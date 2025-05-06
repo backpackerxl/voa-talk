@@ -4,8 +4,8 @@ output/**
 *~
 *.iml
 */.idea/**
-*/uploads/*.png
-*/uploads/*.jpg
+*/*/*.png
+*/*/*.jpg
 .idea/**
 .idea
 *.log
