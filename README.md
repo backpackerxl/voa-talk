@@ -34,6 +34,10 @@ npm run build
 cd backend
 ```
 
+```commandline
+mkdir logfile uploads
+```
+
 ```
 pip install -r requirements.txt
 ```
