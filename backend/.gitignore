@@ -3,9 +3,9 @@ output/**
 *.class
 *~
 *.iml
-*/.idea/**
-*/*/*.png
-*/*/*.jpg
+.idea/misc.xml
+*.png
+*.jpg
 .idea/**
 .idea
 *.log
@@ -35,4 +35,3 @@ pom.xml.versionsBackup
 **/.env
 .instance_id
 rebuild-docker.sh
-/backend/uploads/

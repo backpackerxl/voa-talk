@@ -1,0 +1,352 @@
+<template>
+  <div class="loginbody">
+    <div class="logindata">
+      <div class="logintext">
+        <p>AiChat 用户登录</p>
+      </div>
+      <div class="formdata">
+        <el-form ref="form" :model="form" :rules="rules">
+          <el-form-item prop="username">
+            <el-input
+              class="in-box"
+              v-model="form.username"
+              size="large"
+              clearable
+              placeholder="请输入账号"
+            >
+              <!-- 使用 prefix-icon 插槽添加图标 -->
+              <template #prefix>
+                <el-icon><User /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              class="in-box"
+              v-model="form.password"
+              size="large"
+              clearable
+              placeholder="请输入密码"
+              show-password
+            >
+              <!-- 使用 prefix-icon 插槽添加图标 -->
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+          <!-- 验证码 -->
+          <el-form-item prop="captchaCode">
+            <el-input
+              class="captcha-input in-box"
+              v-model="form.captchaCode"
+              size="large"
+              clearable
+              placeholder="请输入验证码"
+            >
+              <!-- 使用 prefix-icon 插槽添加图标 -->
+              <template #prefix>
+                <el-icon><Picture /></el-icon>
+              </template>
+            </el-input>
+            <div class="captcha-image" v-loading="loading">
+              <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" />
+            </div>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="tool">
+        <div>
+          <el-checkbox v-model="checked" @change="remenber"
+            >记住密码
+          </el-checkbox>
+        </div>
+        <div>
+          <a @click="forgetpas">忘记密码？</a>
+        </div>
+      </div>
+      <div class="butt">
+        <el-button size="large" type="primary" @click="submitLogin"
+          >登 录</el-button
+        >
+        <div class="register">
+          <a @click="register">注 册</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { loginUser, loginCode } from "@/api/login";
+import { useRouter } from "vue-router";
+import store from "@/store"; // 导入Vuex store
+import { Picture, User, Lock } from "@element-plus/icons-vue";
+import { encryptAes } from "@/utils/tools";
+import { config } from '@/utils/config'
+
+// createApp(App).use(store).mount('#app')
+
+export default {
+  name: "LogIn",
+  components: {
+    Picture,
+    User,
+    Lock,
+  },
+  setup() {
+    const router = useRouter();
+    return { router };
+  },
+  data() {
+    return {
+      form: {
+        username: "admin",
+        password: "123456",
+        captchaCode: null,
+      },
+      captchaImage: null,
+      loading: false, // 新增的属性，验证码加载使用
+      captchaCode: null,
+      checked: false,
+      rules: {
+        username: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
+          { max: 20, message: "不能大于20个字符", trigger: "blur" },
+        ],
+        password: [
+          { required: true, message: "请输入密码", trigger: "blur" },
+          { max: 10, message: "不能大于10个字符", trigger: "blur" },
+        ],
+        captchaCode: [
+          { required: true, message: "请输入验证码", trigger: "blur" },
+          { max: 6, message: "不能大于6个字符", trigger: "blur" },
+        ],
+      },
+    };
+  },
+
+  mounted() {
+    this.refreshCaptcha(); // 加载验证码图片
+  },
+
+  methods: {
+    // 获取验证码图片
+    async refreshCaptcha() {
+      this.loading = true; // 请求开始时设置为true
+      try {
+        const response = await loginCode();
+        const binaryData = response.data.vCode;
+        this.captchaImage = `data:image/png;base64,${binaryData}`;
+        this.$notify({
+          title: "成功",
+          message: "验证码加载成功",
+          type: "success",
+        });
+      } catch (error) {
+        this.loading = false;
+        this.$notify.error({
+          title: "错误",
+          message: "验证码加载失败",
+        });
+        console.error("Error fetching the captcha:", error);
+      } finally {
+        this.loading = false; // 请求结束时设置为false
+      }
+    },
+
+    submitLogin() {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          // 校验通过，发送请求
+          this.sendPostRequest();
+        } else {
+          // 校验失败，提示用户
+          this.$message.error("请填写完整登录信息");
+          return false;
+        }
+      });
+    },
+
+    async sendPostRequest() {
+      try {
+        const password = this.form.password;
+        let encryptedPassword = encryptAes(password);
+        // 使用加密后的密码进行登录
+        const response = await loginUser(
+          this.form.username,
+          encryptedPassword,
+          this.form.captchaCode
+        );
+        // 假设这是登录成功后的处理逻辑
+        if (response.code === 200) {
+          this.$message({
+            type: "success",
+            message: "登录成功",
+            showClose: true,
+          });
+          // console.log("服务响应：", response);
+
+          // 往浏览器存入token
+          // localStorage.setItem("token", response.data.data.jwtToken);
+          store.dispatch("app/setAuthorization", response.data.jwtToken);
+          store.dispatch("app/setUserRole", response.data.superAdmin);
+          store.dispatch("app/setNickName", response.data.nickName);
+          const avater = response.data.avatar;
+          if (avater) {
+            store.dispatch("app/setAvatar", config.BASE_URL + avater);
+          }
+
+          this.$router.replace("/home/chat");
+        } else {
+          this.$message({
+            message: response.msg,
+            type: "error",
+            showClose: true,
+          });
+          this.refreshCaptcha();
+        }
+      } catch (error) {
+        console.error(error);
+        this.$message({
+          message: "请求失败",
+          type: "error",
+          showClose: true,
+        });
+        this.refreshCaptcha();
+      }
+    },
+    // 记住密码
+    remenber(data) {
+      this.checked = data;
+      if (this.checked) {
+        localStorage.setItem("password", JSON.stringify(this.form));
+      } else {
+        localStorage.removeItem("password");
+      }
+    },
+    forgetpas() {
+      this.router.push("/forget");
+    },
+    register() {
+      this.router.push("/register");
+    },
+  },
+};
+</script>
+
+<style scoped>
+.loginbody {
+  width: 100%;
+  height: 100%;
+  min-width: 1000px;
+  /* background-image: url("../static/login3.jpg"); */
+  background-image: url("@/assets/login3.jpg");
+  background-size: 100% 100%;
+  background-position: center center;
+  overflow: auto;
+  background-repeat: no-repeat;
+  position: fixed;
+  line-height: 100%;
+  padding-top: 150px;
+}
+
+.logintext {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 500;
+  color: rgb(103, 103, 105);
+}
+
+.logindata {
+  width: 500px;
+  transform: translate(-50%);
+  margin-left: 20%;
+  /* 上方一行控制整个登录框架左右移动 */
+  border-radius: 5px;
+  box-sizing: border-box;
+  background: rgb(255, 255, 255);
+  padding: 30px 80px;
+  box-shadow: 0px 10px 30px 10px rgb(255, 255, 255, 0.3);
+}
+
+.tool {
+  display: flex;
+  justify-content: space-between;
+  color: #b4b4b4;
+  font-size: 14px;
+  height: 32px;
+  line-height: 32px;
+  margin: 10px 0;
+}
+
+.tool a {
+  cursor: pointer;
+}
+
+.butt .el-button {
+  margin: 15px 0;
+  width: 100% !important;
+  border: none;
+  font-size: 16px;
+  background: rgb(103, 103, 105, 0.8);
+}
+
+.butt .el-button:hover {
+  background: rgb(103, 103, 105);
+}
+
+.register {
+  color: #b4b4b4;
+  text-align: right;
+  font-size: 16px;
+  height: 40px;
+}
+
+.register a {
+  cursor: copy;
+}
+
+.register a:hover,
+.tool a:hover {
+  color: #676769;
+}
+
+:deep(.el-input__wrapper) {
+  padding: 5px 15px;
+  margin: 4px 0;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
+    inset !important;
+  background-color: transparent !important;
+}
+
+.el-checkbox {
+  --el-checkbox-checked-text-color: #676769;
+  --el-checkbox-checked-bg-color: #676769;
+  --el-checkbox-checked-input-border-color: #676769;
+  color: #b4b4b4;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  padding: 5px 15px;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 4px #676769 inset !important;
+}
+
+.captcha-input {
+  width: 65%; /* 输入框占据一半宽度 */
+}
+
+.captcha-image {
+  width: 35%; /* 图片占据一半宽度 */
+  height: 46px; /* 您可以根据需要调整 */
+  text-align: right;
+}
+
+.captcha-image img {
+  height: 45px;
+  object-fit: cover;
+  cursor: pointer;
+}
+</style>

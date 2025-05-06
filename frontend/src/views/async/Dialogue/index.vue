@@ -1,0 +1,735 @@
+<template>
+  <div class="chat-page">
+    <el-skeleton
+      style="width: 43vw; padding: 0 22vw; margin-top: 30px"
+      :loading="openLoading"
+      animated
+    >
+      <template #template>
+        <el-skeleton-item
+          variant="text"
+          style="width: 40%; height: 45px; margin-left: 60%; margin-top: 10px"
+        />
+        <el-skeleton-item
+          variant="text"
+          style="width: 100%; height: 80px; margin-top: 10px"
+        />
+        <el-skeleton-item
+          variant="text"
+          style="width: 70%; height: 45px; margin-left: 30%; margin-top: 10px"
+        />
+        <el-skeleton-item
+          variant="text"
+          style="width: 100%; height: 240px; margin-top: 10px"
+        />
+        <el-skeleton-item
+          variant="text"
+          style="width: 50%; height: 45px; margin-left: 50%; margin-top: 10px"
+        />
+        <el-skeleton-item
+          variant="text"
+          style="width: 100%; height: 200px; margin-top: 10px"
+        />
+      </template>
+      <template #default>
+        <div ref="chatWindow" class="chat-window">
+          <div
+            v-for="(message, index) in messages"
+            :key="index"
+            class="message"
+          >
+            <div v-if="message.type === 'user'" class="user-message">
+              <span>{{ message.content }}</span>
+              <div class="tools">
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="复制"
+                  placement="top"
+                >
+                  <i
+                    @click="copyContent($event, message.content)"
+                    class="fa-solid fa-copy"
+                  ></i>
+                </el-tooltip>
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="编辑"
+                  placement="top"
+                >
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </el-tooltip>
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="分享"
+                  placement="top"
+                >
+                  <i class="fa-solid fa-share"></i>
+                </el-tooltip>
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="删除"
+                  placement="top"
+                >
+                  <i
+                    @click="deleteChat(message.id)"
+                    class="fa-solid fa-trash"
+                  ></i>
+                </el-tooltip>
+              </div>
+            </div>
+            <div class="markdown-body" v-else>
+              <div class="inner" v-html="markdwonToHTML(message.content)"></div>
+              <div class="tools">
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="复制"
+                  placement="top"
+                >
+                  <i
+                    @click="copyContent($event, message.content)"
+                    class="fa-solid fa-copy"
+                  ></i>
+                </el-tooltip>
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="重新生成"
+                  placement="top"
+                >
+                  <i class="fa-solid fa-rotate-right"></i>
+                </el-tooltip>
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="分享"
+                  placement="top"
+                >
+                  <i class="fa-solid fa-share"></i>
+                </el-tooltip>
+                <el-tooltip
+                  class="box-item"
+                  effect="light"
+                  content="删除"
+                  placement="top"
+                >
+                  <i
+                    @click="deleteChat(message.id)"
+                    class="fa-solid fa-trash"
+                  ></i>
+                </el-tooltip>
+              </div>
+            </div>
+          </div>
+          <div class="container">
+            <div
+              ref="oOutPut"
+              class="markdown-body"
+              v-html="markdwonToHTML(respStr)"
+            ></div>
+            <div ref="cursorElement" class="cursor"></div>
+            <div
+              :class="{
+                'record-list active': changeIcon,
+                'record-list': !changeIcon,
+              }"
+            >
+              <div
+                class="item"
+                v-for="(record, index) in recordList"
+                :key="index"
+                @click="recordQue(record.content)"
+              >
+                <span
+                  >{{ record.content }}? <i class="fa-solid fa-arrow-right"></i
+                ></span>
+              </div>
+            </div>
+          </div>
+          <div class="last-msg" v-loading="loading"></div>
+        </div>
+      </template>
+    </el-skeleton>
+
+    <div
+      class="input-container"
+      :style="welcomeWord ? 'bottom:50%' : 'bottom: 20px'"
+    >
+      <h2 style="text-align: center" v-if="welcomeWord">{{ welcomStr }}</h2>
+      <div class="input__inner_container">
+        <el-input
+          v-model="newMessage"
+          :autosize="{ minRows: 2, maxRows: 10 }"
+          @keyup.enter="sendMessage"
+          placeholder="输入您的问题..."
+          type="textarea"
+          @input="chengQValue"
+        />
+        <div class="opt">
+          <el-select
+            v-model="modelId"
+            placeholder="请选择模型"
+            style="width: 150px"
+            clearable
+          >
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+          <el-button
+            type="primary"
+            @click="sendMessage"
+            circle
+            :disabled="disabledBtn"
+            :class="{
+              'send-message active': !disabledBtn,
+              'send-message': disabledBtn,
+            }"
+          >
+            <i
+              :class="{
+                'fa-solid fa-arrow-up': !changeIcon,
+                'fa-solid fa-square': changeIcon,
+              }"
+            ></i>
+          </el-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <el-dialog
+    v-model="centerDialogVisible"
+    title="删除对话"
+    width="400"
+    align-center
+  >
+    <span>确定删除，对话内容将不可恢复</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="centerDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="deleteUserOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup>
+import { ref, onMounted, nextTick, computed, watch } from "vue";
+import {
+  AiChat,
+  saveAiChat,
+  saveAiChatTitle,
+  aiOneChat,
+  deleteOneChat,
+  queryRecommend,
+} from "@/api/aiChat";
+import { ApiModelList } from "@/api/modelConfig";
+import { Position } from "@element-plus/icons-vue";
+import { getGreeting } from "@/utils/tools";
+import { markdwonToHTML, addCopy } from "@/utils/render-html";
+import { useRoute } from "vue-router";
+import store from "@/store";
+import "github-markdown-css/github-markdown-light.css";
+import "highlight.js/styles/github.css";
+import "katex/dist/katex.min.css";
+
+const routePath = useRoute();
+
+const welcomStr = ref(getGreeting() + "，" + store.state.app.nickName);
+
+const messages = ref([]);
+
+const newMessage = ref("");
+
+const modelId = ref("");
+
+const options = ref([]);
+
+const disabledBtn = ref(true);
+
+const respStr = ref("");
+
+const chatId = ref(-1);
+
+const loading = ref(false);
+
+const openLoading = ref(false);
+
+const welcomeWord = ref(false);
+
+const oOutPut = ref(null);
+
+const cursorElement = ref(null);
+
+const chatWindow = ref(null);
+
+const changeIcon = ref(false);
+
+const centerDialogVisible = ref(false);
+
+const delChatId = ref(-1);
+
+const recordList = ref([]);
+
+watch(
+  () => routePath,
+  async (newRoute, oldRoute) => {
+    if (newRoute.params.id) {
+      welcomeWord.value = false;
+      chatId.value = Number(newRoute.params.id);
+      await getOneChatData();
+      const obj = await queryRecommend({ talk_id: chatId.value });
+      recordList.value = obj.data;
+      nextTick(function () {
+        addCopy();
+        // 自动滚动到最新消息位置
+        if (chatWindow.value) {
+          chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
+        }
+      });
+    } else {
+      chatId.value = -1;
+      messages.value = [];
+      welcomeWord.value = true;
+      recordList.value = [];
+    }
+  },
+  { deep: true }
+);
+
+async function getOneChatData() {
+  openLoading.value = true;
+  let data = await aiOneChat({ talk_id: chatId.value });
+  messages.value = data.data.map((item) => {
+    if (item.type === "bot") {
+      return {
+        id: item.id,
+        type: "bot",
+        content: item.content,
+      };
+    }
+    return item;
+  });
+  openLoading.value = false;
+}
+
+function chengQValue() {
+  disabledBtn.value = newMessage.value.trim() === "";
+}
+
+function deleteUserOk() {
+  deleteOneChat({ id: delChatId.value });
+  messages.value = messages.value.filter((item) => item.id !== delChatId.value);
+  centerDialogVisible.value = false;
+}
+
+function deleteChat(id) {
+  centerDialogVisible.value = true;
+  delChatId.value = id;
+}
+
+// 遍历子节点找到合适的文本节点和偏移量
+function findTextNodeAndOffset(node) {
+  if (node) {
+    for (let i = node.childNodes.length - 1; i >= 0; i--) {
+      let childNode = node.childNodes[i];
+      if (
+        childNode.nodeType === Node.TEXT_NODE &&
+        /\S/.test(childNode.nodeValue)
+      ) {
+        childNode.nodeValue = childNode.nodeValue.replace(/\s+$/, "");
+        return childNode;
+      } else if (childNode.nodeType === Node.ELEMENT_NODE) {
+        const result = findTextNodeAndOffset(childNode);
+        if (result) {
+          return result;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function updateCursorPosition() {
+  let currentNode = oOutPut.value;
+  if (!currentNode) {
+    return;
+  }
+  const result = findTextNodeAndOffset(currentNode);
+  const text = document.createTextNode("\u200b");
+  if (!result) {
+    currentNode.appendChild(text);
+  } else {
+    result.parentElement.appendChild(text);
+  }
+
+  const range = document.createRange();
+  range.setStart(text, 0);
+  range.setEnd(text, 0);
+  const rect = range.getBoundingClientRect();
+
+  const containerRect = currentNode.getBoundingClientRect();
+  let x = rect.left - containerRect.left + 8;
+  cursorElement.value.style.left = x + "px";
+  cursorElement.value.style.top = rect.top - containerRect.top + 8 + "px";
+  if (containerRect.width < x) {
+    cursorElement.value.style.display = "none";
+  } else {
+    cursorElement.value.style.display = "block";
+  }
+  text.remove();
+}
+
+function recordQue(content) {
+  newMessage.value = content;
+  sendMessage();
+}
+
+function copyContent(event, content) {
+  navigator.clipboard
+    .writeText(content)
+    .then(() => {
+      const oCopy = event.target;
+      oCopy.className = "fas fa-check"; // 切换为成功图标
+      oCopy.style.color = "#28a745"; // 成功颜色
+
+      setTimeout(() => {
+        oCopy.className = "fa-solid fa-copy";
+        oCopy.style.color = "rgb(117 116 116)"; // 恢复原样
+      }, 1000); // 2 秒后恢复原样
+    })
+    .catch((err) => {
+      console.error("无法复制代码:", err);
+    });
+}
+
+const sendMessage = async () => {
+  disabledBtn.value = true;
+  changeIcon.value = true;
+  if (newMessage.value.trim() !== "") {
+    respStr.value = "";
+    welcomeWord.value = false;
+    messages.value.push({ type: "user", content: newMessage.value });
+
+    const userInput = newMessage.value;
+    newMessage.value = "";
+
+    // console.log(userInput, modelId.value);
+
+    let params = {
+      user_input: userInput,
+      model_id: modelId.value,
+      session_id: chatId.value,
+    };
+    loading.value = true;
+
+    const resp = await AiChat(params);
+
+    loading.value = false;
+
+    const reader = resp.body.getReader();
+    const textDecoder = new TextDecoder("utf-8");
+    // 处理可能的分块数据
+    while (1) {
+      const { value, done: isDone } = await reader.read();
+      if (isDone) {
+        break;
+      }
+      if (value) {
+        const chunk = textDecoder.decode(value, { stream: true });
+        const messages = chunk.split("\n\n");
+        messages.forEach((message) => {
+          if (message.startsWith("data: ")) {
+            const cleanMessage = message.replace("data: ", "");
+            const data = JSON.parse(cleanMessage);
+            if (chatId.value === -1) {
+              chatId.value = data.session_id;
+              saveAiChatTitle({
+                talk_id: chatId.value,
+                user_input: userInput,
+                model_id: modelId.value,
+              })
+                .then((obj) => {
+                  chatId.value = obj.data.id;
+                  store.dispatch("app/setSliderData", {
+                    talk_id: obj.data.id,
+                    talk_name: obj.data.title,
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }
+            respStr.value += data.content;
+            nextTick(function () {
+              updateCursorPosition();
+              // 自动滚动到最新消息位置
+              if (chatWindow.value) {
+                chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
+              }
+            });
+          }
+        });
+      }
+    }
+    let tempValue = respStr.value;
+    respStr.value = "";
+
+    messages.value.push({
+      type: "bot",
+      content: tempValue,
+    });
+
+    nextTick(function () {
+      cursorElement.value.style.display = "none";
+      addCopy();
+      changeIcon.value = false;
+    });
+
+    // nextTick(function () {
+
+    // });
+    if (chatId.value !== -1) {
+      recordList.value = [];
+      loading.value = true;
+      const obj = await saveAiChat({
+        model_id: modelId.value,
+        talk_id: chatId.value,
+        resp_content: tempValue,
+        req_content: userInput,
+      });
+      loading.value = false;
+      recordList.value = obj.data;
+    }
+  }
+};
+
+onMounted(async () => {
+  if (routePath.params.id) {
+    welcomeWord.value = false;
+    chatId.value = Number(routePath.params.id);
+    await getOneChatData();
+    const obj = await queryRecommend({ talk_id: chatId.value });
+    recordList.value = obj.data;
+  } else {
+    chatId.value = -1;
+    messages.value = [];
+    welcomeWord.value = true;
+  }
+  // 加载下拉框
+  ApiModelList({
+    search_criteria: '{"sort": {"field": "sort", "order": "desc"}}',
+  })
+    .then((res) => {
+      if (res.data && res.data instanceof Array) {
+        options.value = res.data.map((data) => {
+          return {
+            value: data.id,
+            label: data.name,
+          };
+        });
+        modelId.value = options.value[0].value;
+      }
+    })
+    .catch((error) => {
+      console.error("Failed to load model config:", error);
+    });
+  nextTick(function () {
+    addCopy();
+    // 自动滚动到最新消息位置
+    if (chatWindow.value) {
+      chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
+    }
+  });
+});
+</script>
+
+<style scoped>
+.chat-window {
+  margin-top: 30px;
+  width: 43vw;
+  max-height: 75vh;
+  overflow-y: auto;
+  padding: 0 22vw;
+}
+
+.chat-window .last-msg {
+  height: 20px;
+  width: 20px;
+  --el-loading-spinner-size: 18px;
+  --el-color-primary: rgb(103, 103, 105);
+}
+
+:deep(.el-loading-spinner .path) {
+  stroke-width: 4 !important;
+}
+
+.message {
+  margin-bottom: 10px;
+}
+
+.user-message {
+  text-align: right;
+}
+
+.user-message span {
+  background-color: rgb(239, 240, 241);
+  color: rgb(36, 36, 36);
+  padding: 8px;
+  border-radius: 8px;
+  display: inline-flex;
+}
+
+.input-container {
+  width: 43vw;
+  position: fixed;
+  float: bottom;
+  bottom: 20px;
+  padding: 0 22vw;
+}
+
+.input__inner_container {
+  padding: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: #fff;
+}
+
+:deep(.el-textarea__inner) {
+  border: none !important;
+  box-shadow: none !important;
+  resize: none;
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 0;
+}
+
+:deep(.el-textarea__inner.is-focus) {
+  padding: 2px 15px;
+  border-radius: none !important;
+  box-shadow: none !important;
+  resize: none;
+}
+
+.opt {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+:deep(.el-select__wrapper) {
+  --el-color-primary: rgb(103, 103, 105);
+  border-radius: 75px;
+}
+
+.container {
+  position: relative;
+}
+
+.container .cursor {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0);
+  animation: blink 0.8s infinite;
+  display: none;
+}
+
+.send-message {
+  border: none;
+  font-size: 16px;
+  background: rgb(103, 103, 105, 0.4);
+  color: rgb(255, 255, 255, 0.6);
+}
+
+.send-message i.fa-square {
+  font-size: 12px;
+}
+
+.send-message.active,
+.send-message.active:hover {
+  background: rgb(103, 103, 105);
+  color: rgb(255, 255, 255);
+}
+
+.send-message:hover {
+  background: rgb(103, 103, 105, 0.4);
+  color: rgb(255, 255, 255, 0.6);
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.record-list {
+  margin: 15px 0;
+  display: block;
+}
+
+.record-list.active {
+  display: none;
+}
+
+.record-list .item {
+  margin-bottom: 30px;
+}
+
+.record-list .item span {
+  padding: 8px;
+  background: rgb(245, 245, 245);
+  border-radius: 8px;
+  color: rgb(37, 37, 37);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.record-list span i {
+  color: rgb(117 116 116);
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.message .tools {
+  height: 30px;
+  line-height: 30px;
+  color: rgb(117 116 116);
+  opacity: 0;
+}
+
+.tools i.fa-trash {
+  color: rgb(255, 59, 48);
+}
+
+.tools i.fa-trash:hover {
+  background: rgb(255, 59, 48, 0.1);
+}
+
+.message:hover .tools {
+  opacity: 1;
+}
+
+.tools i {
+  margin: 0 5px;
+  padding: 6px;
+}
+
+.tools i:hover {
+  padding: 6px;
+  background: rgb(117, 116, 116, 0.2);
+  border-radius: 4px;
+}
+</style>
