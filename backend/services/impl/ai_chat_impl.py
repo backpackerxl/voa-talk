@@ -103,24 +103,33 @@ def ai_save_chat_serve(user_id, request_data):
             "create_date": now
         }
         DbTools.saveOrUpdate(session, save_dict, RequestLogs)
-        reco_list = []
-        model_cfg = session.query(ModelConfig).filter(ModelConfig.id == request_data['model_id']).first()
+
+        if result:
+            model_cfg = session.query(ModelConfig).filter(ModelConfig.id == request_data['model_id']).first()
+            return ReturnTool.SuccessReturn(gen_record_list(result.id, request_data, model_cfg))
+        else:
+            return ReturnTool.ErrorReturn('数据没有找到')
+
+
+def gen_record_list(chat_id, request_data, model_cfg):
+    reco_list = []
+    with DatabaseSession() as session:
         if model_cfg is not None:
             resp_rec = generateContent([
                 {"role": "user", "content": request_data['req_content']},
                 {"role": "system", "content": request_data['resp_content']},
                 {"role": "user", "content": '''
-                                                        1.要求根据这段上下文生成3个推荐问题
-                                                        2.要求只提炼出三个推荐问题
-                                                        3.要求推荐问题不超过20个字
-                                                        4.要求只返回问题本身的纯文本不要带任何markdown语法格式的字符
-                                                        5.要求站在你的角度考虑，推荐一些你比较擅长的相似问题
-                                                        6.要求内容不要返回序号
-                                                        7.要求请记住最终结果只需要三个，并且每个问题的字数不超过20个字
-                                                        8.要求每个问题之间用英文的;分割
-                                                        9.要求认真思考，不要生成一些奇怪的问题
-                                                        10.要求每个问题最后一个字符不能是特殊的中文或英文符号
-                                                        '''},
+                                                            1.要求根据这段上下文生成3个推荐问题
+                                                            2.要求只提炼出三个推荐问题
+                                                            3.要求推荐问题不超过20个字
+                                                            4.要求只返回问题本身的纯文本不要带任何markdown语法格式的字符
+                                                            5.要求站在你的角度考虑，推荐一些你比较擅长的相似问题
+                                                            6.要求内容不要返回序号
+                                                            7.要求请记住最终结果只需要三个，并且每个问题的字数不超过20个字
+                                                            8.要求每个问题之间用英文的;分割
+                                                            9.要求认真思考，不要生成一些奇怪的问题
+                                                            10.要求每个问题最后一个字符不能是特殊的中文或英文符号
+                                                            '''},
             ], model_cfg)
             arr = []
             if ';' in resp_rec:
@@ -135,12 +144,11 @@ def ai_save_chat_serve(user_id, request_data):
                 session.commit()
                 reco_list = [{"talk_id": talk_id, "content": content[:20]} for content in
                              arr]
-                DbTools.bulk_insert(session, reco_list, TalkRecommendation)
-
-        if result:
-            return ReturnTool.SuccessReturn(reco_list)
-        else:
-            return ReturnTool.ErrorReturn('数据没有找到')
+            DbTools.bulk_insert(session, reco_list, TalkRecommendation)
+    return {
+        "chat_id": chat_id,
+        "reco_list": reco_list
+    }
 
 
 def save_chat_title(user_id, nick_name, user_input, model_id, request_data):
@@ -255,11 +263,25 @@ def api_find_talk_name(talk_id):
 def api_find_talk_recommend(talk_id):
     with DatabaseSession() as session:
         talk_recommend = session.query(TalkRecommendation).filter(TalkRecommendation.talk_id == talk_id).all()
-        if talk_recommend is None:
-            return ReturnTool.SuccessReturn([])
-
-        return ReturnTool.SuccessReturn(
-            [{'talk_id': result.talk_id, 'content': result.content} for result in talk_recommend])
+        if talk_recommend is None or len(talk_recommend) == 0:
+            log = session.query(TalkLogs).order_by(getattr(TalkLogs, 'id').desc()).filter(
+                TalkLogs.talk_id == talk_id).first()
+            if log is None:
+                return ReturnTool.SuccessReturn({
+                    "chat_id": -1,
+                    "reco_list": []
+                })
+            model_cfg = session.query(ModelConfig).order_by(getattr(ModelConfig, 'sort').desc()).first()
+            resp_dict = gen_record_list(log.id, {
+                "req_content": log.req_content,
+                "resp_content": log.resp_content,
+                "talk_id": log.talk_id
+            }, model_cfg)
+            return ReturnTool.SuccessReturn(resp_dict)
+        return ReturnTool.SuccessReturn({
+            "chat_id": -1,
+            "reco_list": [{'talk_id': result.talk_id, 'content': result.content} for result in talk_recommend]
+        })
 
 
 def api_del_chat_impl(id_c):
@@ -267,6 +289,18 @@ def api_del_chat_impl(id_c):
         删除单次对话
     """
     with DatabaseSession() as session:
+        talk_log = session.query(TalkLogs).filter(TalkLogs.id == id_c).first()
+        if talk_log is None:
+            return ReturnTool.ErrorReturn("未找到此对话!")
+        log = session.query(TalkLogs).order_by(getattr(TalkLogs, 'id').desc()).filter(
+            TalkLogs.talk_id == talk_log.talk_id).first()
+        # 先判断是否删除推荐问题
+        if log.id == talk_log.id:
+            session.query(TalkRecommendation).filter(TalkRecommendation.talk_id == talk_log.talk_id).delete()
         session.query(TalkLogs).filter(TalkLogs.id == id_c).delete()
         session.commit()
-        return ReturnTool.SuccessReturn()
+        talk_recommend = session.query(TalkRecommendation).filter(TalkRecommendation.talk_id == talk_log.talk_id).all()
+        return ReturnTool.SuccessReturn({
+            "chat_id": -1,
+            "reco_list": [{'talk_id': result.talk_id, 'content': result.content} for result in talk_recommend]
+        })

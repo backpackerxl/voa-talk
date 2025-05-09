@@ -36,7 +36,9 @@
           <div
             v-for="(message, index) in messages"
             :key="index"
-            class="message"
+            :class="
+              index === messages.length - 1 ? 'message active' : 'message'
+            "
           >
             <div v-if="message.type === 'user'" class="user-message">
               <span>{{ message.content }}</span>
@@ -57,6 +59,7 @@
                   effect="light"
                   content="编辑"
                   placement="top"
+                  v-if="index === messages.length - 2"
                 >
                   <i class="fa-solid fa-pen-to-square"></i>
                 </el-tooltip>
@@ -100,6 +103,7 @@
                   effect="light"
                   content="重新生成"
                   placement="top"
+                  v-if="index === messages.length - 1"
                 >
                   <i class="fa-solid fa-rotate-right"></i>
                 </el-tooltip>
@@ -214,7 +218,7 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="centerDialogVisible = false">取消</el-button>
-        <el-button type="danger" @click="deleteUserOk"> 确定 </el-button>
+        <el-button type="danger" @click="deleteChatOk"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>
@@ -286,7 +290,7 @@ watch(
       chatId.value = Number(newRoute.params.id);
       await getOneChatData();
       const obj = await queryRecommend({ talk_id: chatId.value });
-      recordList.value = obj.data;
+      recordList.value = obj.data.reco_list;
       nextTick(function () {
         addCopy();
         // 自动滚动到最新消息位置
@@ -324,8 +328,14 @@ function chengQValue() {
   disabledBtn.value = newMessage.value.trim() === "";
 }
 
-function deleteUserOk() {
-  deleteOneChat({ id: delChatId.value });
+function deleteChatOk() {
+  deleteOneChat({ id: delChatId.value })
+    .then((res) => {
+      recordList.value = res.data.reco_list;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   messages.value = messages.value.filter((item) => item.id !== delChatId.value);
   centerDialogVisible.value = false;
 }
@@ -493,9 +503,6 @@ const sendMessage = async () => {
       changeIcon.value = false;
     });
 
-    // nextTick(function () {
-
-    // });
     if (chatId.value !== -1) {
       recordList.value = [];
       loading.value = true;
@@ -506,7 +513,16 @@ const sendMessage = async () => {
         req_content: userInput,
       });
       loading.value = false;
-      recordList.value = obj.data;
+      const cId = obj.data.chat_id;
+      let lastIdx = messages.value.length - 1;
+      messages.value[lastIdx].id = cId;
+      messages.value[lastIdx - 1].id = cId;
+      recordList.value = obj.data.reco_list;
+      nextTick(function () {
+        if (chatWindow.value) {
+          chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
+        }
+      });
     }
   }
 };
@@ -517,7 +533,7 @@ onMounted(async () => {
     chatId.value = Number(routePath.params.id);
     await getOneChatData();
     const obj = await queryRecommend({ talk_id: chatId.value });
-    recordList.value = obj.data;
+    recordList.value = obj.data.reco_list;
   } else {
     chatId.value = -1;
     messages.value = [];
@@ -698,7 +714,6 @@ onMounted(async () => {
 }
 
 .record-list span i {
-  color: rgb(117 116 116);
   font-size: 12px;
   margin-left: 10px;
 }
@@ -706,7 +721,7 @@ onMounted(async () => {
 .message .tools {
   height: 30px;
   line-height: 30px;
-  color: rgb(117 116 116);
+  color: rgb(117, 116, 116, 0.8);
   opacity: 0;
 }
 
@@ -718,7 +733,8 @@ onMounted(async () => {
   background: rgb(255, 59, 48, 0.1);
 }
 
-.message:hover .tools {
+.message:hover .tools,
+.message.active .tools {
   opacity: 1;
 }
 
@@ -729,7 +745,7 @@ onMounted(async () => {
 
 .tools i:hover {
   padding: 6px;
-  background: rgb(117, 116, 116, 0.2);
+  background: rgb(117, 116, 116, 0.1);
   border-radius: 4px;
 }
 </style>

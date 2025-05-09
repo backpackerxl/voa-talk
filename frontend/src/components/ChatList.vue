@@ -23,7 +23,7 @@
       <li
         v-for="(chat, index) in tableData"
         :key="index"
-        class="list-item"
+        :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'"
         @click="openChatHis($event, chat)"
         :data-index="index"
       >
@@ -81,6 +81,9 @@
 import { computed, ref, onMounted, defineEmits, defineProps, watch } from "vue";
 import router from "@/router";
 import { EditPen, Delete } from "@element-plus/icons-vue";
+import { useRoute } from "vue-router";
+
+const routePath = useRoute();
 
 const props = defineProps({
   chat: {
@@ -103,9 +106,9 @@ const disabled = computed(() => loading.value || noMore.value);
 const currentPage = ref(1);
 const pageSize = ref(15);
 const contentRefs = ref([]);
-const oldTarget = ref(null);
 const isVisible = ref(false);
 const moreIcon = ref(null);
+const talkIdOn = ref(-1);
 
 function handleVisibleChange(visible) {
   isVisible.value = visible;
@@ -138,12 +141,7 @@ function openChatHis(event, row) {
     moreIcon.value = event.target;
     return;
   }
-  if (oldTarget.value) {
-    oldTarget.value.classList.remove("active");
-  }
-  const currentTarget = event.currentTarget;
-  currentTarget.classList.add("active");
-  oldTarget.value = currentTarget;
+  talkIdOn.value = row.talk_id;
   emits("change-data", {
     chatTitle: row.talk_name,
     chatId: row.talk_id,
@@ -155,9 +153,6 @@ function openChatHis(event, row) {
 function openChatHisList() {
   emits("change-data", { chatTitle: "", chatId: -1, type: "change" });
   router.replace("/home/chat/history");
-  if (oldTarget.value) {
-    oldTarget.value.classList.remove("active");
-  }
 }
 
 const getAiChatList = () => {
@@ -197,16 +192,12 @@ watch(
         });
         break;
       case "open":
-        if (oldTarget.value) {
-          oldTarget.value.classList.remove("active");
-        }
+        talkIdOn.value = newChat.talk_id;
         break;
       case "new":
         delete newChat.type;
         tableData.value = [newChat, ...tableData.value];
-        if (oldTarget.value) {
-          oldTarget.value.classList.remove("active");
-        }
+        talkIdOn.value = newChat.talk_id;
         break;
       default:
         break;
@@ -247,6 +238,7 @@ function handleEditMsg(row) {
 }
 
 onMounted(function () {
+  talkIdOn.value = +routePath.params.id;
   getAiChatList();
 });
 </script>
@@ -277,7 +269,7 @@ onMounted(function () {
 }
 
 .infinite-list-wrapper .list-item {
-  height: 45px;
+  height: 40px;
   color: rgb(35, 35, 35);
 }
 
@@ -341,7 +333,7 @@ onMounted(function () {
 }
 
 .infinite-list-wrapper .list-item + .list-item {
-  margin-top: 10px;
+  margin-top: 1px;
 }
 
 .last-msg {
