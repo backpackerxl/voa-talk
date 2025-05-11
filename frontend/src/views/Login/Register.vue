@@ -1,27 +1,28 @@
 <template>
   <div class="loginbody">
+    <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="register-container">
       <el-card class="register-card">
-        <p class="logintext">AiChat 用户注册</p>
+        <p class="logintext">VoaTalk 注册</p>
         <el-form
           :model="registerForm"
           :rules="rules"
           ref="registerFormRef"
-          label-position="right"
+          label-position="top"
           label-width="100px"
         >
-          <el-form-item label="姓名" prop="name">
+          <el-form-item label="昵称" prop="name">
             <el-input
               v-model="registerForm.name"
-              placeholder="请输入姓名"
+              placeholder="请输入昵称"
               clearable
               size="large"
             ></el-input>
           </el-form-item>
-          <el-form-item label="登录账户" prop="username">
+          <el-form-item label="用户名" prop="username">
             <el-input
               v-model="registerForm.username"
-              placeholder="请输入登录账户"
+              placeholder="请输入用户名"
               clearable
               size="large"
             ></el-input>
@@ -55,6 +56,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { enrollUser } from "@/api/login";
+import GitHubLink from "@/components/GitHubLink";
 
 const registerForm = ref({
   name: "",
@@ -65,6 +67,7 @@ const registerForm = ref({
 const rules = {
   name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
   username: [
+    { required: true, message: "请输入登录账户", trigger: "blur" },
     {
       pattern: /^[a-zA-Z0-9]+$/,
       message: "登录账户只能包含字母和数字",
@@ -95,19 +98,16 @@ const handleRegister = async () => {
         const res = await enrollUser({ name, username, email });
         // console.log("注册后端返回：", res);
         if (res.code === 200) {
-          ElMessage.success(
-            "注册成功！请检查邮箱以完成验证。密码将会发送到您的邮箱。"
-          );
+          ElMessage.success("注册成功,密码已发送到您的注册邮箱。");
           router.push("/");
         } else {
           ElMessage.error(res.msg);
         }
       } catch (error) {
         console.log(error);
-        ElMessage.error("注册失败，请重试。");
       }
     } else {
-      ElMessage.error("请填写完整的注册信息。");
+      ElMessage.error("请完善注册信息。");
     }
   });
 };
@@ -120,16 +120,10 @@ const goToLogin = () => {
 <style scoped>
 .loginbody {
   width: 100%;
-  height: 100%;
-  min-width: 1000px;
-  background-image: url("@/assets/login3.jpg");
-  background-size: 100% 100%;
-  background-position: center center;
-  overflow: auto;
-  background-repeat: no-repeat;
-  position: fixed;
-  line-height: 100%;
-  padding-top: 150px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logintext {
@@ -137,17 +131,21 @@ const goToLogin = () => {
   font-size: 24px;
   font-weight: 500;
   color: rgb(103, 103, 105);
+  margin: 10px 0;
 }
 
 .register-card {
-  margin-left: 120px;
-  width: 500px;
-  box-shadow: 0px 10px 30px 10px rgb(255, 255, 255, 0.3);
+  width: 380px;
+  box-shadow: 0px 4px 6px rgb(0, 0, 0, 0.1);
 }
 
 .button-group,
 .el-input {
-  width: 85%;
+  width: 100%;
+}
+
+.button-group{
+  height: 76px;
 }
 
 .button-group .el-button {
@@ -166,7 +164,6 @@ const goToLogin = () => {
   color: #b4b4b4;
   text-align: right;
   font-size: 16px;
-  height: 40px;
 }
 
 .login a {
@@ -184,10 +181,6 @@ const goToLogin = () => {
   box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
     inset !important;
   background-color: transparent !important;
-}
-
-:deep(.el-form-item__label) {
-  line-height: 56px;
 }
 
 :deep(.el-input__wrapper.is-focus) {

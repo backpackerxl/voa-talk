@@ -122,13 +122,7 @@ function handleChatData(data) {
   }
 }
 
-const menuData = ref([
-  {
-    url: "/home/profile",
-    label: "我的主页",
-    icon: "fa-solid fa-id-card",
-  },
-]);
+const menuData = ref([]);
 
 // 计算属性：判断用户是否是管理员
 const userRole = computed(() => store.state.app.userRole || null);

@@ -1,5 +1,6 @@
 # 读取ini文件
 import configparser
+import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -27,7 +28,7 @@ def send_email(to_email, subject, body, is_html=False):
     # 连接到你的企业SMTP服务器
     try:
         server = smtplib.SMTP_SSL(Config.SMTP_SERVER, int(Config.SMTP_PORT))  # 使用 SMTP_SSL 而不是 SMTP
-        server.login(Config.EMAIL_USER, Config.EMAIL_PASSWORD)
+        server.login(Config.EMAIL_USER, os.getenv('EMAIL_PASSWORD'))
 
         # 发送电子邮件
         server.sendmail(Config.EMAIL_USER, [to_email], msg.as_string())
@@ -40,5 +41,5 @@ def send_email(to_email, subject, body, is_html=False):
 
 # 用法示例
 if __name__ == '__main__':
-    result_msg = send_email('946115360@qq.com', 'Python电子邮件测试', '这是一封从Python发送的测试电子邮件。')
+    result_msg = send_email('946115360@qq.com', 'Python电子邮件测试2', '这是一封从Python发送的测试电子邮件。')
     print(result_msg)

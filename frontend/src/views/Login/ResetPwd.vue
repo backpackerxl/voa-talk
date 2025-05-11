@@ -1,16 +1,16 @@
 <template>
   <div class="loginbody">
+    <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="register-container">
       <el-card class="register-card">
-        <p class="logintext">AiChat 修改密码</p>
+        <p class="logintext">VoaTalk 修改密码</p>
         <el-form
           :model="registerForm"
           :rules="rules"
           ref="registerFormRef"
-          label-position="right"
-          label-width="100px"
+          label-position="top"
         >
-          <el-form-item label="密码" prop="pwd">
+          <el-form-item label="新密码" prop="pwd">
             <el-input
               v-model="registerForm.pwd"
               placeholder="请输入新密码"
@@ -19,7 +19,7 @@
               show-password
             ></el-input>
           </el-form-item>
-          <el-form-item label="确认密码" prop="pwd_ok">
+          <el-form-item label="确认新密码" prop="pwd_ok">
             <el-input
               v-model="registerForm.pwd_ok"
               placeholder="请确认新密码"
@@ -28,13 +28,11 @@
               show-password
             ></el-input>
           </el-form-item>
-          <el-form-item>
-            <div class="button-group">
-              <el-button size="large" type="primary" @click="handleResetPwd"
-                >修改密码</el-button
-              >
-            </div>
-          </el-form-item>
+          <div class="button-group">
+            <el-button size="large" type="primary" @click="handleResetPwd"
+              >修改密码</el-button
+            >
+          </div>
         </el-form>
       </el-card>
     </div>
@@ -47,6 +45,7 @@ import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { resetPWD } from "@/api/login";
 import { encryptAes } from "@/utils/tools";
+import GitHubLink from "@/components/GitHubLink";
 
 const registerForm = ref({
   pwd: "",
@@ -71,8 +70,14 @@ const validateConfirmPassword = (rule, value, callback) => {
 };
 
 const rules = {
-  pwd: [{ validator: validatePassword, trigger: "blur" }],
-  pwd_ok: [{ validator: validateConfirmPassword, trigger: "blur" }],
+  pwd: [
+    { required: true, message: "请输入新密码", trigger: "blur" },
+    { validator: validatePassword, trigger: "blur" },
+  ],
+  pwd_ok: [
+    { required: true, message: "请重新输入新密码", trigger: "blur" },
+    { validator: validateConfirmPassword, trigger: "blur" },
+  ],
 };
 
 const registerFormRef = ref(null);
@@ -84,7 +89,7 @@ const handleResetPwd = async () => {
     if (valid) {
       // Aa!#123456
       const { pwd, pwd_ok } = registerForm.value;
-      const secret_key = routePath.params.secretKey || '';
+      const secret_key = routePath.params.secretKey || "";
       console.log("密码重置数据:", { pwd, pwd_ok, secret_key });
       try {
         const res = await resetPWD({ pwd: encryptAes(pwd), secret_key });
@@ -97,7 +102,6 @@ const handleResetPwd = async () => {
         }
       } catch (error) {
         console.log(error);
-        ElMessage.error("密码重置失败，请重试。");
       }
     } else {
       ElMessage.error("请填写完整的密码信息。");
@@ -109,16 +113,10 @@ const handleResetPwd = async () => {
 <style scoped>
 .loginbody {
   width: 100%;
-  height: 100%;
-  min-width: 1000px;
-  background-image: url("@/assets/login3.jpg");
-  background-size: 100% 100%;
-  background-position: center center;
-  overflow: auto;
-  background-repeat: no-repeat;
-  position: fixed;
-  line-height: 100%;
-  padding-top: 150px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logintext {
@@ -126,17 +124,12 @@ const handleResetPwd = async () => {
   font-size: 24px;
   font-weight: 500;
   color: rgb(103, 103, 105);
+  margin: 10px 0;
 }
 
 .register-card {
-  margin-left: 120px;
-  width: 500px;
-  box-shadow: 0px 10px 30px 10px rgb(255, 255, 255, 0.3);
-}
-
-.button-group,
-.el-input {
-  width: 85%;
+  width: 380px;
+  box-shadow: 0px 4px 6px rgb(0, 0, 0, 0.1);
 }
 
 .button-group .el-button {
@@ -158,10 +151,6 @@ const handleResetPwd = async () => {
   box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
     inset !important;
   background-color: transparent !important;
-}
-
-:deep(.el-form-item__label) {
-  line-height: 56px;
 }
 
 :deep(.el-input__wrapper.is-focus) {

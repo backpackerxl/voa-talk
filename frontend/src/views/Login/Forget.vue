@@ -1,14 +1,14 @@
 <template>
   <div class="loginbody">
+    <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="register-container">
       <el-card class="register-card">
-        <p class="logintext">AiChat 找回密码</p>
+        <p class="logintext">VoaTalk 找回密码</p>
         <el-form
           :model="registerForm"
           :rules="rules"
           ref="registerFormRef"
-          label-position="right"
-          label-width="100px"
+          label-position="top"
         >
           <el-form-item label="邮箱" prop="email">
             <el-input
@@ -18,13 +18,11 @@
               size="large"
             ></el-input>
           </el-form-item>
-          <el-form-item>
-            <div class="button-group">
-              <el-button size="large" type="primary" @click="handleForget"
-                >找回密码</el-button
-              >
-            </div>
-          </el-form-item>
+          <div class="button-group">
+            <el-button size="large" type="primary" @click="handleForget"
+              >找回密码</el-button
+            >
+          </div>
         </el-form>
       </el-card>
     </div>
@@ -36,6 +34,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { forgetPwd } from "@/api/login";
+import GitHubLink from "@/components/GitHubLink";
 
 const registerForm = ref({
   email: "",
@@ -61,22 +60,19 @@ const handleForget = async () => {
     if (valid) {
       const { email } = registerForm.value;
       let req_url = window.location.origin;
-      req_url = req_url + '/#/' + 'resetPwd'
+      req_url = req_url + "/resetPwd";
       console.log("邮箱：:", { email, req_url });
 
       try {
         const res = await forgetPwd({ email, req_url });
         if (res.code === 200) {
-          ElMessage.success(
-            "发送成功！请检查邮箱以完成验证。"
-          );
+          ElMessage.success("发送成功！请检查邮箱以完成验证。");
           router.push("/");
         } else {
           ElMessage.error(res.msg);
         }
       } catch (error) {
         console.log(error);
-        ElMessage.error("发送失败，请重试。");
       }
     } else {
       ElMessage.error("请填写完整的邮箱信息。");
@@ -88,16 +84,10 @@ const handleForget = async () => {
 <style scoped>
 .loginbody {
   width: 100%;
-  height: 100%;
-  min-width: 1000px;
-  background-image: url("@/assets/login3.jpg");
-  background-size: 100% 100%;
-  background-position: center center;
-  overflow: auto;
-  background-repeat: no-repeat;
-  position: fixed;
-  line-height: 100%;
-  padding-top: 150px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logintext {
@@ -105,17 +95,12 @@ const handleForget = async () => {
   font-size: 24px;
   font-weight: 500;
   color: rgb(103, 103, 105);
+  margin: 10px 0;
 }
 
 .register-card {
-  margin-left: 120px;
-  width: 500px;
-  box-shadow: 0px 10px 30px 10px rgb(255, 255, 255, 0.3);
-}
-
-.button-group,
-.el-input {
-  width: 85%;
+  width: 380px;
+  box-shadow: 0px 4px 6px rgb(0, 0, 0, 0.1);
 }
 
 .button-group .el-button {
@@ -137,10 +122,6 @@ const handleForget = async () => {
   box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
     inset !important;
   background-color: transparent !important;
-}
-
-:deep(.el-form-item__label) {
-  line-height: 56px;
 }
 
 :deep(.el-input__wrapper.is-focus) {

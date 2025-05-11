@@ -3,12 +3,13 @@
     <el-upload
       ref="uploadRef"
       :style="imageUrl ? 'display: none' : 'display: block'"
-      action="/api/upload"
+      :action="config.BASE_URL + '/upload'"
       list-type="picture-card"
       :headers="{ Token: store.state.app.authorization }"
       :on-success="handleSuccess"
       :before-upload="beforeUpload"
       :show-file-list="false"
+      accept="image/png, image/jpeg"
     >
       <el-icon><Plus /></el-icon>
     </el-upload>
@@ -55,14 +56,14 @@
         >开启新对话</el-button
       >
       <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit"
-        >找回密码</el-button
+        >重置密码</el-button
       >
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted } from "vue";
 import store from "@/store";
 import {
   Delete,
@@ -77,13 +78,16 @@ const welcomStr = ref(store.state.app.nickName);
 import router from "@/router";
 import { updateUser } from "@/api/apiUser";
 import { ElMessage } from "element-plus";
-
-const imageUrl = ref(store.state.app.avatar);
+import { config } from "@/utils/config";
+const avatarUrl = store.state.app.avatar;
+const imageUrl = ref(avatarUrl);
+const saveUrl = ref(avatarUrl.replace(config.BASE_URL, ""));
 
 const uploadRef = ref(null);
 
 function handleSuccess(response, file, fileList) {
-  imageUrl.value = "api/" + response.image_url;
+  saveUrl.value = response.image_url;
+  imageUrl.value = config.BASE_URL + response.image_url;
 }
 
 function uploadImg() {
@@ -120,7 +124,7 @@ function forgetPwd() {
 
 async function saveUserInfo() {
   const resp = await updateUser({
-    avatar: imageUrl.value,
+    avatar: saveUrl.value,
     nick_name: welcomStr.value,
   });
   if (resp.code === 200) {
@@ -141,7 +145,9 @@ async function saveUserInfo() {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 50px;
 }
+
 :deep(.el-upload.el-upload--picture-card),
 :deep(.el-upload-list--picture-card .el-upload-list__item-actions),
 :deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail) {

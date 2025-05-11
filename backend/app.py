@@ -5,6 +5,8 @@ import os
 import pkgutil
 
 import waitress
+from datetime import date
+from pathlib import Path
 from flask import Flask, Blueprint, send_from_directory, request
 from flask_cors import CORS
 
@@ -23,8 +25,7 @@ def hello():
 
 
 UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -48,20 +49,31 @@ def upload_file():
         return {'error': 'No selected file'}, 400
     # 检查文件扩展名是否允许
     if file and allowed_file(file.filename):
+        # 获取今天的日期并格式化为 YYYYMMDD
+        today = date.today().strftime('%Y%m%d')
+        # 创建按日期划分的子目录
+        date_folder = Path(app.config['UPLOAD_FOLDER']) / today
+        os.makedirs(date_folder, exist_ok=True)  # 自动创建目录(如果不存在)
         # 获取文件扩展名
         file_ext = os.path.splitext(file.filename)[1]
         # 生成唯一的文件名
         new_filename = str(snowflake.next_id()) + file_ext
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
+        save_path = date_folder / new_filename
+        file.save(save_path)
         # 返回可访问的图片地址
-        image_url = 'uploads/' + new_filename
+        image_url = f'/uploads/{today}/{new_filename}'
         return {'image_url': image_url}, 200
     return {'error': 'Invalid file type'}, 400
 
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+@app.route('/uploads/<path:file_path>')
+def uploaded_file(file_path):
+    # 分离目录和文件名
+    directory, filename = os.path.split(file_path)
+    # 构建完整的目录路径
+    full_directory = Path(app.config['UPLOAD_FOLDER']) / directory
+    # 发送文件
+    return send_from_directory(full_directory, filename)
 
 
 # 获取当前文件所在目录的绝对路径

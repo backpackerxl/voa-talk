@@ -3,6 +3,7 @@ import json
 import uuid
 
 from dbinfo import DatabaseSession
+from sqlalchemy import or_
 from dto import SysUserDTO
 from entity import SysUser
 from utils import DbTools, Config, encryptUtils, Tools
@@ -96,17 +97,20 @@ def enroll_impl(name, username, email):
     :return:
     """
     password = Tools.generate_random_password()
-    hash_password = encryptUtils.encrypt_aes(password)
-    print(name, username, email)
-    subject = "欢迎使用AiChat"
+    subject = "欢迎使用VoaTalk"
     body = f'您好：{name}\n您的账号已经注册成功。\n您的登录账号为：' + username + '\n密码为：' + password + '\n请妥善保管您的账号密码。'
     with DatabaseSession() as session:
-        user_exist = session.query(SysUser).filter_by(user_name=username, email=email).first()
+        user_exist = session.query(SysUser).filter(
+            or_(
+                SysUser.user_name == username,
+                SysUser.email == email,
+            )
+        ).all()
         if user_exist:
             return ReturnTool.ErrorReturn('用户名已存在或邮箱已被注册')
         if SendMail.send_email(email, subject, body) != '电子邮件发送成功！':
             return ReturnTool.ErrorReturn('邮件发送失败，请检查邮箱是否正确')
-        hashed_password, salt = Tools.generate_hashed_password(hash_password)
+        hashed_password, salt = Tools.generate_hashed_password(password)
         sql_data = {
             'user_name': username, 'nick_name': name, 'email': email, 'pass_word': hashed_password, 'salt': salt,
             "update_date": TimeToolClass.get_time(), "create_date": TimeToolClass.get_time(),
@@ -117,20 +121,20 @@ def enroll_impl(name, username, email):
 
 
 def forget_pwd_impl(email, req_url):
-    subject = "欢迎使用AiChat"
+    subject = "欢迎使用VoaTalk"
     with DatabaseSession() as session:
         user_exist = session.query(SysUser).filter_by(email=email).first()
         if user_exist:
             # 存在此用户
             key = str(snowflake.next_id())
-            body = f'您好：{user_exist.nick_name}\n您的登录账号为：' + user_exist.user_name + '，请点击此链接：\n' + req_url + '/' + key + '\n找回密码。'
+            body = f'您好：{user_exist.nick_name}\n您的登录账号为：' + user_exist.user_name + '，请点击此链接：\n' + req_url + '/' + key + '\n找回密码。注意：此链接10分钟内有效！'
             if SendMail.send_email(email, subject, body) != '电子邮件发送成功！':
                 return ReturnTool.ErrorReturn('邮件发送失败，请检查邮箱是否正确')
             else:
                 RedisHandler().save_key(key, json.dumps({
                     "user_name": user_exist.user_name,
                     "email": user_exist.email,
-                }), 300)  # 5分钟保活
+                }), 600)  # 链接10分钟保活
         else:
             return ReturnTool.ErrorReturn('此邮箱未注册')
 

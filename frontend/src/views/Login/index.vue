@@ -1,78 +1,79 @@
 <template>
   <div class="loginbody">
+    <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="logindata">
-      <div class="logintext">
-        <p>AiChat 用户登录</p>
-      </div>
-      <div class="formdata">
-        <el-form ref="form" :model="form" :rules="rules">
-          <el-form-item prop="username">
-            <el-input
-              class="in-box"
-              v-model="form.username"
-              size="large"
-              clearable
-              placeholder="请输入账号"
-            >
-              <!-- 使用 prefix-icon 插槽添加图标 -->
-              <template #prefix>
-                <el-icon><User /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input
-              class="in-box"
-              v-model="form.password"
-              size="large"
-              clearable
-              placeholder="请输入密码"
-              show-password
-            >
-              <!-- 使用 prefix-icon 插槽添加图标 -->
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-          <!-- 验证码 -->
-          <el-form-item prop="captchaCode">
-            <el-input
-              class="captcha-input in-box"
-              v-model="form.captchaCode"
-              size="large"
-              clearable
-              placeholder="请输入验证码"
-            >
-              <!-- 使用 prefix-icon 插槽添加图标 -->
-              <template #prefix>
-                <el-icon><Picture /></el-icon>
-              </template>
-            </el-input>
-            <div class="captcha-image" v-loading="loading">
-              <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" />
-            </div>
-          </el-form-item>
-        </el-form>
-      </div>
-      <div class="tool">
-        <div>
-          <el-checkbox v-model="checked" @change="remenber"
-            >记住密码
-          </el-checkbox>
+      <el-card>
+        <p class="logintext">VoaTalk 登录</p>
+        <div class="formdata">
+          <el-form ref="form" :model="form" :rules="rules">
+            <el-form-item prop="username">
+              <el-input
+                class="in-box"
+                v-model="form.username"
+                size="large"
+                clearable
+                placeholder="请输入账号"
+              >
+                <!-- 使用 prefix-icon 插槽添加图标 -->
+                <template #prefix>
+                  <el-icon><User /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                class="in-box"
+                v-model="form.password"
+                size="large"
+                clearable
+                placeholder="请输入密码"
+                show-password
+              >
+                <!-- 使用 prefix-icon 插槽添加图标 -->
+                <template #prefix>
+                  <el-icon><Lock /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <!-- 验证码 -->
+            <el-form-item prop="captchaCode">
+              <el-input
+                class="captcha-input in-box"
+                v-model="form.captchaCode"
+                size="large"
+                clearable
+                placeholder="请输入验证码"
+              >
+                <!-- 使用 prefix-icon 插槽添加图标 -->
+                <template #prefix>
+                  <el-icon><Picture /></el-icon>
+                </template>
+              </el-input>
+              <div class="captcha-image" v-loading="loading">
+                <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" />
+              </div>
+            </el-form-item>
+          </el-form>
         </div>
-        <div>
-          <a @click="forgetpas">忘记密码？</a>
+        <div class="tool">
+          <div>
+            <el-checkbox v-model="checked" @change="remenber"
+              >记住密码
+            </el-checkbox>
+          </div>
+          <div>
+            <a @click="forgetpas">忘记密码？</a>
+          </div>
         </div>
-      </div>
-      <div class="butt">
-        <el-button size="large" type="primary" @click="submitLogin"
-          >登 录</el-button
-        >
-        <div class="register">
-          <a @click="register">注 册</a>
+        <div class="butt">
+          <el-button size="large" type="primary" @click="submitLogin"
+            >登 录</el-button
+          >
+          <div class="register">
+            <a @click="register">注 册</a>
+          </div>
         </div>
-      </div>
+      </el-card>
     </div>
   </div>
 </template>
@@ -83,9 +84,8 @@ import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
 import { Picture, User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
-import { config } from '@/utils/config'
-
-// createApp(App).use(store).mount('#app')
+import { config } from "@/utils/config";
+import GitHubLink from "@/components/GitHubLink";
 
 export default {
   name: "LogIn",
@@ -93,6 +93,7 @@ export default {
     Picture,
     User,
     Lock,
+    GitHubLink,
   },
   setup() {
     const router = useRouter();
@@ -101,8 +102,8 @@ export default {
   data() {
     return {
       form: {
-        username: "admin",
-        password: "123456",
+        username: null,
+        password: null,
         captchaCode: null,
       },
       captchaImage: null,
@@ -208,11 +209,6 @@ export default {
         }
       } catch (error) {
         console.error(error);
-        this.$message({
-          message: "请求失败",
-          type: "error",
-          showClose: true,
-        });
         this.refreshCaptcha();
       }
     },
@@ -238,17 +234,10 @@ export default {
 <style scoped>
 .loginbody {
   width: 100%;
-  height: 100%;
-  min-width: 1000px;
-  /* background-image: url("../static/login3.jpg"); */
-  background-image: url("@/assets/login3.jpg");
-  background-size: 100% 100%;
-  background-position: center center;
-  overflow: auto;
-  background-repeat: no-repeat;
-  position: fixed;
-  line-height: 100%;
-  padding-top: 150px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logintext {
@@ -256,18 +245,12 @@ export default {
   font-size: 24px;
   font-weight: 500;
   color: rgb(103, 103, 105);
+  margin: 10px 0;
 }
 
 .logindata {
-  width: 500px;
-  transform: translate(-50%);
-  margin-left: 20%;
-  /* 上方一行控制整个登录框架左右移动 */
-  border-radius: 5px;
-  box-sizing: border-box;
-  background: rgb(255, 255, 255);
-  padding: 30px 80px;
-  box-shadow: 0px 10px 30px 10px rgb(255, 255, 255, 0.3);
+  width: 380px;
+  box-shadow: 0px 4px 6px rgb(0, 0, 0, 0.1);
 }
 
 .tool {
@@ -277,11 +260,14 @@ export default {
   font-size: 14px;
   height: 32px;
   line-height: 32px;
-  margin: 10px 0;
 }
 
 .tool a {
   cursor: pointer;
+}
+
+.butt {
+  height: 86px;
 }
 
 .butt .el-button {

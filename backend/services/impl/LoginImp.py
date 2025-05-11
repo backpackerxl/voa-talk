@@ -159,7 +159,8 @@ def login_impl(request):
         if queue.user_state != 1:
             return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！")
         pwd = request.get_json().get('passWord')
-        password = verify_password(aes_decrypt(pwd), queue.salt)
+        decrypt = aes_decrypt(pwd)
+        password = verify_password(decrypt, queue.salt)
 
         # 检查密码是否正确，用于开发检查
         # print(f"用户输入：{password}")
@@ -224,7 +225,7 @@ def retrieve_password_servie_servie(email, code):
         sql_data = {
             'id': queue.id, 'pass_word': hashed_password, 'salt': salt, "update_date": TimeToolClass.get_time()
         }
-        subject = "欢迎使用AiChat"
+        subject = "欢迎使用VoaTalk"
         body = f'您好：{queue.name}\n您的账号密码找回成功。\n您的登录账号为：' + queue.user_name + '\n密码为：' + password + '\n请妥善保管您的账号密码。'
         if SendMail.send_email(email, subject, body) != '电子邮件发送成功！':
             return ReturnTool.ErrorReturn('邮件发送失败，请检查邮箱是否正确')

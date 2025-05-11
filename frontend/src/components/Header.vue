@@ -16,7 +16,13 @@
       <!-- </div> -->
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+          <el-dropdown-item command="profile"
+            ><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item
+          >
+          <el-dropdown-item command="logout"
+            ><i class="fa-solid fa-right-from-bracket"></i
+            >退出登录</el-dropdown-item
+          >
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -70,6 +76,8 @@ const handleCommand = (command) => {
       .catch(() => {
         console.log("Logout canceled");
       });
+  } else if (command === "profile") {
+    router.push("/home/profile");
   }
 };
 </script>

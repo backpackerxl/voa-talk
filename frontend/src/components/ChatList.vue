@@ -256,9 +256,17 @@ onMounted(function () {
   border-top: 1px solid rgb(35, 35, 35, 0.1);
 }
 
+.header-container .his-icon {
+  display: none;
+}
+
+.header-container:hover .his-icon {
+  display: block;
+}
+
 .infinite-list-wrapper {
   height: 62vh;
-  padding: 5px;
+  padding: 0 5px;
 }
 
 .infinite-list-wrapper .list {

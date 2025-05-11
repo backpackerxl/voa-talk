@@ -146,9 +146,8 @@
                 class="item"
                 v-for="(record, index) in recordList"
                 :key="index"
-                @click="recordQue(record.content)"
               >
-                <span
+                <span @click="recordQue(record.content)"
                   >{{ record.content }}? <i class="fa-solid fa-arrow-right"></i
                 ></span>
               </div>
@@ -240,6 +239,7 @@ import { getGreeting } from "@/utils/tools";
 import { markdwonToHTML, addCopy } from "@/utils/render-html";
 import { useRoute } from "vue-router";
 import store from "@/store";
+import { ElMessage } from "element-plus";
 import "github-markdown-css/github-markdown-light.css";
 import "highlight.js/styles/github.css";
 import "katex/dist/katex.min.css";
@@ -409,6 +409,7 @@ function copyContent(event, content) {
       const oCopy = event.target;
       oCopy.className = "fas fa-check"; // 切换为成功图标
       oCopy.style.color = "#28a745"; // 成功颜色
+      ElMessage.success("复制成功");
 
       setTimeout(() => {
         oCopy.className = "fa-solid fa-copy";

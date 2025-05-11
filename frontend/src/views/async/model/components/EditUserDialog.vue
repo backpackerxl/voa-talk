@@ -68,7 +68,7 @@ let state = reactive({
 watch(
   () => props.user,
   (newUser) => {
-    console.log("New user data received in dialog:", newUser); // 检查数据接收
+    // console.log("New user data received in dialog:", newUser); // 检查数据接收
     if (newUser) {
       form.value.model_id = newUser.model_id || "";
       form.value.id = newUser.id || "";

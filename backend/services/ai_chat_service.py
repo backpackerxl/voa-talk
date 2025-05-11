@@ -28,10 +28,6 @@ def get_req_user(request):
     # 如果 token 无效，抛出 ValueError 异常
     if not valid:
         raise ValueError("无效的令牌")
-    # 从 payload 中获取用户名称
-    # user_id = payload.get("id")
-    # nick_name = payload.get("nickName")
-    # super_admin = payload.get("superAdmin")
     return payload
 
 
@@ -87,8 +83,6 @@ def api_update_ids(request):
     talk_id = request_data.get('talk_id')
     return ai_chat_impl.api_update_ids(talk_id, request_data)
 
-
-# {'id': 1, 'userName': 'admin', 'nickName': '超级管理员', 'avatar': None, 'IP': '127.0.0.1', 'superAdmin': 1, 'exp': 1744999221}
 
 def api_query_page_service(request):
     page_size = request.args.get('pageSize', default=Config.PageSize, type=int)
