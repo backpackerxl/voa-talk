@@ -41,6 +41,35 @@
             "
           >
             <div v-if="message.type === 'user'" class="user-message">
+              <div v-if="index === messages.length - 2">
+                <div v-if="showEditInput" class="edit-warrap">
+                  <i @click="closeSend($event)" class="fa-solid fa-xmark"></i>
+                  <el-input
+                    v-model="mContent"
+                    style="width: 100%"
+                    :autosize="{ minRows: 1, maxRows: 15 }"
+                    class="re-input"
+                    type="textarea"
+                  />
+                  <el-button
+                    type="primary"
+                    @click="sendMessage"
+                    circle
+                    :disabled="disabledBtn"
+                    :class="{
+                      'send-message active': !disabledBtn,
+                      'send-message': disabledBtn,
+                    }"
+                  >
+                    <i
+                      :class="{
+                        'fa-solid fa-arrow-up': !changeIcon,
+                        'fa-solid fa-square': changeIcon,
+                      }"
+                    ></i>
+                  </el-button>
+                </div>
+              </div>
               <span>{{ message.content }}</span>
               <div class="tools">
                 <el-tooltip
@@ -61,7 +90,10 @@
                   placement="top"
                   v-if="index === messages.length - 2"
                 >
-                  <i class="fa-solid fa-pen-to-square"></i>
+                  <i
+                    @click="editQue($event, message.content)"
+                    class="fa-solid fa-pen-to-square"
+                  ></i>
                 </el-tooltip>
                 <el-tooltip
                   class="box-item"
@@ -136,6 +168,7 @@
               v-html="markdwonToHTML(respStr)"
             ></div>
             <div ref="cursorElement" class="cursor"></div>
+            <div class="last-msg" v-loading="loading"></div>
             <div
               :class="{
                 'record-list active': changeIcon,
@@ -153,7 +186,6 @@
               </div>
             </div>
           </div>
-          <div class="last-msg" v-loading="loading"></div>
         </div>
       </template>
     </el-skeleton>
@@ -167,7 +199,8 @@
         <el-input
           v-model="newMessage"
           :autosize="{ minRows: 2, maxRows: 10 }"
-          @keyup.enter="sendMessage"
+          @keyup.enter.exact="sendMessage"
+          @keydown.shift.enter="handleShiftEnter"
           placeholder="输入您的问题..."
           type="textarea"
           @input="chengQValue"
@@ -282,6 +315,10 @@ const delChatId = ref(-1);
 
 const recordList = ref([]);
 
+const showEditInput = ref(false);
+
+const mContent = ref("");
+
 watch(
   () => routePath,
   async (newRoute, oldRoute) => {
@@ -325,6 +362,7 @@ async function getOneChatData() {
 }
 
 function chengQValue() {
+  newMessage.value = newMessage.value.replace(/[\r\n]+$/, "");
   disabledBtn.value = newMessage.value.trim() === "";
 }
 
@@ -402,6 +440,20 @@ function recordQue(content) {
   sendMessage();
 }
 
+function editQue(node, content) {
+  showEditInput.value = true;
+  mContent.value = content;
+  node.target.parentNode.style.opacity = "0";
+  node.target.parentNode.previousElementSibling.style.display = "none";
+}
+
+function closeSend(node) {
+  showEditInput.value = false;
+  node.target.parentNode.parentNode.nextElementSibling.style = "";
+  node.target.parentNode.parentNode.nextElementSibling.nextElementSibling.style.opacity =
+    "1";
+}
+
 function copyContent(event, content) {
   navigator.clipboard
     .writeText(content)
@@ -421,7 +473,18 @@ function copyContent(event, content) {
     });
 }
 
+function handleShiftEnter(e) {
+  e.preventDefault();
+  newMessage.value = newMessage.value + "\n";
+}
+
 const sendMessage = async () => {
+  const firstCharIndex = newMessage.value.search(/[^\s]/);
+  const isValid =
+    firstCharIndex !== -1 && firstCharIndex < newMessage.value.length;
+  if (!isValid) {
+    return;
+  }
   disabledBtn.value = true;
   changeIcon.value = true;
   if (newMessage.value.trim() !== "") {
@@ -602,6 +665,9 @@ onMounted(async () => {
   padding: 8px;
   border-radius: 8px;
   display: inline-flex;
+  white-space: pre-wrap;
+  max-width: 26vw;
+  text-align: left;
 }
 
 .input-container {
@@ -619,7 +685,7 @@ onMounted(async () => {
   background: #fff;
 }
 
-:deep(.el-textarea__inner) {
+.input-container :deep(.el-textarea__inner) {
   border: none !important;
   box-shadow: none !important;
   resize: none;
@@ -628,7 +694,7 @@ onMounted(async () => {
   padding: 0;
 }
 
-:deep(.el-textarea__inner.is-focus) {
+.input-container :deep(.el-textarea__inner.is-focus) {
   padding: 2px 15px;
   border-radius: none !important;
   box-shadow: none !important;
@@ -693,7 +759,6 @@ onMounted(async () => {
 }
 
 .record-list {
-  margin: 15px 0;
   display: block;
 }
 
@@ -742,11 +807,45 @@ onMounted(async () => {
 .tools i {
   margin: 0 5px;
   padding: 6px;
+  cursor: pointer;
 }
 
 .tools i:hover {
   padding: 6px;
   background: rgb(117, 116, 116, 0.1);
   border-radius: 4px;
+}
+
+.edit-warrap {
+  display: flex;
+  align-items: center;
+  min-height: 37px;
+}
+
+.edit-warrap .fa-xmark {
+  font-size: 18px;
+  color: rgb(136, 136, 136, 0.6);
+  cursor: pointer;
+}
+
+.edit-warrap .fa-xmark:hover {
+  color: rgb(136, 136, 136);
+}
+
+.edit-warrap .re-input {
+  margin: 0 10px;
+}
+
+.edit-warrap :deep(.el-textarea__inner) {
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 2px #676769 inset !important;
+  background-color: transparent !important;
+  resize: none;
+}
+
+.edit-warrap :deep(.el-textarea__inner.is-focus) {
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 2px #676769 inset !important;
+  resize: none;
 }
 </style>

@@ -250,10 +250,10 @@ onMounted(function () {
   justify-content: space-between;
   align-items: center;
   height: 40px;
-  margin-top: 20px;
   padding-left: 15px;
   padding-right: 18px;
   border-top: 1px solid rgb(35, 35, 35, 0.1);
+  background: #fff;
 }
 
 .header-container .his-icon {

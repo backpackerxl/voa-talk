@@ -295,4 +295,15 @@ onMounted(() => {
 .open-chat:hover {
   background: rgb(103, 103, 105);
 }
+
+.el-menu {
+  height: 200px;
+  overflow: auto;
+}
+
+.history-chat {
+  width: 240px;
+  position: absolute;
+  bottom: 10px;
+}
 </style>
