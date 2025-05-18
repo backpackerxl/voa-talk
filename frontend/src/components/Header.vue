@@ -6,7 +6,7 @@
         ><EditPen
       /></el-icon>
     </p>
-    <el-dropdown @command="handleCommand">
+    <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click">
       <!-- <div> -->
       <el-avatar v-if="imageUrl" :src="imageUrl" />
       <el-avatar
@@ -15,7 +15,9 @@
       />
       <!-- </div> -->
       <template #dropdown>
-        <el-dropdown-menu>
+        <el-dropdown-menu
+          :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
+        >
           <el-dropdown-item command="profile"
             ><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item
           >
@@ -43,12 +45,18 @@ const props = defineProps({
   title: String,
 });
 
+const isVisible = ref(false);
+
 const store = useStore(); // Initialize the store
 
 const imageUrl = computed(() => store.state.app.avatar || null);
 
 function editTitle() {
   emit("submit", props);
+}
+
+function handleVisibleChange(visible) {
+  isVisible.value = visible;
 }
 
 const router = useRouter();

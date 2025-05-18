@@ -35,3 +35,58 @@ def generate_hashed_password(password):
     """
     salt = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
     return hashlib.sha256((password + salt).encode()).hexdigest(), salt
+
+
+def insert_lowercase_letters(s):
+    """
+    随机插入字符
+    """
+    result = s
+    # 生成不连续的插入位置
+    possible_positions = list(range(len(s) + 1))
+    positions = []
+
+    for _ in range(0, 3):
+        if not possible_positions:
+            break  # 没有可用位置时提前结束
+        pos = random.choice(possible_positions)
+        positions.append(pos)
+
+        # 移除当前位置及相邻位置
+        to_remove = {pos}
+        if pos - 1 in possible_positions:
+            to_remove.add(pos - 1)
+        if pos + 1 in possible_positions:
+            to_remove.add(pos + 1)
+        possible_positions = [p for p in possible_positions if p not in to_remove]
+        # 按位置排序并执行插入
+        positions.sort()
+        result = s
+        offset = 0  # 记录插入导致的位置偏移
+
+        for pos in positions:
+            actual_pos = pos + offset
+            # 随机决定连续字母数量 (1-3个)
+            length = random.randint(1, 3)
+            # 仅生成小写字母
+            letters = ''.join(random.choices(string.ascii_lowercase, k=length))
+            # 执行插入
+            result = result[:actual_pos] + letters + result[actual_pos:]
+            offset += len(letters)  # 更新偏移量
+
+        # 按位置排序并执行插入
+        positions.sort()
+        result = s
+        offset = 0  # 记录插入导致的位置偏移
+
+        for pos in positions:
+            actual_pos = pos + offset
+            # 随机决定连续字母数量 (1-3个)
+            length = random.randint(1, 3)
+            # 仅生成小写字母
+            letters = ''.join(random.choices(string.ascii_lowercase, k=length))
+            # 执行插入
+            result = result[:actual_pos] + letters + result[actual_pos:]
+            offset += len(letters)  # 更新偏移量
+
+    return result

@@ -132,10 +132,7 @@ watch(
   () => sliderData,
   (newSliderData, oldSliderData) => {
     if (newSliderData.value && chatId.value === -1) {
-      chatObj.value = {
-        ...newSliderData.value,
-        type: "new",
-      };
+      chatObj.value = newSliderData.value;
       chatTitle.value = newSliderData.value.talk_name;
       chatId.value = newSliderData.value.talk_id;
       if (routePath.path === "/home/chat") {
@@ -173,7 +170,7 @@ async function deleteUserOk() {
     talk_name: chatTitleValue.value,
     type: "delete",
   };
-  console.log(chatObj.value);
+  // console.log(chatObj.value);
   centerDialogVisible.value = false;
   if (chatId.value === +routePath.params.id) {
     chatTitle.value = "新对话";
@@ -184,7 +181,7 @@ async function deleteUserOk() {
 
 function handleDeleteMsg(row) {
   centerDialogVisible.value = true;
-  console.log(row);
+  // console.log(row);
   chatId.value = row.chatId;
   chatTitleValue.value = row.chatTitle;
 }

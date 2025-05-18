@@ -11,9 +11,6 @@ export default {
 };
 </script>
 <style>
-html {
-  overflow: hidden;
-}
 body {
   background-color: #fff;
   margin: 0;
@@ -65,7 +62,7 @@ body {
   font-size: 14px;
 }
 
-.pre-header i.copy-icon{
+.pre-header i.copy-icon {
   padding: 4px;
 }
 

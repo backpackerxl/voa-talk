@@ -129,12 +129,7 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus"; // 引入 ElMessage 组件
-import {
-  queryChat,
-  editChatName,
-  deleteChat,
-  queryTalkName,
-} from "@/api/aiChat";
+import { queryChat, editChatName, deleteChat } from "@/api/aiChat";
 import { useStore } from "vuex"; // Use Vuex's useStore function
 import router from "@/router";
 
@@ -168,10 +163,10 @@ function close() {
 }
 
 async function openChatInfo(row) {
-  const objTalk = await queryTalkName({ talk_id: row.talk_id });
   store.dispatch("app/setSliderData", {
     talk_id: row.talk_id,
-    talk_name: objTalk.data || "",
+    talk_name: row.talk_name || "",
+    type: "open"
   });
   router.replace("/home/chat/" + row.talk_id);
 }

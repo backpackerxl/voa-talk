@@ -26,43 +26,6 @@ service.interceptors.request.use(
 )
 
 // 响应拦截器
-// service.interceptors.response.use(
-//   response => {
-//     // 响应成功处理
-//     if (+response.data.code === 200) {
-//       return (response.data || {}).data
-//     } else {
-//       ElMessage.error(response.data.msg || '服务器错误')
-//       return Promise.reject(response.data.msg || '服务器错误')
-//     }
-//   },
-//   async error => {
-//     console.log("error==>",error)
-//     // 响应失败处理
-//     if (error.response && (error.response.status === 401 || error.response.status === 408)) {
-//       // 如果响应码是 401 或 408，则跳转到登录页
-//       const redirect = encodeURIComponent(window.location.href)
-//       router.push(`/login?redirect=${redirect}`)
-//       // 清除token
-//       store.dispatch('app/clearToken')
-//       // 中断请求链
-//       return Promise.reject(error)
-//     }
-//     if(error.response.data.code!=200){
-//       ElMessage.error(error.response.data?.message || '服务器错误')
-//       return Promise.reject(error)
-//     }
-//     ElMessage.closeAll()
-//     try {
-//       ElMessage.error(error.response.data.msg)
-//     } catch (err) {
-//       ElMessage.error(error.message)
-//     }
-//     return Promise.reject(error)
-//   }
-// )
-
-// 响应拦截器
 service.interceptors.response.use(
     response => {
       // 响应成功处理
@@ -84,7 +47,7 @@ service.interceptors.response.use(
         return Promise.reject(error);
       }
       if (error.response.data.code !== 200) {
-        ElMessage.error(error.response.data?.message || '服务器错误');
+        ElMessage.error(error.response.data?.msg || '服务器错误');
         return Promise.reject(error);
       }
       ElMessage.closeAll();

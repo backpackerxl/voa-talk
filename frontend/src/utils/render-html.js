@@ -67,7 +67,7 @@ export function markdwonToHTML(content) {
             oDivC.className = 'pre-container'
             oDivH.className = 'pre-header'
             oButton.className = 'pre-button';
-            copyIcon.className = "copy-icon fa-regular fa-clone"; // Font Awesome 复制图标
+            copyIcon.className = "copy-icon fa-solid fa-copy"; // Font Awesome 复制图标
             upIcon.className = "fas fa-angle-up"; // Font Awesome 复制图标
 
             oButton.appendChild(upIcon);
@@ -98,7 +98,7 @@ export function addCopy() {
                     el.style.color = "#28a745"; // 成功颜色
 
                     setTimeout(() => {
-                        el.className = "copy-icon fa-regular fa-clone";
+                        el.className = "copy-icon fa-solid fa-copy";
                         el.style.color = "rgb(121, 122, 123)"; // 恢复原样
                     }, 2000); // 2 秒后恢复原样
                 })

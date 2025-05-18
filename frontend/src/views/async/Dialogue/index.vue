@@ -8,31 +8,27 @@
       <template #template>
         <el-skeleton-item
           variant="text"
-          style="width: 40%; height: 45px; margin-left: 60%; margin-top: 10px"
+          style="width: 40%; height: 45px; margin-left: 60%; margin-top: 20px"
         />
         <el-skeleton-item
           variant="text"
-          style="width: 100%; height: 80px; margin-top: 10px"
+          style="width: 100%; height: 100px; margin-top: 20px"
         />
         <el-skeleton-item
           variant="text"
-          style="width: 70%; height: 45px; margin-left: 30%; margin-top: 10px"
+          style="width: 40%; height: 38px; margin-top: 20px"
         />
         <el-skeleton-item
           variant="text"
-          style="width: 100%; height: 240px; margin-top: 10px"
+          style="width: 40%; margin-right: 60%; height: 38px; margin-top: 10px"
         />
         <el-skeleton-item
           variant="text"
-          style="width: 50%; height: 45px; margin-left: 50%; margin-top: 10px"
-        />
-        <el-skeleton-item
-          variant="text"
-          style="width: 100%; height: 200px; margin-top: 10px"
+          style="width: 40%; height: 38px; margin-top: 10px"
         />
       </template>
       <template #default>
-        <div ref="chatWindow" class="chat-window">
+        <div class="chat-window">
           <div
             v-for="(message, index) in messages"
             :key="index"
@@ -40,10 +36,28 @@
               index === messages.length - 1 ? 'message active' : 'message'
             "
           >
-            <div v-if="message.type === 'user'" class="user-message">
+            <!-- 自定义复选框 -->
+            <div class="custom-checkbox" v-if="isShare">
+              <input
+                type="checkbox"
+                :id="'msg-' + message.id"
+                :value="message.id"
+                v-model="checkList"
+                class="checkbox-input"
+              />
+              <label :for="'msg-' + message.id" class="checkbox-label"></label>
+            </div>
+            <div
+              v-if="message.type === 'user'"
+              :class="{
+                'user-message': true,
+                selected: checkList.includes(message.id),
+              }"
+              @click="toggleCheckbox(message.id, $event)"
+            >
               <div v-if="index === messages.length - 2">
                 <div v-if="showEditInput" class="edit-warrap">
-                  <i @click="closeSend($event)" class="fa-solid fa-xmark"></i>
+                  <i @click="closeSend" class="fa-solid fa-xmark"></i>
                   <el-input
                     v-model="mContent"
                     style="width: 100%"
@@ -53,13 +67,9 @@
                   />
                   <el-button
                     type="primary"
-                    @click="sendMessage"
+                    @click="reSendMessage(message.id)"
                     circle
-                    :disabled="disabledBtn"
-                    :class="{
-                      'send-message active': !disabledBtn,
-                      'send-message': disabledBtn,
-                    }"
+                    class="send-message active"
                   >
                     <i
                       :class="{
@@ -71,7 +81,7 @@
                 </div>
               </div>
               <span>{{ message.content }}</span>
-              <div class="tools">
+              <div class="tools" v-if="!isShare">
                 <el-tooltip
                   class="box-item"
                   effect="light"
@@ -101,7 +111,10 @@
                   content="分享"
                   placement="top"
                 >
-                  <i class="fa-solid fa-share"></i>
+                  <i
+                    @click="share($event, message.id)"
+                    class="fa-solid fa-share"
+                  ></i>
                 </el-tooltip>
                 <el-tooltip
                   class="box-item"
@@ -116,9 +129,16 @@
                 </el-tooltip>
               </div>
             </div>
-            <div class="markdown-body" v-else>
+            <div
+              :class="{
+                'markdown-body': true,
+                selected: checkList.includes(message.id),
+              }"
+              v-else
+              @click="toggleCheckbox(message.id, $event)"
+            >
               <div class="inner" v-html="markdwonToHTML(message.content)"></div>
-              <div class="tools">
+              <div class="tools" v-if="!isShare">
                 <el-tooltip
                   class="box-item"
                   effect="light"
@@ -137,7 +157,34 @@
                   placement="top"
                   v-if="index === messages.length - 1"
                 >
-                  <i class="fa-solid fa-rotate-right"></i>
+                  <el-dropdown
+                    @visible-change="handleVisibleChange"
+                    trigger="click"
+                  >
+                    <button class="drp-btn">
+                      <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <template #dropdown>
+                      <el-dropdown-menu
+                        :style="{
+                          pointerEvents: isVisible ? 'auto' : 'none',
+                        }"
+                      >
+                        <el-dropdown-item
+                          v-for="item in options"
+                          :key="item.value"
+                          @click="
+                            rotateChat(
+                              message.id,
+                              messages[messages.length - 2].content,
+                              item.value
+                            )
+                          "
+                          >{{ item.label }}</el-dropdown-item
+                        >
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
                 </el-tooltip>
                 <el-tooltip
                   class="box-item"
@@ -145,7 +192,10 @@
                   content="分享"
                   placement="top"
                 >
-                  <i class="fa-solid fa-share"></i>
+                  <i
+                    @click="share($event, message.id)"
+                    class="fa-solid fa-share"
+                  ></i>
                 </el-tooltip>
                 <el-tooltip
                   class="box-item"
@@ -164,7 +214,7 @@
           <div class="container">
             <div
               ref="oOutPut"
-              class="markdown-body"
+              class="markdown-body now"
               v-html="markdwonToHTML(respStr)"
             ></div>
             <div ref="cursorElement" class="cursor"></div>
@@ -174,6 +224,7 @@
                 'record-list active': changeIcon,
                 'record-list': !changeIcon,
               }"
+              v-if="!isShare"
             >
               <div
                 class="item"
@@ -193,6 +244,7 @@
     <div
       class="input-container"
       :style="welcomeWord ? 'bottom:50%' : 'bottom: 20px'"
+      v-if="!isShare"
     >
       <h2 style="text-align: center" v-if="welcomeWord">{{ welcomStr }}</h2>
       <div class="input__inner_container">
@@ -240,6 +292,24 @@
       </div>
     </div>
   </div>
+  <div class="box-share" v-if="isShare">
+    <!-- 全选控制区域 -->
+    <div class="select-controls">
+      <div class="custom-checkbox">
+        <input
+          type="checkbox"
+          id="select-all"
+          v-model="isAllSelected"
+          class="checkbox-input"
+        />
+        <label for="select-all" class="checkbox-label">全选</label>
+      </div>
+      <div>
+        <el-button @click="noShare">取消分享</el-button>
+        <el-button @click="copyLink" type="primary">复制链接</el-button>
+      </div>
+    </div>
+  </div>
   <el-dialog
     v-model="centerDialogVisible"
     title="删除对话"
@@ -254,6 +324,7 @@
       </div>
     </template>
   </el-dialog>
+  <el-backtop :right="100" :bottom="100" />
 </template>
 
 <script setup>
@@ -265,9 +336,10 @@ import {
   aiOneChat,
   deleteOneChat,
   queryRecommend,
+  shareChat,
 } from "@/api/aiChat";
 import { ApiModelList } from "@/api/modelConfig";
-import { Position } from "@element-plus/icons-vue";
+import { Position, ArrowDown } from "@element-plus/icons-vue";
 import { getGreeting } from "@/utils/tools";
 import { markdwonToHTML, addCopy } from "@/utils/render-html";
 import { useRoute } from "vue-router";
@@ -305,8 +377,6 @@ const oOutPut = ref(null);
 
 const cursorElement = ref(null);
 
-const chatWindow = ref(null);
-
 const changeIcon = ref(false);
 
 const centerDialogVisible = ref(false);
@@ -318,6 +388,86 @@ const recordList = ref([]);
 const showEditInput = ref(false);
 
 const mContent = ref("");
+
+const chatPid = ref(null);
+
+const isVisible = ref(false);
+
+const checkList = ref([]);
+
+const isShare = ref(false);
+
+let oSpanC = null,
+  oDivTools = null;
+
+function handleVisibleChange(visible) {
+  isVisible.value = visible;
+}
+
+function toggleCheckbox(id, event) {
+  // 如果点击的是工具按钮或输入框，不触发复选框切换
+  if (event.target.closest("input, textarea, button")) {
+    return;
+  }
+
+  const checkbox = document.getElementById(`msg-${id}`);
+  if (checkbox) {
+    checkbox.checked = !checkbox.checked;
+
+    // 更新v-model绑定的值
+    const index = checkList.value.indexOf(id);
+    if (checkbox.checked && index === -1) {
+      checkList.value.push(id);
+    } else if (!checkbox.checked && index !== -1) {
+      checkList.value.splice(index, 1);
+    }
+  }
+}
+
+function share(event, id) {
+  isShare.value = true;
+  toggleCheckbox(id, event);
+}
+
+// 全选计算属性
+const isAllSelected = computed({
+  get() {
+    return (
+      messages.value.length > 0 &&
+      checkList.value.length === messages.value.length / 2
+    );
+  },
+  set(value) {
+    checkList.value = value
+      ? [...new Set(messages.value.map((msg) => msg.id))]
+      : [];
+  },
+});
+
+function noShare() {
+  isShare.value = false;
+  checkList.value = [];
+}
+
+async function copyLink() {
+  if (checkList.value.length <= 0) {
+    ElMessage.warning("请选择要分享的对话");
+  }
+  let params = {
+    ids: checkList.value,
+  };
+  const obj = await shareChat(params);
+  let req_url = window.location.origin;
+  navigator.clipboard
+    .writeText(req_url + "/thread/" + obj.data.share_id)
+    .then(() => {
+      ElMessage.success("链接复制成功");
+    })
+    .catch((err) => {
+      console.error("无法复制链接:", err);
+    });
+  noShare();
+}
 
 watch(
   () => routePath,
@@ -331,9 +481,8 @@ watch(
       nextTick(function () {
         addCopy();
         // 自动滚动到最新消息位置
-        if (chatWindow.value) {
-          chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
-        }
+        document.documentElement.scrollTop =
+          document.documentElement.scrollHeight;
       });
     } else {
       chatId.value = -1;
@@ -347,17 +496,8 @@ watch(
 
 async function getOneChatData() {
   openLoading.value = true;
-  let data = await aiOneChat({ talk_id: chatId.value });
-  messages.value = data.data.map((item) => {
-    if (item.type === "bot") {
-      return {
-        id: item.id,
-        type: "bot",
-        content: item.content,
-      };
-    }
-    return item;
-  });
+  let obj = await aiOneChat({ talk_id: chatId.value });
+  messages.value = obj.data;
   openLoading.value = false;
 }
 
@@ -443,15 +583,44 @@ function recordQue(content) {
 function editQue(node, content) {
   showEditInput.value = true;
   mContent.value = content;
-  node.target.parentNode.style.opacity = "0";
-  node.target.parentNode.previousElementSibling.style.display = "none";
+  oSpanC = node.target.parentNode.previousElementSibling;
+  oDivTools = node.target.parentNode;
+  oDivTools.style.opacity = "0";
+  oSpanC.style.display = "none";
 }
 
-function closeSend(node) {
+function closeSend() {
   showEditInput.value = false;
-  node.target.parentNode.parentNode.nextElementSibling.style = "";
-  node.target.parentNode.parentNode.nextElementSibling.nextElementSibling.style.opacity =
-    "1";
+  oDivTools.style = "";
+  oSpanC.style = "";
+}
+
+function reSendMessage(id) {
+  if (!id) {
+    return;
+  }
+  delChatId.value = id;
+  chatPid.value = id;
+  delLastMsg();
+  closeSend();
+  newMessage.value = mContent.value;
+  sendMessage();
+}
+
+function delLastMsg() {
+  messages.value.pop();
+  messages.value.pop();
+}
+
+function rotateChat(id, que, optId) {
+  if (!id) {
+    return;
+  }
+  chatPid.value = id;
+  modelId.value = optId;
+  newMessage.value = que;
+  delLastMsg();
+  sendMessage();
 }
 
 function copyContent(event, content) {
@@ -535,6 +704,7 @@ const sendMessage = async () => {
                   store.dispatch("app/setSliderData", {
                     talk_id: obj.data.id,
                     talk_name: obj.data.title,
+                    type: "new",
                   });
                 })
                 .catch((err) => {
@@ -545,9 +715,8 @@ const sendMessage = async () => {
             nextTick(function () {
               updateCursorPosition();
               // 自动滚动到最新消息位置
-              if (chatWindow.value) {
-                chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
-              }
+              document.documentElement.scrollTop =
+                document.documentElement.scrollHeight;
             });
           }
         });
@@ -565,12 +734,15 @@ const sendMessage = async () => {
       cursorElement.value.style.display = "none";
       addCopy();
       changeIcon.value = false;
+      document.documentElement.scrollTop =
+        document.documentElement.scrollHeight;
     });
 
     if (chatId.value !== -1) {
       recordList.value = [];
       loading.value = true;
       const obj = await saveAiChat({
+        id: chatPid.value,
         model_id: modelId.value,
         talk_id: chatId.value,
         resp_content: tempValue,
@@ -579,13 +751,13 @@ const sendMessage = async () => {
       loading.value = false;
       const cId = obj.data.chat_id;
       let lastIdx = messages.value.length - 1;
+      chatPid.value = null;
       messages.value[lastIdx].id = cId;
       messages.value[lastIdx - 1].id = cId;
       recordList.value = obj.data.reco_list;
       nextTick(function () {
-        if (chatWindow.value) {
-          chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
-        }
+        document.documentElement.scrollTop =
+          document.documentElement.scrollHeight;
       });
     }
   }
@@ -624,9 +796,7 @@ onMounted(async () => {
   nextTick(function () {
     addCopy();
     // 自动滚动到最新消息位置
-    if (chatWindow.value) {
-      chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
-    }
+    document.documentElement.scrollTop = document.documentElement.scrollHeight;
   });
 });
 </script>
@@ -635,8 +805,6 @@ onMounted(async () => {
 .chat-window {
   margin-top: 30px;
   width: 43vw;
-  max-height: 75vh;
-  overflow-y: auto;
   padding: 0 22vw;
 }
 
@@ -651,16 +819,26 @@ onMounted(async () => {
   stroke-width: 4 !important;
 }
 
-.message {
-  margin-bottom: 10px;
+.message .selected {
+  background: rgb(233, 234, 236, 0.4);
+  border-radius: 5px;
+}
+
+.markdown-body {
+  padding: 10px;
+}
+
+.markdown-body.now {
+  padding: 0px 10px;
 }
 
 .user-message {
   text-align: right;
+  padding: 10px;
 }
 
 .user-message span {
-  background-color: rgb(239, 240, 241);
+  background-color: rgb(233, 234, 236);
   color: rgb(36, 36, 36);
   padding: 8px;
   border-radius: 8px;
@@ -668,6 +846,7 @@ onMounted(async () => {
   white-space: pre-wrap;
   max-width: 26vw;
   text-align: left;
+  margin-bottom: 10px;
 }
 
 .input-container {
@@ -692,6 +871,7 @@ onMounted(async () => {
   font-size: 16px;
   line-height: 1.5;
   padding: 0;
+  caret-color: rgb(103, 103, 105);
 }
 
 .input-container :deep(.el-textarea__inner.is-focus) {
@@ -714,6 +894,8 @@ onMounted(async () => {
 
 .container {
   position: relative;
+  padding: 0px 10px;
+  margin-bottom: 180px;
 }
 
 .container .cursor {
@@ -804,8 +986,16 @@ onMounted(async () => {
   opacity: 1;
 }
 
-.tools i {
-  margin: 0 5px;
+.markdown-body .tools i {
+  margin-right: 5px;
+}
+
+.user-message .tools i {
+  margin-left: 5px;
+}
+
+.user-message .tools i,
+.markdown-body .tools i {
   padding: 6px;
   cursor: pointer;
 }
@@ -847,5 +1037,38 @@ onMounted(async () => {
   border-radius: 6px !important;
   box-shadow: 0 0 0 2px #676769 inset !important;
   resize: none;
+}
+
+.drp-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgb(142, 141, 141);
+  font-size: 16px;
+}
+
+.box-share {
+  width: 43vw;
+  height: 45px;
+  position: fixed;
+  bottom: 0;
+  padding: 10px;
+}
+
+.chat-window .message input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.box-share .select-controls input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.box-share .select-controls {
+  font-size: 14px;
+  color: rgb(94, 94, 94);
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

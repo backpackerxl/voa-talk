@@ -1,11 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import store from '@/store';  // 导入 Vuex store
-// import MainLayout from '@/layouts/MainLayout.vue';
 
 const Login = () => import('@/views/Login/index.vue');
 const Register = () => import('@/views/Login/Register.vue');
 const Forget = () => import('@/views/Login/Forget.vue');
 const ResetPwd = () => import('@/views/Login/ResetPwd.vue');
+const Thread = () => import('@/views/Share/index.vue');
+const NotFound = () => import('@/views/NoRouting/DefaultPage.vue');
 
 const routes = [
     {
@@ -69,7 +70,19 @@ const routes = [
         component: ResetPwd,
         meta: { requiresAuth: false },
     },
-    // 添加更多路由
+    {
+        path: '/thread/:id',
+        name: 'Thread',
+        component: Thread,
+        meta: { requiresAuth: false },
+    },
+    // 404页面配置（放在最后）
+    {
+        path: '/:pathMatch(.*)*', // Vue Router 4.x 的写法
+        name: 'NotFound',
+        component: NotFound,
+        meta: { requiresAuth: false },
+    }
 ];
 
 const router = createRouter({
@@ -80,9 +93,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const isAuthenticated = store.state.app.authorization !== ''; // 检查是否已认证
     const userRole = store.state.app.userRole;
-    // console.log("userRole", userRole);
-    // console.log("isAuthenticated", isAuthenticated);
-    // console.log("Navigating to:", to.path);
     if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
         console.log("Not authenticated, redirecting to /login");
         next({ path: '/login' });

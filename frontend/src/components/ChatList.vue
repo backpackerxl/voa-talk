@@ -205,6 +205,16 @@ watch(
   }
 );
 
+watch(
+  () => routePath,
+  async (newRoute, oldRoute) => {
+    if (newRoute.params.id) {
+      talkIdOn.value = +newRoute.params.id;
+    }
+  },
+  { deep: true }
+);
+
 async function deleteUserOk(chat) {
   await deleteChat({ talk_id: chat.talk_id + "" });
   tableData.value = tableData.value.filter(

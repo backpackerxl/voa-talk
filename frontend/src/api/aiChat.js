@@ -96,3 +96,19 @@ export function queryRecommend(params) {
         params: params,
     });
 }
+
+export function shareChat(params) {
+    return request({
+        url: 'ai_chat/shareChat',
+        method: 'post',
+        params: params,
+    });
+}
+
+export function getRedisChat(params) {
+    return request({
+        url: 'ai_chat/getRedisChat',
+        method: 'get',
+        params: params,
+    });
+}

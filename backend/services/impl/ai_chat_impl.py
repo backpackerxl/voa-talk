@@ -1,18 +1,23 @@
 import datetime
 import json
 import time
+import random
+import string
 
 from flask import Response
 from openai import OpenAI
 
 from dbinfo import DatabaseSession
 from entity import ModelConfig, TalkUserRelation, TalkLogs, RequestLogs, TalkRecommendation
-from utils import ReturnTool, DbTools
+from utils import ReturnTool, DbTools, Tools
+from utils.RedisUtils import RedisHandler
 from utils.GetChatId import Snowflake
 
 clientDict = {}
 
 snowflake = Snowflake(data_center_id=1, worker_id=3)
+
+snowflake_share = Snowflake(data_center_id=2, worker_id=6)
 
 
 def getClient(model_cfg):
@@ -304,3 +309,36 @@ def api_del_chat_impl(id_c):
             "chat_id": -1,
             "reco_list": [{'talk_id': result.talk_id, 'content': result.content} for result in talk_recommend]
         })
+
+
+def share_chat_impl(params):
+    with DatabaseSession() as session:
+        talk_log = session.query(TalkLogs).filter(TalkLogs.id == params['ids'][0]).first()
+        if talk_log is None:
+            return ReturnTool.ErrorReturn("未找到此对话,链接生成失败！")
+
+        talk_user = session.query(TalkUserRelation).filter(TalkUserRelation.talk_id == talk_log.talk_id).first()
+        s_id = Tools.insert_lowercase_letters(str(snowflake_share.next_id()))
+        params['share_time'] = datetime.datetime.now().strftime("%Y 年 %m 月 %d 日")
+        params['title'] = talk_user.talk_name
+        RedisHandler().save_key(s_id, json.dumps(params), 60 * 60 * 24)  # 链接24H保活
+        return ReturnTool.SuccessReturn({
+            "share_id": s_id,
+        })
+
+
+def get_redis_chat(r_id):
+    res_str = RedisHandler().get_key(r_id)
+    if res_str is None:
+        return ReturnTool.ErrorReturn("无效链接！")
+    res_dict = json.loads(res_str)
+
+    with DatabaseSession() as session:
+        talk_logs = session.query(TalkLogs).filter(TalkLogs.id.in_(res_dict['ids'])).all()
+
+        arr = []
+        for mc in talk_logs:
+            arr.append({"id": mc.id, "type": 'user', "content": mc.req_content})
+            arr.append({"id": mc.id, "type": 'bot', "content": mc.resp_content})
+        res_dict['talk_logs'] = arr
+        return ReturnTool.SuccessReturn(res_dict)

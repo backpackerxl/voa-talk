@@ -170,11 +170,43 @@ def api_find_talk_recommend():
         logs.setup_logger().error(f'Error processing request: {e}')
         return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
 
+
 @ai_chat_blueprint.route('/delOneChat', methods=['POST'])
 @token_on
 def api_del_chat():
     try:
         response = ai_chat_service.api_del_chat(request)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        logs.setup_logger().error(f'Error processing request: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@ai_chat_blueprint.route('/shareChat', methods=['POST'])
+@token_on
+def share_chat():
+    try:
+        response = ai_chat_service.share_chat(request)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        logs.setup_logger().error(f'Error processing request: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@ai_chat_blueprint.route('/getRedisChat', methods=['GET'])
+def get_redis_chat():
+    try:
+        response = ai_chat_service.get_redis_chat(request)
         return jsonify(response), response.get("code")
     except BusinessException as e:
         # 特定的业务逻辑异常处理

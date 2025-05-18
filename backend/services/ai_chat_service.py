@@ -118,3 +118,13 @@ def api_del_chat(request):
         return ReturnTool.ErrorReturn("id为空")
     id_c = request_data.get("id")
     return ai_chat_impl.api_del_chat_impl(id_c)
+
+
+def share_chat(request):
+    request_data = request.get_json()
+    return ai_chat_impl.share_chat_impl(request_data)
+
+
+def get_redis_chat(request):
+    r_id = request.args.get('r_id')
+    return ai_chat_impl.get_redis_chat(r_id)
