@@ -96,7 +96,7 @@
         width="400"
         align-center
       >
-        <span>确定删除模型名: {{ userNameList }} 的配置？</span>
+        <span>确定删除所选模型配置？此操作不可恢复！</span>
         <template #footer>
           <div class="dialog-footer">
             <el-button @click="centerDialogVisible = false">取消</el-button>
@@ -106,10 +106,11 @@
       </el-dialog>
     </div>
 
-    <EditUserDialog
+    <EditModelDialog
       @close="close"
       v-if="state.open"
-      :user="selectedUser"
+      :model="selectedUser"
+      :title="titleDesc"
       @submit="submitEdit"
     />
   </div>
@@ -123,13 +124,13 @@ import {
   ApiModelDel,
   ApiModelExit,
 } from "@/api/modelConfig";
-import EditUserDialog from "./components/EditUserDialog.vue"; // 引入组件
+import EditModelDialog from "./components/EditModelDialog.vue"; // 引入组件
 
 const tableData = ref([]);
 const tableCount = ref(0);
+const titleDesc = ref("");
 // 当前页码
 const currentPage = ref(1);
-const userNameList = ref("");
 
 // 每页显示数量
 const pageSize = ref(20);
@@ -170,11 +171,13 @@ const fetchData = async () => {
 
 const openEditDialog = (row) => {
   // console.log("Opening edit dialog for:", row); // 确认函数调用
+  titleDesc.value = "修改模型";
   selectedUser.value = row;
   state.open = true;
 };
 
 const addModel = () => {
+  titleDesc.value = "新增模型";
   selectedUser.value = null;
   state.open = true;
 };
@@ -183,6 +186,7 @@ const submitEdit = async (updatedUser) => {
   try {
     await ApiModelExit(updatedUser);
     fetchData();
+    ElMessage.success("修改成功！");
   } catch (error) {
     console.error("Failed to update user:", error);
   }
@@ -196,12 +200,17 @@ const pageQuery = (page) => {
 const changeCheckBox = (list) => {
   if (list.length > 0) {
     state.delete_ids = list.map((item) => item.id).join(",");
-    userNameList.value = list.map((item) => item.name).join("、");
+  } else {
+    state.delete_ids = "";
   }
 };
 
 const batchDel = () => {
-  centerDialogVisible.value = true;
+  if (state.delete_ids === "") {
+    ElMessage.warning("请勾选需要删除的模型");
+  } else {
+    centerDialogVisible.value = true;
+  }
 };
 
 const deleteUserOk = async () => {
@@ -225,7 +234,6 @@ const deleteUserOk = async () => {
 
 const handleDelete = (row) => {
   centerDialogVisible.value = true;
-  userNameList.value = row.name;
   state.delete_ids = row.id;
 };
 
@@ -238,10 +246,11 @@ onMounted(() => {
 .header {
   width: 100%;
   height: 80px;
-  background: #fff;
+  background: var(--el-bg-color);
+  box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
   box-sizing: border-box;
-  box-shadow: 0 2px 12px rgb(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 
 .header .option {
@@ -255,7 +264,7 @@ onMounted(() => {
 .header .option p {
   font-size: 14px;
   padding-left: 10px;
-  color: rgb(0, 0, 0, 0.6);
+  color: var(--el-text-color-primary);
   border-left: 3px solid #3e8ef7;
 }
 
@@ -294,7 +303,7 @@ onMounted(() => {
 
 .data-view {
   width: 100%;
-  background: #fff;
+  background: var(--el-bg-color);
   box-sizing: border-box;
   box-shadow: 0 2px 12px rgb(0, 0, 0, 0.1);
   position: relative;
@@ -309,7 +318,7 @@ onMounted(() => {
 
 .me-pagination span {
   font-size: 14px;
-  color: rgb(0, 0, 0, 0.6);
+  color: var(--el-text-color-primary);
   line-height: 45px;
   margin-right: 20px;
 }

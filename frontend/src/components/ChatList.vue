@@ -29,7 +29,7 @@
       >
         <el-tooltip
           class="box-item"
-          effect="dark"
+          effect="light"
           :content="chat.talk_name"
           placement="right"
           :disabled="!shouldShowTooltip(index)"
@@ -255,15 +255,15 @@ onMounted(function () {
 
 <style>
 .header-container {
-  color: rgb(35, 35, 35);
+  color: var(--el-text-color-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 40px;
   padding-left: 15px;
   padding-right: 18px;
-  border-top: 1px solid rgb(35, 35, 35, 0.1);
-  background: #fff;
+  border-top: 1px solid var(--el-color-info-light-8);
+  background: var(--el-bg-color);
 }
 
 .header-container .his-icon {
@@ -288,12 +288,12 @@ onMounted(function () {
 
 .infinite-list-wrapper .list-item {
   height: 40px;
-  color: rgb(35, 35, 35);
+  color: var(--el-text-color-primary);
 }
 
 .infinite-list-wrapper .list-item:hover,
 .infinite-list-wrapper .list-item.active {
-  background: rgb(233, 234, 236);
+  background: var(--el-color-info-light-8);
   cursor: pointer;
   border-radius: 14px;
 }
@@ -335,9 +335,6 @@ onMounted(function () {
 
 .el-dropdown-menu__item {
   border-radius: 6px;
-  --el-dropdown-menuItem-hover-fill: rgb(35, 35, 35, 0.1);
-  --el-dropdown-menuItem-hover-color: rgb(35, 35, 35);
-  --el-text-color-regular: rgb(35, 35, 35);
 }
 
 .delete {
@@ -358,7 +355,10 @@ onMounted(function () {
   height: 20px;
   width: 20px;
   --el-loading-spinner-size: 18px;
-  --el-color-primary: rgb(103, 103, 105);
+}
+
+:deep(.el-loading-mask) {
+  background-color: transparent !important;
 }
 
 :deep(.el-loading-spinner .path) {

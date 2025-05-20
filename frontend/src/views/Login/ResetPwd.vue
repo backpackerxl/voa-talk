@@ -117,13 +117,14 @@ const handleResetPwd = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--el-bg-color);
 }
 
 .logintext {
   text-align: center;
   font-size: 24px;
   font-weight: 500;
-  color: rgb(103, 103, 105);
+  color: var(--el-text-color-primary);
   margin: 10px 0;
 }
 
@@ -137,25 +138,20 @@ const handleResetPwd = async () => {
   width: 100% !important;
   border: none;
   font-size: 16px;
-  background: rgb(103, 103, 105, 0.8);
-}
-
-.button-group .el-button:hover {
-  background: rgb(103, 103, 105);
 }
 
 :deep(.el-input__wrapper) {
-  padding: 5px 15px;
-  margin: 4px 0;
+  --el-input-height: 46px;
   border-radius: 8px !important;
-  box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
-    inset !important;
+  box-shadow: 0 0 0 4px var(--el-input-border-color) inset !important;
   background-color: transparent !important;
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  padding: 5px 15px;
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 4px #676769 inset !important;
+  box-shadow: 0 0 0 4px var(--el-color-primary) inset !important;
+}
+
+:deep(.el-form-item.is-error .el-input__wrapper) {
+  box-shadow: 0 0 0 4px var(--el-color-danger) inset !important;
 }
 </style>

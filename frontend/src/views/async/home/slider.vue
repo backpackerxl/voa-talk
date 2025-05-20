@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-aside width="240px">
-      <h2 class="mb">AiChat</h2>
+      <h2 class="mb">VoaTalk</h2>
       <div class="new-chat">
         <el-button
           class="open-chat"
@@ -241,7 +241,10 @@ onMounted(() => {
 .el-aside {
   position: fixed;
   top: 0px;
+  left: 0px;
   height: 100vh;
+  background-color: var(--el-bg-color);
+  z-index: 100;
 }
 
 .menu-icon {
@@ -251,7 +254,7 @@ onMounted(() => {
 
 .mb {
   font-size: 18px;
-  color: rgb(0, 0, 0, 0.8);
+  color: var(--el-text-color-primary);
   margin-left: 20px;
   margin-top: 20px;
 }
@@ -283,14 +286,9 @@ onMounted(() => {
 }
 
 .open-chat {
-  background: rgb(103, 103, 105, 0.8);
   border: none;
   box-shadow: none;
   width: 100%;
-}
-
-.open-chat:hover {
-  background: rgb(103, 103, 105);
 }
 
 .el-menu {

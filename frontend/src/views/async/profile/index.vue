@@ -186,7 +186,6 @@ async function saveUserInfo() {
   top: 20px;
   left: 0;
   content: "";
-
   width: inherit;
   height: inherit;
   border-radius: 50%;
@@ -210,30 +209,16 @@ async function saveUserInfo() {
   width: 100% !important;
   border: none;
   font-size: 16px;
-  background: rgb(103, 103, 105, 0.8);
-}
-
-.button-group .el-button:hover {
-  background: rgb(103, 103, 105);
 }
 
 :deep(.el-input__wrapper) {
-  padding: 5px 15px;
-  margin: 4px 0;
   border-radius: 8px !important;
-  box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
-    inset !important;
+  box-shadow: 0 0 0 4px var(--el-input-border-color);
   background-color: transparent !important;
 }
 
-:deep(.el-form-item__label) {
-  line-height: 56px;
-}
-
 :deep(.el-input__wrapper.is-focus) {
-  padding: 5px 15px;
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 4px #676769 inset !important;
+  box-shadow: 0 0 0 4px var(--el-color-primary) !important;
 }
 
 .opt {
@@ -244,17 +229,30 @@ async function saveUserInfo() {
 .opt .el-button {
   width: 280px;
   margin: 10px 0;
-  background: rgb(103, 103, 105, 0.8);
   border: none;
   box-shadow: none;
 }
 
-.opt .el-button:hover {
-  background: rgb(103, 103, 105);
-}
-
 .opt p {
   text-align: center;
-  color: rgb(103, 103, 105);
+  color: var(--el-text-color-primary);
+  position: relative;
+}
+
+.opt p::before,
+.opt p::after {
+  position: absolute;
+  content: "";
+  background: var(--el-text-color-primary);
+  height: 1px;
+  width: 35%;
+  top: 50%;
+}
+
+.opt p::before {
+  left: 0;
+}
+.opt p::after {
+  right: 0;
 }
 </style>

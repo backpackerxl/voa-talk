@@ -38,8 +38,8 @@ const props = defineProps({
 
 .github-corner svg {
   color: #fff;
-  fill: #676769;
-  fill: var(--theme-color, #676769);
+  fill: var(--el-color-primary);
+  fill: var(--theme-color, var(--el-color-primary));
   height: 80px;
   width: 80px;
 }

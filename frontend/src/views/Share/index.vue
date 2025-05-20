@@ -106,8 +106,8 @@
 import { ref, onMounted, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
-import "github-markdown-css/github-markdown-light.css";
-import "highlight.js/styles/github.css";
+import "@/assets/css/github-markdown.css";
+import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
 import { markdwonToHTML, addCopy } from "@/utils/render-html";
 import { ChatDotSquare } from "@element-plus/icons-vue";
@@ -169,15 +169,13 @@ onMounted(async function () {
 <style scoped>
 .container {
   width: 100%;
-  background: top / contain url("@/assets/images/share-bg.jpg") no-repeat,
-    #f1f4fb fixed;
   display: flex;
   justify-content: center;
 }
 
 .warper {
   width: 43vw;
-  background: #fff;
+  background: var(--el-bg-color);
   margin: 40px 0px;
   border-radius: 24px;
   padding: 48px;
@@ -198,13 +196,14 @@ onMounted(async function () {
 
 .warper .header p {
   font-size: 12px;
-  color: rgb(177, 177, 177);
-  border-bottom: 1px solid rgb(202, 202, 202);
+  color: var(--el-text-color-primary);
+  border-bottom: 1px solid var(--el-text-color-primary);
   padding-bottom: 30px;
 }
 
 .markdown-body {
   padding: 10px;
+  background-color: transparent;
 }
 
 .user-message {
@@ -213,8 +212,8 @@ onMounted(async function () {
 }
 
 .user-message span {
-  background-color: rgb(233, 234, 236);
-  color: rgb(36, 36, 36);
+  background: var(--el-border-color);
+  color: var(--el-text-color-primary);
   padding: 8px;
   border-radius: 8px;
   display: inline-flex;
@@ -227,7 +226,7 @@ onMounted(async function () {
 .message .tools {
   height: 30px;
   line-height: 30px;
-  color: rgb(117, 116, 116, 0.8);
+  color: var(--el-text-color-regular);
   opacity: 0;
 }
 

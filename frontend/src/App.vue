@@ -11,8 +11,18 @@ export default {
 };
 </script>
 <style>
+:root {
+  --el-color-primary: rgb(0, 181, 173) !important;
+  --el-color-primary-light-3: rgb(0, 181, 173, 0.7) !important;
+  --el-color-primary-light-5: rgb(0, 181, 173, 0.5) !important;
+  --el-color-primary-light-7: rgb(0, 181, 173, 0.3) !important;
+  --el-color-primary-light-8: rgb(0, 181, 173, 0.2) !important;
+  --el-color-primary-light-9: rgb(0, 181, 173, 0.1) !important;
+  --el-color-primary-dark-2: rgb(0, 181, 173) !important;
+}
+
 body {
-  background-color: #fff;
+  background-color: var(--el-fill-color);
   margin: 0;
 }
 
@@ -29,24 +39,24 @@ body {
 
 /* 滚动条滑块 */
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(204, 204, 204, 0.6);
+  background-color: var(--el-color-info-light-7);
   border-radius: 3px;
 }
 
 /* 滚动条滑块悬停状态 */
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(204, 204, 204);
+  background-color: var(--el-color-info-light-5);
 }
 
 .pre-container {
-  background: rgb(243, 244, 246);
-  border-radius: 6px;
+  border-radius: 10px;
+  background: var(--el-border-color);
 }
 
 .pre-header {
   height: 30px;
   padding: 0 10px;
-  color: rgb(121, 122, 123);
+  color: var(--el-text-color-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -55,7 +65,7 @@ body {
 
 .pre-header .pre-button {
   padding: 4px;
-  color: rgb(121, 122, 123);
+  color: var(--el-text-color-primary);
   outline: none;
   border: none;
   background: transparent;
@@ -68,7 +78,7 @@ body {
 
 .pre-header .pre-button:hover,
 .pre-header i.copy-icon:hover {
-  background: rgb(226, 226, 227);
+  background: rgb(117, 116, 116, 0.2);
   border-radius: 6px;
   padding: 4px;
 }

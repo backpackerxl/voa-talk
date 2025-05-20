@@ -166,7 +166,7 @@ async function openChatInfo(row) {
   store.dispatch("app/setSliderData", {
     talk_id: row.talk_id,
     talk_name: row.talk_name || "",
-    type: "open"
+    type: "open",
   });
   router.replace("/home/chat/" + row.talk_id);
 }
@@ -194,21 +194,14 @@ const fetchData = async () => {
 };
 
 const openEditDialog = (row) => {
-  // console.log("Opening edit dialog for:", row); // 确认函数调用
   chatTitle.value = row.talk_name;
   chatId.value = row.talk_id;
   editDialogVisible.value = true;
 };
 
-const addModel = () => {
-  selectedUser.value = null;
-  state.open = true;
-};
-
 async function editMsgOk() {
   await editChatName({ talk_id: chatId.value, talk_name: chatTitle.value });
   fetchData();
-  // console.log(chatId.value, chatTitle.value);
   editDialogVisible.value = false;
   store.dispatch("app/setSliderData", { fetch: true });
 }
@@ -221,11 +214,17 @@ const pageQuery = (page) => {
 const changeCheckBox = (list) => {
   if (list.length > 0) {
     state.delete_ids = list.map((item) => item.talk_id).join(",");
+  } else {
+    state.delete_ids = "";
   }
 };
 
 const batchDel = () => {
-  centerDialogVisible.value = true;
+  if (state.delete_ids === "") {
+    ElMessage.warning("请勾选需要删除的对话");
+  } else {
+    centerDialogVisible.value = true;
+  }
 };
 
 const deleteUserOk = async () => {
@@ -262,10 +261,11 @@ onMounted(() => {
 .header {
   width: 100%;
   height: 80px;
-  background: #fff;
+  background: var(--el-bg-color);
+  box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
   box-sizing: border-box;
-  box-shadow: 0 2px 12px rgb(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 
 .header .option {
@@ -279,7 +279,7 @@ onMounted(() => {
 .header .option p {
   font-size: 14px;
   padding-left: 10px;
-  color: rgb(0, 0, 0, 0.6);
+  color: var(--el-text-color-primary);
   border-left: 3px solid #3e8ef7;
 }
 
@@ -314,7 +314,7 @@ onMounted(() => {
 
 .data-view {
   width: 100%;
-  background: #fff;
+  background: var(--el-bg-color);
   box-sizing: border-box;
   box-shadow: 0 2px 12px rgb(0, 0, 0, 0.1);
   position: relative;
@@ -329,7 +329,7 @@ onMounted(() => {
 
 .me-pagination span {
   font-size: 14px;
-  color: rgb(0, 0, 0, 0.6);
+  color: var(--el-text-color-primary);
   line-height: 45px;
   margin-right: 20px;
 }

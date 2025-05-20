@@ -44,13 +44,19 @@
         <el-table-column prop="nick_name" label="昵称" min-width="150" />
         <el-table-column label="是否为管理员" min-width="120">
           <template v-slot="scope">
-            <el-tag round type="info" v-if="scope.row.super_admin === 0">否</el-tag>
-            <el-tag round type="success" v-if="scope.row.super_admin === 1">是</el-tag>
+            <el-tag round type="info" v-if="scope.row.super_admin === 0"
+              >否</el-tag
+            >
+            <el-tag round type="success" v-if="scope.row.super_admin === 1"
+              >是</el-tag
+            >
           </template>
         </el-table-column>
         <el-table-column label="用户状态" min-width="120">
           <template v-slot="scope">
-            <el-tag type="success" v-if="scope.row.user_state === 1">正常</el-tag>
+            <el-tag type="success" v-if="scope.row.user_state === 1"
+              >正常</el-tag
+            >
             <el-tag type="info" v-if="scope.row.user_state === 0">停用</el-tag>
           </template>
         </el-table-column>
@@ -97,7 +103,7 @@
         width="400"
         align-center
       >
-        <span>确定删除用户: {{ userNameList }} 的账号？</span>
+        <span>确定删除所选用户的账号？此操作不可恢复</span>
         <template #footer>
           <div class="dialog-footer">
             <el-button @click="centerDialogVisible = false">取消</el-button>
@@ -187,12 +193,17 @@ const pageQuery = (page) => {
 const changeCheckBox = (list) => {
   if (list.length > 0) {
     state.delete_ids = list.map((item) => item.id).join(",");
-    userNameList.value = list.map((item) => item.user_name).join("、");
+  } else {
+    state.delete_ids = "";
   }
 };
 
 const batchDel = () => {
-  centerDialogVisible.value = true;
+  if (state.delete_ids === "") {
+    ElMessage.warning("请勾选需要删除的用户");
+  } else {
+    centerDialogVisible.value = true;
+  }
 };
 
 const deleteUserOk = async () => {
@@ -229,10 +240,11 @@ onMounted(() => {
 .header {
   width: 100%;
   height: 80px;
-  background: #fff;
+  background: var(--el-bg-color);
+  box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
   box-sizing: border-box;
-  box-shadow: 0 2px 12px rgb(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 
 .header .option {
@@ -246,7 +258,7 @@ onMounted(() => {
 .header .option p {
   font-size: 14px;
   padding-left: 10px;
-  color: rgb(0, 0, 0, 0.6);
+  color: var(--el-text-color-primary);
   border-left: 3px solid #3e8ef7;
 }
 
@@ -285,7 +297,7 @@ onMounted(() => {
 
 .data-view {
   width: 100%;
-  background: #fff;
+  background: var(--el-bg-color);
   box-sizing: border-box;
   box-shadow: 0 2px 12px rgb(0, 0, 0, 0.1);
   position: relative;
@@ -300,7 +312,7 @@ onMounted(() => {
 
 .me-pagination span {
   font-size: 14px;
-  color: rgb(0, 0, 0, 0.6);
+  color: var(--el-text-color-primary);
   line-height: 45px;
   margin-right: 20px;
 }

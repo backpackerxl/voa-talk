@@ -5,8 +5,14 @@
       <el-card>
         <p class="logintext">VoaTalk 登录</p>
         <div class="formdata">
-          <el-form ref="form" :model="form" :rules="rules">
-            <el-form-item prop="username">
+          <el-form
+            ref="form"
+            :model="form"
+            :rules="rules"
+            label-position="top"
+            label-width="100px"
+          >
+            <el-form-item label="账号" prop="username">
               <el-input
                 class="in-box"
                 v-model="form.username"
@@ -20,7 +26,7 @@
                 </template>
               </el-input>
             </el-form-item>
-            <el-form-item prop="password">
+            <el-form-item label="密码" prop="password">
               <el-input
                 class="in-box"
                 v-model="form.password"
@@ -36,7 +42,7 @@
               </el-input>
             </el-form-item>
             <!-- 验证码 -->
-            <el-form-item prop="captchaCode">
+            <el-form-item label="验证码" prop="captchaCode">
               <el-input
                 class="captcha-input in-box"
                 v-model="form.captchaCode"
@@ -238,13 +244,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--el-bg-color);
 }
 
 .logintext {
   text-align: center;
   font-size: 24px;
   font-weight: 500;
-  color: rgb(103, 103, 105);
+  color: var(--el-text-color-primary);
   margin: 10px 0;
 }
 
@@ -256,7 +263,7 @@ export default {
 .tool {
   display: flex;
   justify-content: space-between;
-  color: #b4b4b4;
+  color: var(--el-text-color-primary);
   font-size: 14px;
   height: 32px;
   line-height: 32px;
@@ -275,15 +282,10 @@ export default {
   width: 100% !important;
   border: none;
   font-size: 16px;
-  background: rgb(103, 103, 105, 0.8);
-}
-
-.butt .el-button:hover {
-  background: rgb(103, 103, 105);
 }
 
 .register {
-  color: #b4b4b4;
+  color: var(--el-text-color-primary);
   text-align: right;
   font-size: 16px;
   height: 40px;
@@ -295,29 +297,22 @@ export default {
 
 .register a:hover,
 .tool a:hover {
-  color: #676769;
+  color: var(--el-color-primary);
 }
 
 :deep(.el-input__wrapper) {
-  padding: 5px 15px;
-  margin: 4px 0;
+  --el-input-height: 46px;
   border-radius: 8px !important;
-  box-shadow: 0 0 0 4px var(--el-input-border-color, var(--el-border-color))
-    inset !important;
+  box-shadow: 0 0 0 4px var(--el-input-border-color) inset !important;
   background-color: transparent !important;
 }
 
-.el-checkbox {
-  --el-checkbox-checked-text-color: #676769;
-  --el-checkbox-checked-bg-color: #676769;
-  --el-checkbox-checked-input-border-color: #676769;
-  color: #b4b4b4;
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 4px var(--el-color-primary) inset !important;
 }
 
-:deep(.el-input__wrapper.is-focus) {
-  padding: 5px 15px;
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 4px #676769 inset !important;
+:deep(.el-form-item.is-error .el-input__wrapper) {
+  box-shadow: 0 0 0 4px var(--el-color-danger) inset !important;
 }
 
 .captcha-input {

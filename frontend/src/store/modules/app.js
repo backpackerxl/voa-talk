@@ -4,6 +4,7 @@ const state = {
     nickName: localStorage.getItem('nickName') || '', // 初始化
     avatar: localStorage.getItem('avatar') || '', // 初始化
     sliderData: null,
+    them: localStorage.getItem('them') || 'light', // 初始化
 };
 
 const mutations = {
@@ -36,6 +37,12 @@ const mutations = {
     },
     CLEAR_SLIDER_DATA(state) {
         state.sliderData = null;
+    },
+    SET_THEM(state, them) {
+        state.them = them;
+    },
+    CLEAR_THEM(state) {
+        state.them = 'light';
     },
 };
 
@@ -77,6 +84,14 @@ const actions = {
     },
     clearSliderData({ commit }) {
         commit('CLEAR_SLIDER_DATA');
+    },
+    setThem({ commit }, them) {
+        commit('SET_THEM', them);
+        localStorage.setItem('them', them); // 同步保存到 localStorage
+    },
+    clearThem({ commit }) {
+        commit('CLEAR_THEM');
+        localStorage.setItem('them', 'light'); // 同步保存到 localStorage
     },
 };
 

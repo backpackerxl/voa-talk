@@ -6,28 +6,36 @@
         ><EditPen
       /></el-icon>
     </p>
-    <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click">
-      <!-- <div> -->
-      <el-avatar v-if="imageUrl" :src="imageUrl" />
-      <el-avatar
-        v-else
-        src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-      />
-      <!-- </div> -->
-      <template #dropdown>
-        <el-dropdown-menu
-          :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
-        >
-          <el-dropdown-item command="profile"
-            ><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item
+
+    <div class="opt-menu">
+      <ThemSwitch />
+      <el-dropdown
+        @visible-change="handleVisibleChange"
+        @command="handleCommand"
+        trigger="click"
+      >
+        <!-- <div> -->
+        <el-avatar v-if="imageUrl" :src="imageUrl" />
+        <el-avatar
+          v-else
+          src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+        />
+        <!-- </div> -->
+        <template #dropdown>
+          <el-dropdown-menu
+            :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
           >
-          <el-dropdown-item command="logout"
-            ><i class="fa-solid fa-right-from-bracket"></i
-            >退出登录</el-dropdown-item
-          >
-        </el-dropdown-menu>
-      </template>
-    </el-dropdown>
+            <el-dropdown-item command="profile"
+              ><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item
+            >
+            <el-dropdown-item command="logout"
+              ><i class="fa-solid fa-right-from-bracket"></i
+              >退出登录</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </div>
   </div>
 </template>
 
@@ -39,6 +47,7 @@ import { defineEmits, computed, ref } from "vue";
 
 let emit = defineEmits(["submit"]);
 import { EditPen } from "@element-plus/icons-vue";
+import ThemSwitch from "@/components/ThemSwitch";
 
 const props = defineProps({
   id: Number,
@@ -95,16 +104,16 @@ const handleCommand = (command) => {
   height: 70px;
   display: flex;
   justify-content: space-between;
-  width: calc(100% - 240px);
-  margin-left: 240px;
+  width: 100%;
   align-items: center;
   padding: 0px 40px;
   box-sizing: border-box;
   flex-wrap: wrap;
-  background: #fff;
+  background: var(--el-bg-color);
   position: fixed;
   top: 0;
-  z-index: 999;
+  right: 0;
+  z-index: 99;
 }
 
 .el-dropdown-link {
@@ -126,6 +135,11 @@ const handleCommand = (command) => {
   outline: none;
 }
 
+.chat-header p {
+  color: var(--el-text-color-primary);
+  margin-left: 240px;
+}
+
 p .edit-icon {
   opacity: 0;
   cursor: pointer;
@@ -133,5 +147,16 @@ p .edit-icon {
 
 p:hover .edit-icon {
   opacity: 1;
+}
+
+.opt-menu {
+  position: relative;
+}
+
+.them-switch {
+  position: absolute;
+  transform: scale(0.16, 0.18);
+  top: -50px;
+  right: -75px;
 }
 </style>

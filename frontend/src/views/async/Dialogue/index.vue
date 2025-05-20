@@ -1,7 +1,7 @@
 <template>
   <div class="chat-page">
     <el-skeleton
-      style="width: 43vw; padding: 0 22vw; margin-top: 30px"
+      style="width: 43vw; padding: 0 22vw; margin-top: 100px"
       :loading="openLoading"
       animated
     >
@@ -345,8 +345,8 @@ import { markdwonToHTML, addCopy } from "@/utils/render-html";
 import { useRoute } from "vue-router";
 import store from "@/store";
 import { ElMessage } from "element-plus";
-import "github-markdown-css/github-markdown-light.css";
-import "highlight.js/styles/github.css";
+import "@/assets/css/github-markdown.css";
+import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
 
 const routePath = useRoute();
@@ -812,7 +812,10 @@ onMounted(async () => {
   height: 20px;
   width: 20px;
   --el-loading-spinner-size: 18px;
-  --el-color-primary: rgb(103, 103, 105);
+}
+
+:deep(.el-loading-mask) {
+  background-color: transparent !important;
 }
 
 :deep(.el-loading-spinner .path) {
@@ -820,12 +823,13 @@ onMounted(async () => {
 }
 
 .message .selected {
-  background: rgb(233, 234, 236, 0.4);
+  background: var(--el-color-info-light-8);
   border-radius: 5px;
 }
 
 .markdown-body {
   padding: 10px;
+  background-color: transparent;
 }
 
 .markdown-body.now {
@@ -838,8 +842,8 @@ onMounted(async () => {
 }
 
 .user-message span {
-  background-color: rgb(233, 234, 236);
-  color: rgb(36, 36, 36);
+  background: var(--el-border-color);
+  color: var(--el-text-color-primary);
   padding: 8px;
   border-radius: 8px;
   display: inline-flex;
@@ -861,7 +865,7 @@ onMounted(async () => {
   padding: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  background: #fff;
+  background: var(--el-bg-color);
 }
 
 .input-container :deep(.el-textarea__inner) {
@@ -871,7 +875,8 @@ onMounted(async () => {
   font-size: 16px;
   line-height: 1.5;
   padding: 0;
-  caret-color: rgb(103, 103, 105);
+  background-color: transparent;
+  caret-color: var(--el-text-color-primary);
 }
 
 .input-container :deep(.el-textarea__inner.is-focus) {
@@ -888,8 +893,8 @@ onMounted(async () => {
 }
 
 :deep(.el-select__wrapper) {
-  --el-color-primary: rgb(103, 103, 105);
   border-radius: 75px;
+  background-color: transparent;
 }
 
 .container {
@@ -903,7 +908,7 @@ onMounted(async () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: rgba(0, 0, 0);
+  background-color: var(--el-text-color-primary);
   animation: blink 0.8s infinite;
   display: none;
 }
@@ -911,23 +916,10 @@ onMounted(async () => {
 .send-message {
   border: none;
   font-size: 16px;
-  background: rgb(103, 103, 105, 0.4);
-  color: rgb(255, 255, 255, 0.6);
 }
 
 .send-message i.fa-square {
   font-size: 12px;
-}
-
-.send-message.active,
-.send-message.active:hover {
-  background: rgb(103, 103, 105);
-  color: rgb(255, 255, 255);
-}
-
-.send-message:hover {
-  background: rgb(103, 103, 105, 0.4);
-  color: rgb(255, 255, 255, 0.6);
 }
 
 @keyframes blink {
@@ -954,9 +946,9 @@ onMounted(async () => {
 
 .record-list .item span {
   padding: 8px;
-  background: rgb(245, 245, 245);
+  background: var(--el-border-color);
   border-radius: 8px;
-  color: rgb(37, 37, 37);
+  color: var(--el-text-color-primary);
   cursor: pointer;
   font-size: 14px;
 }
@@ -969,7 +961,7 @@ onMounted(async () => {
 .message .tools {
   height: 30px;
   line-height: 30px;
-  color: rgb(117, 116, 116, 0.8);
+  color: var(--el-text-color-regular);
   opacity: 0;
 }
 
@@ -1014,12 +1006,12 @@ onMounted(async () => {
 
 .edit-warrap .fa-xmark {
   font-size: 18px;
-  color: rgb(136, 136, 136, 0.6);
+  color: var(--el-text-color-regular);
   cursor: pointer;
 }
 
 .edit-warrap .fa-xmark:hover {
-  color: rgb(136, 136, 136);
+  color: var(--el-text-color-primary);
 }
 
 .edit-warrap .re-input {
@@ -1028,14 +1020,14 @@ onMounted(async () => {
 
 .edit-warrap :deep(.el-textarea__inner) {
   border-radius: 6px !important;
-  box-shadow: 0 0 0 2px #676769 inset !important;
-  background-color: transparent !important;
+  box-shadow: 0 0 0 2px var(--el-color-primary) inset !important;
+  background-color: var(--el-bg-color);
   resize: none;
 }
 
 .edit-warrap :deep(.el-textarea__inner.is-focus) {
   border-radius: 6px !important;
-  box-shadow: 0 0 0 2px #676769 inset !important;
+  box-shadow: 0 0 0 2px var(--el-color-primary) inset !important;
   resize: none;
 }
 
@@ -1043,7 +1035,7 @@ onMounted(async () => {
   padding: 0;
   border: none;
   background: transparent;
-  color: rgb(142, 141, 141);
+  color: var(--el-text-color-regular);
   font-size: 16px;
 }
 
@@ -1053,6 +1045,7 @@ onMounted(async () => {
   position: fixed;
   bottom: 0;
   padding: 10px;
+  background-color: var(--el-bg-color);
 }
 
 .chat-window .message input[type="checkbox"] {
@@ -1065,7 +1058,7 @@ onMounted(async () => {
 
 .box-share .select-controls {
   font-size: 14px;
-  color: rgb(94, 94, 94);
+  color: var(--el-text-color-primary);
   user-select: none;
   display: flex;
   justify-content: space-between;
