@@ -145,12 +145,12 @@ function copyContent(event, content) {
 }
 
 onMounted(async function () {
-  console.log(routePath.params.id);
+  // console.log(routePath.params.id);
   openLoading.value = true;
 
   try {
     const obj = await getRedisChat({ r_id: routePath.params.id });
-    console.log(obj);
+    // console.log(obj);
     messages.value = obj.data.talk_logs;
     title.value = obj.data.title;
     shareTime.value = obj.data.share_time;
@@ -175,7 +175,7 @@ onMounted(async function () {
 
 .warper {
   width: 43vw;
-  background: var(--el-bg-color);
+  box-shadow: 0 8px 12px var(--me-share-bg-color);
   margin: 40px 0px;
   border-radius: 24px;
   padding: 48px;
@@ -212,7 +212,7 @@ onMounted(async function () {
 }
 
 .user-message span {
-  background: var(--el-border-color);
+  background: var(--me-bg-color);
   color: var(--el-text-color-primary);
   padding: 8px;
   border-radius: 8px;

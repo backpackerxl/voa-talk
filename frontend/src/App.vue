@@ -4,25 +4,25 @@
   </div>
 </template>
 
-<script>
-//注册组件
-export default {
-  name: "App",
-};
+<script setup>
+import store from "@/store";
+import { onMounted } from "vue";
+import "@/assets/css/me-main-color.css";
+
+onMounted(function () {
+  document.documentElement.className = store.state.app.them;
+  let colorObj = store.state.app.mainColor;
+  if (colorObj) {
+    let tag = JSON.parse(colorObj).tag;
+    if (tag) {
+      document.documentElement.classList.add(tag);
+    }
+  }
+});
 </script>
 <style>
-:root {
-  --el-color-primary: rgb(0, 181, 173) !important;
-  --el-color-primary-light-3: rgb(0, 181, 173, 0.7) !important;
-  --el-color-primary-light-5: rgb(0, 181, 173, 0.5) !important;
-  --el-color-primary-light-7: rgb(0, 181, 173, 0.3) !important;
-  --el-color-primary-light-8: rgb(0, 181, 173, 0.2) !important;
-  --el-color-primary-light-9: rgb(0, 181, 173, 0.1) !important;
-  --el-color-primary-dark-2: rgb(0, 181, 173) !important;
-}
-
 body {
-  background-color: var(--el-fill-color);
+  background-color: var(--me-body-bg-color);
   margin: 0;
 }
 
@@ -50,7 +50,7 @@ body {
 
 .pre-container {
   border-radius: 10px;
-  background: var(--el-border-color);
+  background: var(--me-bg-color);
 }
 
 .pre-header {

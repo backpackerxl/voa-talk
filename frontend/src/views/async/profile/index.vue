@@ -58,6 +58,25 @@
       <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit"
         >重置密码</el-button
       >
+      <p class="them-text">自定义主题色</p>
+      <div class="them-color">
+        <el-tooltip
+          v-for="item in colorList"
+          :key="item.id"
+          class="box-item"
+          effect="light"
+          :content="item.tip"
+          placement="top"
+        >
+          <div
+            :class="checkThemId === item.id ? 'item checked' : 'item'"
+            @click="selectColor(item)"
+            :style="'background-color: ' + item.bgColor"
+          >
+            <i class="fas fa-check"></i>
+          </div>
+        </el-tooltip>
+      </div>
     </div>
   </div>
 </template>
@@ -79,9 +98,73 @@ import router from "@/router";
 import { updateUser } from "@/api/apiUser";
 import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
+
 const avatarUrl = store.state.app.avatar;
 const imageUrl = ref(avatarUrl);
 const saveUrl = ref(avatarUrl.replace(config.BASE_URL, ""));
+const checkThemId = ref(1);
+const colorList = ref([
+  {
+    id: 1,
+    bgColor: "#409eff",
+    tip: "拂晓蓝",
+    tag: null,
+  },
+  {
+    id: 2,
+    bgColor: "#0bb2d4",
+    tip: "青色",
+    tag: "cyan",
+  },
+  {
+    id: 3,
+    bgColor: "#0052d9",
+    tip: "蓝色",
+    tag: "blue",
+  },
+  {
+    id: 4,
+    bgColor: "#11c26d",
+    tip: "绿色",
+    tag: "green",
+  },
+  {
+    id: 5,
+    bgColor: "#17b3a3",
+    tip: "蓝绿色",
+    tag: "genblue",
+  },
+  {
+    id: 6,
+    bgColor: "#667afa",
+    tip: "靛青色",
+    tag: "indigo",
+  },
+  {
+    id: 7,
+    bgColor: "#9463f7",
+    tip: "紫色",
+    tag: "purple",
+  },
+  {
+    id: 8,
+    bgColor: "#ff6a00",
+    tip: "橙色",
+    tag: "orange",
+  },
+  {
+    id: 9,
+    bgColor: "#f74584",
+    tip: "混红色",
+    tag: "mixedred",
+  },
+  {
+    id: 10,
+    bgColor: "#f23030",
+    tip: "红色",
+    tag: "red",
+  },
+]);
 
 const uploadRef = ref(null);
 
@@ -138,6 +221,28 @@ async function saveUserInfo() {
     ElMessage.error("修改失败");
   }
 }
+
+let oldTag = null;
+
+function selectColor(item) {
+  checkThemId.value = item.id;
+  if (oldTag) {
+    document.documentElement.classList.remove(oldTag);
+  }
+
+  if (item.tag) {
+    document.documentElement.classList.add(item.tag);
+  }
+  oldTag = item.tag;
+  store.dispatch("app/setMainColor", JSON.stringify(item));
+}
+
+onMounted(function () {
+  let colorObj = store.state.app.mainColor;
+  if (colorObj) {
+    checkThemId.value = JSON.parse(colorObj).id;
+  }
+});
 </script>
 
 <style scoped>
@@ -233,6 +338,32 @@ async function saveUserInfo() {
   box-shadow: none;
 }
 
+.them-color {
+  width: 280px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.them-color .item {
+  width: 45px;
+  height: 45px;
+  border-radius: 4px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.them-color .item i {
+  line-height: 45px;
+  text-align: center;
+  color: #fff;
+  font-size: 24px;
+  display: none;
+}
+
+.them-color .item.checked i {
+  display: block;
+}
+
 .opt p {
   text-align: center;
   color: var(--el-text-color-primary);
@@ -247,6 +378,11 @@ async function saveUserInfo() {
   height: 1px;
   width: 35%;
   top: 50%;
+}
+
+.opt p.them-text::before,
+.opt p.them-text::after {
+  width: 30%;
 }
 
 .opt p::before {

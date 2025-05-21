@@ -1,0 +1,105 @@
+:root {
+    --me-bg-color: #e9e9eb;
+    --me-body-bg-color: #ffffff;
+    --me-table-th-color: #f0f0f0;
+    --me-switch-bg-color: #eeeeee;
+    --me-share-bg-color: #e9e9eb;
+}
+
+:root.cyan {
+    --el-color-primary: rgb(11, 178, 212, 1) !important;
+    --el-color-primary-light-3: rgb(11, 178, 212, 0.7) !important;
+    --el-color-primary-light-5: rgb(11, 178, 212, 0.5) !important;
+    --el-color-primary-light-7: rgb(11, 178, 212, 0.3) !important;
+    --el-color-primary-light-8: rgb(11, 178, 212, 0.2) !important;
+    --el-color-primary-light-9: rgb(11, 178, 212, 0.1) !important;
+    --el-color-primary-dark-2: rgb(11, 178, 212, 1) !important;
+}
+
+:root.blue {
+    --el-color-primary: rgb(0, 82, 217, 1) !important;
+    --el-color-primary-light-3: rgb(0, 82, 217, 0.7) !important;
+    --el-color-primary-light-5: rgb(0, 82, 217, 0.5) !important;
+    --el-color-primary-light-7: rgb(0, 82, 217, 0.3) !important;
+    --el-color-primary-light-8: rgb(0, 82, 217, 0.2) !important;
+    --el-color-primary-light-9: rgb(0, 82, 217, 0.1) !important;
+    --el-color-primary-dark-2: rgb(0, 82, 217, 1) !important;
+}
+
+:root.green {
+    --el-color-primary: rgb(17, 194, 109, 1) !important;
+    --el-color-primary-light-3: rgb(17, 194, 109, 0.7) !important;
+    --el-color-primary-light-5: rgb(17, 194, 109, 0.5) !important;
+    --el-color-primary-light-7: rgb(17, 194, 109, 0.3) !important;
+    --el-color-primary-light-8: rgb(17, 194, 109, 0.2) !important;
+    --el-color-primary-light-9: rgb(17, 194, 109, 0.1) !important;
+    --el-color-primary-dark-2: rgb(17, 194, 109, 1) !important;
+}
+
+:root.genblue {
+    --el-color-primary: rgb(23, 179, 163, 1) !important;
+    --el-color-primary-light-3: rgb(23, 179, 163, 0.7) !important;
+    --el-color-primary-light-5: rgb(23, 179, 163, 0.5) !important;
+    --el-color-primary-light-7: rgb(23, 179, 163, 0.3) !important;
+    --el-color-primary-light-8: rgb(23, 179, 163, 0.2) !important;
+    --el-color-primary-light-9: rgb(23, 179, 163, 0.1) !important;
+    --el-color-primary-dark-2: rgb(23, 179, 163, 1) !important;
+}
+
+:root.indigo {
+    --el-color-primary: rgb(102, 122, 250, 1) !important;
+    --el-color-primary-light-3: rgb(102, 122, 250, 0.7) !important;
+    --el-color-primary-light-5: rgb(102, 122, 250, 0.5) !important;
+    --el-color-primary-light-7: rgb(102, 122, 250, 0.3) !important;
+    --el-color-primary-light-8: rgb(102, 122, 250, 0.2) !important;
+    --el-color-primary-light-9: rgb(102, 122, 250, 0.1) !important;
+    --el-color-primary-dark-2: rgb(102, 122, 250, 1) !important;
+}
+
+:root.purple {
+    --el-color-primary: rgb(148, 99, 247, 1) !important;
+    --el-color-primary-light-3: rgb(148, 99, 247, 0.7) !important;
+    --el-color-primary-light-5: rgb(148, 99, 247, 0.5) !important;
+    --el-color-primary-light-7: rgb(148, 99, 247, 0.3) !important;
+    --el-color-primary-light-8: rgb(148, 99, 247, 0.2) !important;
+    --el-color-primary-light-9: rgb(148, 99, 247, 0.1) !important;
+    --el-color-primary-dark-2: rgb(148, 99, 247, 1) !important;
+}
+
+:root.orange {
+    --el-color-primary: rgb(255, 106, 0, 1) !important;
+    --el-color-primary-light-3: rgb(255, 106, 0, 0.7) !important;
+    --el-color-primary-light-5: rgb(255, 106, 0, 0.5) !important;
+    --el-color-primary-light-7: rgb(255, 106, 0, 0.3) !important;
+    --el-color-primary-light-8: rgb(255, 106, 0, 0.2) !important;
+    --el-color-primary-light-9: rgb(255, 106, 0, 0.1) !important;
+    --el-color-primary-dark-2: rgb(255, 106, 0, 1) !important;
+}
+
+:root.mixedred {
+    --el-color-primary: rgb(247, 69, 132, 1) !important;
+    --el-color-primary-light-3: rgb(247, 69, 132, 0.7) !important;
+    --el-color-primary-light-5: rgb(247, 69, 132, 0.5) !important;
+    --el-color-primary-light-7: rgb(247, 69, 132, 0.3) !important;
+    --el-color-primary-light-8: rgb(247, 69, 132, 0.2) !important;
+    --el-color-primary-light-9: rgb(247, 69, 132, 0.1) !important;
+    --el-color-primary-dark-2: rgb(247, 69, 132, 1) !important;
+}
+
+:root.red {
+    --el-color-primary: rgb(242, 48, 48, 1) !important;
+    --el-color-primary-light-3: rgb(242, 48, 48, 0.7) !important;
+    --el-color-primary-light-5: rgb(242, 48, 48, 0.5) !important;
+    --el-color-primary-light-7: rgb(242, 48, 48, 0.3) !important;
+    --el-color-primary-light-8: rgb(242, 48, 48, 0.2) !important;
+    --el-color-primary-light-9: rgb(242, 48, 48, 0.1) !important;
+    --el-color-primary-dark-2: rgb(242, 48, 48, 1) !important;
+}
+
+html.dark {
+    --me-bg-color: #404045;
+    --me-body-bg-color: #292a2d;
+    --me-table-th-color: #383838;
+    --me-switch-bg-color: #383838;
+    --me-share-bg-color: #141414;
+}

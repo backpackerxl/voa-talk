@@ -842,7 +842,7 @@ onMounted(async () => {
 }
 
 .user-message span {
-  background: var(--el-border-color);
+  background: var(--me-bg-color);
   color: var(--el-text-color-primary);
   padding: 8px;
   border-radius: 8px;
@@ -946,7 +946,7 @@ onMounted(async () => {
 
 .record-list .item span {
   padding: 8px;
-  background: var(--el-border-color);
+  background: var(--me-bg-color);
   border-radius: 8px;
   color: var(--el-text-color-primary);
   cursor: pointer;

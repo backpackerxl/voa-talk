@@ -5,6 +5,7 @@ const state = {
     avatar: localStorage.getItem('avatar') || '', // 初始化
     sliderData: null,
     them: localStorage.getItem('them') || 'light', // 初始化
+    mainColor: localStorage.getItem('mainColor') || null,
 };
 
 const mutations = {
@@ -43,6 +44,12 @@ const mutations = {
     },
     CLEAR_THEM(state) {
         state.them = 'light';
+    },
+    SET_MAIN_COLOR(state, colorObj) {
+        state.mainColor = colorObj;
+    },
+    CLEAR_MAIN_COLOR(state) {
+        state.mainColor = null
     },
 };
 
@@ -92,6 +99,13 @@ const actions = {
     clearThem({ commit }) {
         commit('CLEAR_THEM');
         localStorage.setItem('them', 'light'); // 同步保存到 localStorage
+    },
+    setMainColor({ commit }, colorObj) {
+        commit('SET_MAIN_COLOR', colorObj);
+        localStorage.setItem('mainColor', colorObj); // 同步保存到 localStorage
+    },
+    clearMainColor({ commit }) {
+        commit('CLEAR_MAIN_COLOR');
     },
 };
 

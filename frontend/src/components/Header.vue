@@ -109,7 +109,7 @@ const handleCommand = (command) => {
   padding: 0px 40px;
   box-sizing: border-box;
   flex-wrap: wrap;
-  background: var(--el-bg-color);
+  background: var(--me-body-bg-color);
   position: fixed;
   top: 0;
   right: 0;
@@ -150,13 +150,9 @@ p:hover .edit-icon {
 }
 
 .opt-menu {
-  position: relative;
-}
-
-.them-switch {
-  position: absolute;
-  transform: scale(0.16, 0.18);
-  top: -50px;
-  right: -75px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 120px;
 }
 </style>
