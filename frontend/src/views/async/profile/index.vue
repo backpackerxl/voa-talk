@@ -222,18 +222,19 @@ async function saveUserInfo() {
   }
 }
 
-let oldTag = null;
+let oldTag = ref(JSON.parse(store.state.app.mainColor).tag);
 
 function selectColor(item) {
   checkThemId.value = item.id;
-  if (oldTag) {
-    document.documentElement.classList.remove(oldTag);
+  console.log(oldTag.value);
+  if (oldTag.value) {
+    document.documentElement.classList.remove(oldTag.value);
   }
 
   if (item.tag) {
     document.documentElement.classList.add(item.tag);
   }
-  oldTag = item.tag;
+  oldTag.value = item.tag;
   store.dispatch("app/setMainColor", JSON.stringify(item));
 }
 
