@@ -3,7 +3,9 @@
     <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="register-container">
       <el-card class="register-card">
-        <p class="logintext">VoaTalk 修改密码</p>
+        <p class="logintext">
+          <Logo />
+        </p>
         <el-form
           :model="registerForm"
           :rules="rules"
@@ -46,6 +48,7 @@ import { ElMessage } from "element-plus";
 import { resetPWD } from "@/api/login";
 import { encryptAes } from "@/utils/tools";
 import GitHubLink from "@/components/GitHubLink";
+import Logo from "@/components/Logo";
 
 const registerForm = ref({
   pwd: "",

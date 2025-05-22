@@ -3,7 +3,9 @@
     <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="logindata">
       <el-card>
-        <p class="logintext">VoaTalk 登录</p>
+        <p class="logintext">
+          <Logo />
+        </p>
         <div class="formdata">
           <el-form
             ref="form"
@@ -50,7 +52,6 @@
                 clearable
                 placeholder="请输入验证码"
               >
-                <!-- 使用 prefix-icon 插槽添加图标 -->
                 <template #prefix>
                   <el-icon><Picture /></el-icon>
                 </template>
@@ -92,6 +93,7 @@ import { Picture, User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
 import { config } from "@/utils/config";
 import GitHubLink from "@/components/GitHubLink";
+import Logo from "@/components/Logo";
 
 export default {
   name: "LogIn",
@@ -100,6 +102,7 @@ export default {
     User,
     Lock,
     GitHubLink,
+    Logo,
   },
   setup() {
     const router = useRouter();

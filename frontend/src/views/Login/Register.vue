@@ -3,7 +3,9 @@
     <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="register-container">
       <el-card class="register-card">
-        <p class="logintext">VoaTalk 注册</p>
+        <p class="logintext">
+          <Logo />
+        </p>
         <el-form
           :model="registerForm"
           :rules="rules"
@@ -57,6 +59,7 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { enrollUser } from "@/api/login";
 import GitHubLink from "@/components/GitHubLink";
+import Logo from "@/components/Logo";
 
 const registerForm = ref({
   name: "",

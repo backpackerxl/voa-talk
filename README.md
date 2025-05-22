@@ -1,12 +1,16 @@
-# VoaTalk
+<div style="text-align: center;">
+    <img src="frontend/src/assets/images/logo.png" alt="图片描述">
+</div>
 
-## git clone project
+# How to Use
+
+## 1.git clone project
 
 ```commandline
 git clone https://github.com/backpackerxl/voa-talk.git
 ```
 
-## Frontend Project setup
+## 2.Frontend Project setup
 
 ```commandline
 cd frontend
@@ -16,19 +20,19 @@ cd frontend
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### 2.1Compiles and hot-reloads for development
 
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### 2.2Compiles and minifies for production
 
 ```
 npm run build
 ```
 
-## Backend Project setup
+## 3.Backend Project setup
 
 ```commandline
 cd backend
@@ -42,13 +46,14 @@ mkdir logfile uploads
 pip install -r requirements.txt
 ```
 
-### Compiles and hot-reloads for development
+### 3.1Compiles and hot-reloads for development
 
 ```
 python app.py
 ```
 
-### Mail setting
+### 3.2Mail setting
+
 - individual mail setting
 - set `Config.py`
 
