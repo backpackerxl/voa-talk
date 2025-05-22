@@ -217,6 +217,11 @@
               class="markdown-body now"
               v-html="markdwonToHTML(respStr)"
             ></div>
+            <div class="thinking" v-if="modelTokens !== 0">
+              <p>
+                思考用时: {{ thinkTime }}s, 消耗模型token数: {{ modelTokens }}
+              </p>
+            </div>
             <div ref="cursorElement" class="cursor"></div>
             <div class="last-msg" v-loading="loading"></div>
             <div
@@ -243,10 +248,13 @@
 
     <div
       class="input-container"
-      :style="welcomeWord ? 'bottom:50%' : 'bottom: 20px'"
+      :style="welcomeWord ? 'bottom:40%' : 'bottom: 20px'"
       v-if="!isShare"
     >
-      <h2 style="text-align: center" v-if="welcomeWord">{{ welcomStr }}</h2>
+      <div class="welcome" v-if="welcomeWord">
+        <Logo />
+        <h2>{{ welcomStr }}</h2>
+      </div>
       <div class="input__inner_container">
         <el-input
           v-model="newMessage"
@@ -348,6 +356,7 @@ import { ElMessage } from "element-plus";
 import "@/assets/css/github-markdown.css";
 import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
+import Logo from "@/components/Logo";
 
 const routePath = useRoute();
 
@@ -396,6 +405,10 @@ const isVisible = ref(false);
 const checkList = ref([]);
 
 const isShare = ref(false);
+
+const modelTokens = ref(0);
+
+const thinkTime = ref(0);
 
 let oSpanC = null,
   oDivTools = null;
@@ -489,6 +502,7 @@ watch(
       messages.value = [];
       welcomeWord.value = true;
       recordList.value = [];
+      modelTokens.value = 0;
     }
   },
   { deep: true }
@@ -663,6 +677,7 @@ const sendMessage = async () => {
 
     const userInput = newMessage.value;
     newMessage.value = "";
+    modelTokens.value = 0;
 
     // console.log(userInput, modelId.value);
 
@@ -677,6 +692,8 @@ const sendMessage = async () => {
 
     loading.value = false;
 
+    // 记录思考时间
+    let startThink = Date.now();
     const reader = resp.body.getReader();
     const textDecoder = new TextDecoder("utf-8");
     // 处理可能的分块数据
@@ -731,6 +748,9 @@ const sendMessage = async () => {
     });
 
     nextTick(function () {
+      // 记录思考结束时间
+      let endThink = Date.now();
+      thinkTime.value = (endThink - startThink) / 1000;
       cursorElement.value.style.display = "none";
       addCopy();
       changeIcon.value = false;
@@ -750,6 +770,7 @@ const sendMessage = async () => {
       });
       loading.value = false;
       const cId = obj.data.chat_id;
+      modelTokens.value = obj.data.tokens;
       let lastIdx = messages.value.length - 1;
       chatPid.value = null;
       messages.value[lastIdx].id = cId;
@@ -861,6 +882,15 @@ onMounted(async () => {
   padding: 0 22vw;
 }
 
+.input-container .welcome {
+  text-align: center;
+}
+
+.input-container .welcome h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
 .input__inner_container {
   padding: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
@@ -901,6 +931,11 @@ onMounted(async () => {
   position: relative;
   padding: 0px 10px;
   margin-bottom: 180px;
+}
+
+.container .thinking {
+  font-size: 14px;
+  color: var(--el-color-info);
 }
 
 .container .cursor {

@@ -44,7 +44,9 @@
         <template #default>
           <div class="header">
             <h1>{{ title }}</h1>
-            <p>{{ shareTime }} • 内容由 AI 生成，不能完全保障真实</p>
+            <p v-if="messages.length > 0">
+              {{ shareTime }} • 内容由 AI 生成，不能完全保障真实
+            </p>
           </div>
           <div class="content-body">
             <div
@@ -154,6 +156,8 @@ onMounted(async function () {
     messages.value = obj.data.talk_logs;
     title.value = obj.data.title;
     shareTime.value = obj.data.share_time;
+    document.documentElement.querySelector("title").innerText =
+      title.value || "VoaTalk 你的Ai助手";
   } catch (err) {
     console.log(err);
   }

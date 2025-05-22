@@ -15,3 +15,4 @@ class TalkLogs(Base):
     req_content = Column('req_content', String, primary_key=False, nullable=False, comment="用户输入的信息")
     img = Column('img', String, primary_key=False, nullable=True, comment="用户上传的图片")
     create_date = Column('create_date', Date, primary_key=False, nullable=True, comment="创建日期")
+    tokens = Column('tokens', Date, primary_key=False, nullable=False, comment="大模型token消耗")

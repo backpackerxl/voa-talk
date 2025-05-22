@@ -10,21 +10,89 @@
           @click="openNewChat"
         >
           <svg
-            t="1747912862946"
-            class="icon"
-            viewBox="0 0 1024 1024"
-            version="1.1"
             xmlns="http://www.w3.org/2000/svg"
-            p-id="8687"
-            width="16"
-            height="16"
-            style="margin-right: 4px"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            width="97"
+            height="99.33775329589844"
+            viewBox="0 0 97 99.33775329589844"
+            fill="none"
+            class="logo"
           >
+            <g filter="url(#filter_3_22)">
+              <path
+                fill="rgba(255, 255, 255, 1)"
+                d="M22.3333 16.0013L74.6667 16.0013C84.7919 16.0013 93 24.2095 93 34.3347L93 67.668C93 77.7932 84.7919 86.0013 74.6667 86.0013L22.3333 86.0013C12.2081 86.0013 4 77.7932 4 67.668L4 34.3347C4 24.2095 12.2081 16.0013 22.3333 16.0013ZM22.3333 26.0013C17.731 26.0013 14 29.7323 14 34.3347L14 67.668C14 72.2704 17.731 76.0013 22.3333 76.0013L74.6667 76.0013C79.269 76.0013 83 72.2704 83 67.668L83 34.3347C83 29.7323 79.269 26.0013 74.6667 26.0013L22.3333 26.0013Z"
+              ></path>
+            </g>
             <path
-              d="M717.12 274H762c82.842 0 150 67.158 150 150v200c0 82.842-67.158 150-150 150H262c-82.842 0-150-67.158-150-150V424c0-82.842 67.158-150 150-150h44.88l-18.268-109.602c-4.086-24.514 12.476-47.7 36.99-51.786 24.514-4.086 47.7 12.476 51.786 36.99l20 120c0.246 1.472 0.416 2.94 0.516 4.398h228.192c0.1-1.46 0.27-2.926 0.516-4.398l20-120c4.086-24.514 27.272-41.076 51.786-36.99 24.514 4.086 41.076 27.272 36.99 51.786L717.12 274zM262 364c-33.138 0-60 26.862-60 60v200c0 33.138 26.862 60 60 60h500c33.138 0 60-26.862 60-60V424c0-33.138-26.862-60-60-60H262z m50 548c-24.852 0-45-20.148-45-45S287.148 822 312 822h400c24.852 0 45 20.148 45 45S736.852 912 712 912H312z m-4-428c0-24.852 20.148-45 45-45S398 459.148 398 484v40c0 24.852-20.148 45-45 45S308 548.852 308 524v-40z m318 0c0-24.852 20.148-45 45-45S716 459.148 716 484v40c0 24.852-20.148 45-45 45S626 548.852 626 524v-40z"
-              fill="#ffffff"
-              p-id="8688"
+              fill="rgba(255, 255, 255, 1)"
+              d="M61.3015 17.6882L66.4318 3.59278L75.8288 7.01298L70.6985 21.1084L61.3015 17.6882ZM75.8288 7.01298C74.8843 9.60787 72.0151 10.9458 69.4202 10.0013C66.8253 9.05688 65.4874 6.18767 66.4318 3.59278C67.3763 0.997892 70.2455 -0.340044 72.8404 0.604418C75.4353 1.54888 76.7732 4.41809 75.8288 7.01298Z"
             ></path>
+            <path
+              fill="rgba(255, 255, 255, 1)"
+              d="M33.6985 3.29124L38.8288 17.3866L29.4318 20.8068L24.3015 6.71144L33.6985 3.29124ZM24.3015 6.71144C23.3571 4.11655 24.695 1.24734 27.2899 0.30288C29.8848 -0.641582 32.754 0.696353 33.6985 3.29124C34.6429 5.88613 33.305 8.75534 30.7101 9.69981C28.1152 10.6443 25.246 9.30633 24.3015 6.71144Z"
+            ></path>
+            <path
+              stroke="rgba(255, 255, 255, 1)"
+              stroke-width="10"
+              stroke-linecap="round"
+              d="M40.6018 50.5092L29 41.0013"
+            ></path>
+            <path
+              stroke="rgba(255, 255, 255, 1)"
+              stroke-width="10"
+              stroke-linecap="round"
+              d="M27 57.837L40.3519 51.0013"
+            ></path>
+            <path
+              stroke="rgba(255, 255, 255, 1)"
+              stroke-width="10"
+              stroke-linecap="round"
+              d="M66 43.0013L66 59.0013"
+            ></path>
+            <path
+              stroke="rgba(255, 255, 255, 1)"
+              stroke-width="10"
+              stroke-linecap="round"
+              d="M28 94.3378L67.9994 94.1135"
+            ></path>
+            <defs>
+              <filter
+                id="filter_3_22"
+                x="0"
+                y="14.0013427734375"
+                width="97"
+                height="78"
+                filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB"
+              >
+                <feFlood flood-opacity="0" result="feFloodId_3_22" />
+                <feColorMatrix
+                  in="SourceAlpha"
+                  type="matrix"
+                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                  result="hardAlpha_3_22"
+                />
+                <feOffset dx="0" dy="2" />
+                <feGaussianBlur stdDeviation="2" />
+                <feComposite in2="hardAlpha_3_22" operator="out" />
+                <feColorMatrix
+                  type="matrix"
+                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                />
+                <feBlend
+                  mode="normal"
+                  in2="feFloodId_3_22"
+                  result="dropShadow_1_3_22"
+                />
+                <feBlend
+                  mode="normal"
+                  in="SourceGraphic"
+                  in2="dropShadow_1_3_22"
+                  result="shape_3_22"
+                />
+              </filter>
+            </defs>
           </svg>
           开启新对话</el-button
         >
@@ -148,14 +216,30 @@ const sliderData = computed(() => store.state.app.sliderData || null);
 watch(
   () => sliderData,
   (newSliderData, oldSliderData) => {
-    if (newSliderData.value && chatId.value === -1) {
+    // 跳过初始触发
+    if (oldSliderData === undefined) return;
+    if (newSliderData.value) {
       chatObj.value = newSliderData.value;
       chatTitle.value = newSliderData.value.talk_name;
       chatId.value = newSliderData.value.talk_id;
-      if (routePath.path === "/home/chat") {
+      if (routePath.path === "/home/chat" || routePath.path === "/home/chat/") {
         routePath.params.id = chatId.value;
+        const currentPath = location.pathname;
+        let expectedPath = null;
+        if (currentPath.endsWith("/")) {
+          expectedPath = `${currentPath}${chatId.value}`;
+        } else {
+          expectedPath = `${currentPath}/${chatId.value}`;
+        }
+
+        // 避免重复添加相同的 ID
+        if (
+          currentPath !== expectedPath &&
+          !currentPath.endsWith(`/${chatId.value}`)
+        ) {
+          history.pushState({}, "", expectedPath);
+        }
       }
-      history.pushState({}, "", location.href + "/" + chatId.value);
     }
   },
   { deep: true }
@@ -245,6 +329,10 @@ onMounted(() => {
       queryTalkName({ talk_id: chatId.value })
         .then((data) => {
           chatTitle.value = data.data || "";
+          if (chatTitle.value && chatTitle.value !== "") {
+            document.documentElement.querySelector("title").innerText =
+              chatTitle.value || "VoaTalk 你的Ai助手";
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -306,6 +394,12 @@ onMounted(() => {
   border: none;
   box-shadow: none;
   width: 100%;
+}
+
+.new-chat svg.logo {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
 }
 
 .el-menu {

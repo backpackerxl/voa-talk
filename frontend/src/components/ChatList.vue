@@ -148,6 +148,8 @@ function openChatHis(event, row) {
     type: "change",
   });
   router.replace("/home/chat/" + row.talk_id);
+  document.documentElement.querySelector("title").innerText =
+    row.talk_name || "VoaTalk 你的Ai助手";
 }
 
 function openChatHisList() {
@@ -220,6 +222,7 @@ async function deleteUserOk(chat) {
   tableData.value = tableData.value.filter(
     (item) => item.talk_id !== chat.talk_id
   );
+  getAiChatList();
 }
 
 function handleDeleteMsg(row) {

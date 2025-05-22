@@ -101,6 +101,13 @@ def ai_save_chat_serve(user_id, request_data):
         now = datetime.datetime.fromtimestamp(time.time())
         if request_data.get('id') is None:
             request_data['create_date'] = now
+        messages = [
+            {"role": "system",
+             "content": request_data['resp_content']},
+            {"role": "user", "content": request_data['req_content']}
+        ]
+        tokens_count = Tools.count_tokens_messages(messages)
+        request_data['tokens'] = tokens_count
         result = DbTools.saveOrUpdate(session, request_data, TalkLogs)
         save_dict = {
             "model_id": request_data['model_id'],
@@ -111,12 +118,12 @@ def ai_save_chat_serve(user_id, request_data):
 
         if result:
             model_cfg = session.query(ModelConfig).filter(ModelConfig.id == request_data['model_id']).first()
-            return ReturnTool.SuccessReturn(gen_record_list(result.id, request_data, model_cfg))
+            return ReturnTool.SuccessReturn(gen_record_list(result.id, request_data, model_cfg, tokens_count))
         else:
             return ReturnTool.ErrorReturn('数据没有找到')
 
 
-def gen_record_list(chat_id, request_data, model_cfg):
+def gen_record_list(chat_id, request_data, model_cfg, tokenizer=0):
     reco_list = []
     with DatabaseSession() as session:
         if model_cfg is not None:
@@ -152,6 +159,7 @@ def gen_record_list(chat_id, request_data, model_cfg):
             DbTools.bulk_insert(session, reco_list, TalkRecommendation)
     return {
         "chat_id": chat_id,
+        "tokens": tokenizer,
         "reco_list": reco_list
     }
 
