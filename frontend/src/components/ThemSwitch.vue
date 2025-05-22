@@ -6,30 +6,23 @@
       type="checkbox"
       id="sun_switch"
     />
-    <label for="sun_switch">
-      <div class="switch">
-        <el-tooltip
-          class="box-item"
-          effect="light"
-          content="日间模式"
-          placement="left"
-        >
+    <el-tooltip
+      class="box-item"
+      effect="light"
+      content="模式切换"
+      placement="left"
+    >
+      <label for="sun_switch">
+        <div class="switch">
           <i
             :class="!themValue ? 'fa-solid fa-sun active' : 'fa-solid fa-sun'"
           ></i>
-        </el-tooltip>
-        <el-tooltip
-          class="box-item"
-          effect="light"
-          content="夜间模式"
-          placement="right"
-        >
           <i
             :class="themValue ? 'fa-solid fa-moon active' : 'fa-solid fa-moon'"
           ></i>
-        </el-tooltip>
-      </div>
-    </label>
+        </div>
+      </label>
+    </el-tooltip>
   </div>
 </template>
 
