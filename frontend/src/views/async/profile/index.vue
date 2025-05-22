@@ -66,7 +66,7 @@
           class="box-item"
           effect="light"
           :content="item.tip"
-          placement="top"
+          :placement="item.place"
         >
           <div
             :class="checkThemId === item.id ? 'item checked' : 'item'"
@@ -106,63 +106,73 @@ const checkThemId = ref(1);
 const colorList = ref([
   {
     id: 1,
-    bgColor: "#409eff",
-    tip: "拂晓蓝",
+    bgColor: "#4d6bfe",
+    tip: "霓虹蓝",
     tag: null,
+    place: "top",
   },
   {
     id: 2,
-    bgColor: "#0bb2d4",
-    tip: "青色",
+    bgColor: "#ff7625",
+    tip: "岩力橙",
     tag: "cyan",
+    place: "top",
   },
   {
     id: 3,
     bgColor: "#0052d9",
-    tip: "蓝色",
+    tip: "皇家蓝",
     tag: "blue",
+    place: "top",
   },
   {
     id: 4,
-    bgColor: "#11c26d",
-    tip: "绿色",
+    bgColor: "#00A884",
+    tip: "流光绿",
     tag: "green",
+    place: "top",
   },
   {
     id: 5,
-    bgColor: "#17b3a3",
-    tip: "蓝绿色",
+    bgColor: "#00b458",
+    tip: "宝石绿",
     tag: "genblue",
+    place: "top",
   },
   {
     id: 6,
-    bgColor: "#667afa",
-    tip: "靛青色",
+    bgColor: "#06b3d3",
+    tip: "海湾蓝",
     tag: "indigo",
+    place: "bottom",
   },
   {
     id: 7,
     bgColor: "#9463f7",
-    tip: "紫色",
+    tip: "宇宙紫",
     tag: "purple",
+    place: "bottom",
   },
   {
     id: 8,
-    bgColor: "#ff6a00",
-    tip: "橙色",
+    bgColor: "#ffb400",
+    tip: "闪电黄",
     tag: "orange",
+    place: "bottom",
   },
   {
     id: 9,
     bgColor: "#f74584",
-    tip: "混红色",
+    tip: "玫瑰红",
     tag: "mixedred",
+    place: "bottom",
   },
   {
     id: 10,
-    bgColor: "#f23030",
-    tip: "红色",
+    bgColor: "#fd0077",
+    tip: "璀璨洋红",
     tag: "red",
+    place: "bottom",
   },
 ]);
 

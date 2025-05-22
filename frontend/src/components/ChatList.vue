@@ -332,7 +332,7 @@ onMounted(function () {
   padding: 6px;
 }
 
-.el-popper[data-popper-placement^="bottom"] > .el-popper__arrow {
+.el-popper[data-popper-placement="bottom-end"] > .el-popper__arrow {
   top: 0 !important;
 }
 

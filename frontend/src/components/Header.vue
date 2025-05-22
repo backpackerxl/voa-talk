@@ -13,6 +13,7 @@
         @visible-change="handleVisibleChange"
         @command="handleCommand"
         trigger="click"
+        placement="bottom-end"
       >
         <!-- <div> -->
         <el-avatar v-if="imageUrl" :src="imageUrl" />
