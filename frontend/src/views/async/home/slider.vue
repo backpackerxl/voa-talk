@@ -296,6 +296,8 @@ function openNewChat() {
     type: "open",
   };
   router.replace("/home/chat");
+  document.documentElement.querySelector("title").innerText =
+    chatTitle.value || "VoaTalk 你的Ai助手";
 }
 
 async function editMsgOk() {
