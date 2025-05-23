@@ -1,116 +1,120 @@
 <template>
   <div class="body">
-    <div class="header">
-      <el-form :inline="true" :model="state" class="demo-form-inline">
-        <el-form-item label="用户名">
-          <el-input
-            v-model="state.user_name"
-            placeholder="模糊搜索用户名或昵称"
-            size="large"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button size="large" type="primary" @click="fetchData"
-            >查 询</el-button
+    <div class="data-inner">
+      <div class="header">
+        <el-form :inline="true" :model="state" class="demo-form-inline">
+          <el-form-item label="用户名">
+            <el-input
+              v-model="state.user_name"
+              placeholder="模糊搜索用户名或昵称"
+              size="large"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button size="large" type="primary" @click="fetchData"
+              >查 询</el-button
+            >
+          </el-form-item>
+        </el-form>
+        <div class="option">
+          <p>数据列表</p>
+          <el-button size="large" type="danger" @click="batchDel"
+            >删 除</el-button
           >
-        </el-form-item>
-      </el-form>
-      <div class="option">
-        <p>数据列表</p>
-        <el-button size="large" type="danger" @click="batchDel"
-          >删 除</el-button
+        </div>
+      </div>
+      <div class="data-view">
+        <el-table
+          v-loading="state.loading"
+          :data="tableData"
+          border
+          stripe
+          style="width: 100%"
+          @select="changeCheckBox"
+          @select-all="changeCheckBox"
         >
-      </div>
-    </div>
-    <div class="data-view">
-      <el-table
-        v-loading="state.loading"
-        :data="tableData"
-        border
-        stripe
-        style="width: 100%"
-        @select="changeCheckBox"
-        @select-all="changeCheckBox"
-      >
-        <el-table-column type="selection" width="55" />
-        <!-- 表格列定义 -->
-        <el-table-column
-          fixed
-          prop="user_name"
-          label="用户名"
-          min-width="150"
-        />
-        <el-table-column prop="nick_name" label="昵称" min-width="150" />
-        <el-table-column label="是否为管理员" min-width="120">
-          <template v-slot="scope">
-            <el-tag round type="info" v-if="scope.row.super_admin === 0"
-              >否</el-tag
-            >
-            <el-tag round type="success" v-if="scope.row.super_admin === 1"
-              >是</el-tag
-            >
-          </template>
-        </el-table-column>
-        <el-table-column label="用户状态" min-width="120">
-          <template v-slot="scope">
-            <el-tag type="success" v-if="scope.row.user_state === 1"
-              >正常</el-tag
-            >
-            <el-tag type="info" v-if="scope.row.user_state === 0">停用</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="email" label="邮箱" min-width="200" />
-        <el-table-column
-          prop="last_login_time"
-          label="最后登录时间"
-          min-width="200"
-        />
-        <el-table-column fixed="right" label="操作" min-width="120">
-          <template v-slot="scope">
-            <el-button
-              link
-              type="primary"
-              size="small"
-              @click="openEditDialog(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              size="small"
-              @click="handleDelete(scope.row)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="me-pagination">
-        <span>共 {{ tableCount }} 条</span>
-        <el-pagination
-          layout="prev, pager, next"
-          :page-size="pageSize"
-          :total="tableCount"
-          @current-change="pageQuery"
-        />
-      </div>
+          <el-table-column type="selection" width="55" />
+          <!-- 表格列定义 -->
+          <el-table-column
+            fixed
+            prop="user_name"
+            label="用户名"
+            min-width="150"
+          />
+          <el-table-column prop="nick_name" label="昵称" min-width="150" />
+          <el-table-column label="是否为管理员" min-width="120">
+            <template v-slot="scope">
+              <el-tag round type="info" v-if="scope.row.super_admin === 0"
+                >否</el-tag
+              >
+              <el-tag round type="success" v-if="scope.row.super_admin === 1"
+                >是</el-tag
+              >
+            </template>
+          </el-table-column>
+          <el-table-column label="用户状态" min-width="120">
+            <template v-slot="scope">
+              <el-tag type="success" v-if="scope.row.user_state === 1"
+                >正常</el-tag
+              >
+              <el-tag type="info" v-if="scope.row.user_state === 0"
+                >停用</el-tag
+              >
+            </template>
+          </el-table-column>
+          <el-table-column prop="email" label="邮箱" min-width="200" />
+          <el-table-column
+            prop="last_login_time"
+            label="最后登录时间"
+            min-width="200"
+          />
+          <el-table-column fixed="right" label="操作" min-width="120">
+            <template v-slot="scope">
+              <el-button
+                link
+                type="primary"
+                size="small"
+                @click="openEditDialog(scope.row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                size="small"
+                @click="handleDelete(scope.row)"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="me-pagination">
+          <span>共 {{ tableCount }} 条</span>
+          <el-pagination
+            layout="prev, pager, next"
+            :page-size="pageSize"
+            :total="tableCount"
+            @current-change="pageQuery"
+          />
+        </div>
 
-      <el-dialog
-        v-model="centerDialogVisible"
-        title="删除用户"
-        width="400"
-        align-center
-      >
-        <span>确定删除所选用户的账号？此操作不可恢复</span>
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="centerDialogVisible = false">取消</el-button>
-            <el-button type="danger" @click="deleteUserOk"> 确定 </el-button>
-          </div>
-        </template>
-      </el-dialog>
+        <el-dialog
+          v-model="centerDialogVisible"
+          title="删除用户"
+          width="400"
+          align-center
+        >
+          <span>确定删除所选用户的账号？此操作不可恢复</span>
+          <template #footer>
+            <div class="dialog-footer">
+              <el-button @click="centerDialogVisible = false">取消</el-button>
+              <el-button type="danger" @click="deleteUserOk"> 确定 </el-button>
+            </div>
+          </template>
+        </el-dialog>
+      </div>
     </div>
 
     <EditUserDialog
@@ -237,6 +241,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.body {
+  display: flex;
+  justify-content: center;
+  margin: 0 2px;
+}
+
+.body .data-inner {
+  width: 65vw;
+}
+
 .header {
   width: 100%;
   height: 80px;
@@ -283,8 +297,7 @@ onMounted(() => {
 }
 
 .el-table {
-  height: 70vh !important;
-  max-width: 1115px;
+  height: 66vh !important;
 }
 
 .el-table thead {

@@ -1,111 +1,121 @@
 <template>
   <div class="body">
-    <div class="header">
-      <el-form :inline="true" :model="state" class="demo-form-inline">
-        <el-form-item label="模型名">
-          <el-input
-            v-model="state.user_name"
-            placeholder="模糊搜索模型名"
-            size="large"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button size="large" type="primary" @click="fetchData"
-            >查 询</el-button
-          >
-        </el-form-item>
-      </el-form>
-      <div class="option">
-        <p>数据列表</p>
-        <div>
-          <el-button size="large" type="primary" @click="addModel"
-            >新 增</el-button
-          ><el-button size="large" type="danger" @click="batchDel"
-            >删 除</el-button
-          >
+    <div class="data-inner">
+      <div class="header">
+        <el-form :inline="true" :model="state" class="demo-form-inline">
+          <el-form-item label="模型名">
+            <el-input
+              v-model="state.user_name"
+              placeholder="模糊搜索模型名"
+              size="large"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button size="large" type="primary" @click="fetchData"
+              >查 询</el-button
+            >
+          </el-form-item>
+        </el-form>
+        <div class="option">
+          <p>数据列表</p>
+          <div>
+            <el-button size="large" type="primary" @click="addModel"
+              >新 增</el-button
+            ><el-button size="large" type="danger" @click="batchDel"
+              >删 除</el-button
+            >
+          </div>
         </div>
       </div>
-    </div>
-    <div class="data-view">
-      <el-table
-        v-loading="state.loading"
-        :data="tableData"
-        border
-        stripe
-        style="width: 100%"
-        @select="changeCheckBox"
-        @select-all="changeCheckBox"
-      >
-        <el-table-column type="selection" width="55" />
-        <!-- 表格列定义 -->
-        <el-table-column fixed prop="model_id" label="模型ID" min-width="150" />
-        <el-table-column fixed prop="name" label="模型名称" min-width="150" />
-        <el-table-column prop="req_url" label="接口Api" min-width="200" />
-        <el-table-column prop="api_key" label="接口Key" min-width="200" />
-        <el-table-column prop="sort" label="排序" min-width="100" />
-        <el-table-column prop="update_date" label="修改时间" min-width="180" />
-        <el-table-column prop="desc" label="模型描述" min-width="180">
-          <template #default="{ row }">
-            <el-popover
-              placement="bottom"
-              title=""
-              :content="row.desc"
-              trigger="hover"
-            >
-              <template #reference>
-                <div class="text-truncate">{{ row.desc }}</div>
-              </template>
-            </el-popover>
+      <div class="data-view">
+        <el-table
+          v-loading="state.loading"
+          :data="tableData"
+          border
+          stripe
+          style="width: 100%"
+          @select="changeCheckBox"
+          @select-all="changeCheckBox"
+        >
+          <el-table-column type="selection" width="55" />
+          <!-- 表格列定义 -->
+          <el-table-column
+            fixed
+            prop="model_id"
+            label="模型ID"
+            min-width="150"
+          />
+          <el-table-column fixed prop="name" label="模型名称" min-width="150" />
+          <el-table-column prop="req_url" label="接口Api" min-width="200" />
+          <el-table-column prop="api_key" label="接口Key" min-width="200" />
+          <el-table-column prop="sort" label="排序" min-width="100" />
+          <el-table-column
+            prop="update_date"
+            label="修改时间"
+            min-width="180"
+          />
+          <el-table-column prop="desc" label="模型描述" min-width="180">
+            <template #default="{ row }">
+              <el-popover
+                placement="bottom"
+                title=""
+                :content="row.desc"
+                trigger="hover"
+              >
+                <template #reference>
+                  <div class="text-truncate">{{ row.desc }}</div>
+                </template>
+              </el-popover>
+            </template>
+          </el-table-column>
+          <el-table-column fixed="right" label="操作" min-width="120">
+            <template v-slot="scope">
+              <el-button
+                link
+                type="primary"
+                size="small"
+                @click="openEditDialog(scope.row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                size="small"
+                @click="handleDelete(scope.row)"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="me-pagination">
+          <span>共 {{ tableCount }} 条</span>
+          <el-pagination
+            layout="prev, pager, next"
+            :page-size="pageSize"
+            :total="tableCount"
+            @current-change="pageQuery"
+          />
+        </div>
+
+        <el-dialog
+          v-model="centerDialogVisible"
+          title="删除用户"
+          width="400"
+          align-center
+        >
+          <span>确定删除所选模型配置？此操作不可恢复！</span>
+          <template #footer>
+            <div class="dialog-footer">
+              <el-button @click="centerDialogVisible = false">取消</el-button>
+              <el-button type="danger" @click="deleteUserOk"> 确定 </el-button>
+            </div>
           </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="操作" min-width="120">
-          <template v-slot="scope">
-            <el-button
-              link
-              type="primary"
-              size="small"
-              @click="openEditDialog(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              size="small"
-              @click="handleDelete(scope.row)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="me-pagination">
-        <span>共 {{ tableCount }} 条</span>
-        <el-pagination
-          layout="prev, pager, next"
-          :page-size="pageSize"
-          :total="tableCount"
-          @current-change="pageQuery"
-        />
+        </el-dialog>
       </div>
-
-      <el-dialog
-        v-model="centerDialogVisible"
-        title="删除用户"
-        width="400"
-        align-center
-      >
-        <span>确定删除所选模型配置？此操作不可恢复！</span>
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="centerDialogVisible = false">取消</el-button>
-            <el-button type="danger" @click="deleteUserOk"> 确定 </el-button>
-          </div>
-        </template>
-      </el-dialog>
     </div>
-
     <EditModelDialog
       @close="close"
       v-if="state.open"
@@ -243,6 +253,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.body {
+  display: flex;
+  justify-content: center;
+  margin: 0 2px;
+}
+
+.body .data-inner {
+  width: 65vw;
+}
+
 .header {
   width: 100%;
   height: 80px;
@@ -289,8 +309,7 @@ onMounted(() => {
 }
 
 .el-table {
-  height: 70vh !important;
-  max-width: 1115px;
+  height: 66vh !important;
 }
 
 .el-table thead {

@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container class="me-container">
     <el-aside width="240px">
       <h2 class="mb">VoaTalk</h2>
       <div class="new-chat">
@@ -120,7 +120,7 @@
       <el-header
         ><Header :title="chatTitle" :id="chatId" @submit="submitEditMsg"
       /></el-header>
-      <el-main class="main"><router-view /></el-main>
+      <el-main id="chatView" class="chat-view"><router-view /></el-main>
     </el-container>
   </el-container>
   <el-dialog
@@ -345,13 +345,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.me-container {
+  display: flex;
+}
+
 .el-aside {
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  height: 100vh;
   background-color: var(--el-bg-color);
-  z-index: 100;
 }
 
 .menu-icon {
@@ -379,12 +378,13 @@ onMounted(() => {
   flex: 1;
 }
 
-.main {
-  display: flex;
-  justify-content: center;
-  margin-left: 240px;
-  padding: 0;
-  overflow: hidden;
+.el-main {
+  flex: none !important;
+  padding: 0px !important;
+}
+
+.el-container {
+  width: 100%;
 }
 
 .new-chat {
@@ -407,11 +407,5 @@ onMounted(() => {
 .el-menu {
   height: 200px;
   overflow: auto;
-}
-
-.history-chat {
-  width: 240px;
-  position: absolute;
-  bottom: 10px;
 }
 </style>

@@ -1,97 +1,99 @@
 <template>
   <div class="body">
-    <div class="header">
-      <el-form :inline="true" :model="state" class="demo-form-inline">
-        <el-form-item label="对话名称">
-          <el-input
-            v-model="state.user_name"
-            placeholder="模糊搜索历史对话"
-            size="large"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button size="large" type="primary" @click="fetchData"
-            >查 询</el-button
-          >
-        </el-form-item>
-      </el-form>
-      <div class="option">
-        <p>数据列表</p>
-        <div>
-          <el-button size="large" type="danger" @click="batchDel"
-            >删 除</el-button
-          >
+    <div class="data-inner">
+      <div class="header">
+        <el-form :inline="true" :model="state" class="demo-form-inline">
+          <el-form-item label="对话名称">
+            <el-input
+              v-model="state.user_name"
+              placeholder="模糊搜索历史对话"
+              size="large"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button size="large" type="primary" @click="fetchData"
+              >查 询</el-button
+            >
+          </el-form-item>
+        </el-form>
+        <div class="option">
+          <p>数据列表</p>
+          <div>
+            <el-button size="large" type="danger" @click="batchDel"
+              >删 除</el-button
+            >
+          </div>
         </div>
       </div>
-    </div>
-    <div class="data-view">
-      <el-table
-        v-loading="state.loading"
-        :data="tableData"
-        border
-        stripe
-        style="width: 100%"
-        @select="changeCheckBox"
-        @select-all="changeCheckBox"
-      >
-        <el-table-column type="selection" width="55" />
-        <!-- 表格列定义 -->
-        <el-table-column
-          fixed
-          prop="talk_name"
-          label="对话名称"
-          min-width="450"
-        />
-        <el-table-column
-          fixed
-          prop="nick_name"
-          label="对话拥有者"
-          min-width="200"
-        />
-        <el-table-column
-          fixed
-          prop="create_date"
-          label="对话产生的时间"
-          min-width="200"
-        />
-        <el-table-column fixed="right" label="操作" min-width="180">
-          <template v-slot="scope">
-            <el-button
-              link
-              type="primary"
-              size="small"
-              @click="openChatInfo(scope.row)"
-            >
-              详情
-            </el-button>
-            <el-button
-              link
-              type="primary"
-              size="small"
-              @click="openEditDialog(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              size="small"
-              @click="handleDelete(scope.row)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="me-pagination">
-        <span>共 {{ tableCount }} 条</span>
-        <el-pagination
-          layout="prev, pager, next"
-          :page-size="pageSize"
-          :total="tableCount"
-          @current-change="pageQuery"
-        />
+      <div class="data-view">
+        <el-table
+          v-loading="state.loading"
+          :data="tableData"
+          border
+          stripe
+          style="width: 100%"
+          @select="changeCheckBox"
+          @select-all="changeCheckBox"
+        >
+          <el-table-column type="selection" width="55" />
+          <!-- 表格列定义 -->
+          <el-table-column
+            fixed
+            prop="talk_name"
+            label="对话名称"
+            min-width="450"
+          />
+          <el-table-column
+            fixed
+            prop="nick_name"
+            label="对话拥有者"
+            min-width="200"
+          />
+          <el-table-column
+            fixed
+            prop="create_date"
+            label="对话产生的时间"
+            min-width="200"
+          />
+          <el-table-column fixed="right" label="操作" min-width="180">
+            <template v-slot="scope">
+              <el-button
+                link
+                type="primary"
+                size="small"
+                @click="openChatInfo(scope.row)"
+              >
+                详情
+              </el-button>
+              <el-button
+                link
+                type="primary"
+                size="small"
+                @click="openEditDialog(scope.row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                size="small"
+                @click="handleDelete(scope.row)"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="me-pagination">
+          <span>共 {{ tableCount }} 条</span>
+          <el-pagination
+            layout="prev, pager, next"
+            :page-size="pageSize"
+            :total="tableCount"
+            @current-change="pageQuery"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -258,6 +260,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.body {
+  display: flex;
+  justify-content: center;
+  margin: 0 2px;
+}
+
+.body .data-inner {
+  width: 65vw;
+}
+
 .header {
   width: 100%;
   height: 80px;
@@ -300,8 +312,7 @@ onMounted(() => {
 }
 
 .el-table {
-  height: 70vh !important;
-  max-width: 1115px;
+  height: 66vh !important;
 }
 
 .el-table thead {

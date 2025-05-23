@@ -1,10 +1,6 @@
 <template>
-  <div class="chat-page">
-    <el-skeleton
-      style="width: 43vw; padding: 0 22vw; margin-top: 100px"
-      :loading="openLoading"
-      animated
-    >
+  <div ref="chatPage" class="chat-page">
+    <el-skeleton style="width: 43vw" :loading="openLoading" animated>
       <template #template>
         <el-skeleton-item
           variant="text"
@@ -410,6 +406,8 @@ const modelTokens = ref(0);
 
 const thinkTime = ref(0);
 
+const chatPage = ref(null);
+
 let oSpanC = null,
   oDivTools = null;
 
@@ -494,8 +492,7 @@ watch(
       nextTick(function () {
         addCopy();
         // 自动滚动到最新消息位置
-        document.documentElement.scrollTop =
-          document.documentElement.scrollHeight;
+        scrollTopBottom();
       });
     } else {
       chatId.value = -1;
@@ -732,8 +729,7 @@ const sendMessage = async () => {
             nextTick(function () {
               updateCursorPosition();
               // 自动滚动到最新消息位置
-              document.documentElement.scrollTop =
-                document.documentElement.scrollHeight;
+              scrollTopBottom();
             });
           }
         });
@@ -754,8 +750,8 @@ const sendMessage = async () => {
       cursorElement.value.style.display = "none";
       addCopy();
       changeIcon.value = false;
-      document.documentElement.scrollTop =
-        document.documentElement.scrollHeight;
+      // 自动滚动到最新消息位置
+      scrollTopBottom();
     });
 
     if (chatId.value !== -1) {
@@ -777,8 +773,8 @@ const sendMessage = async () => {
       messages.value[lastIdx - 1].id = cId;
       recordList.value = obj.data.reco_list;
       nextTick(function () {
-        document.documentElement.scrollTop =
-          document.documentElement.scrollHeight;
+        // 自动滚动到最新消息位置
+        scrollTopBottom();
       });
     }
   }
@@ -817,16 +813,32 @@ onMounted(async () => {
   nextTick(function () {
     addCopy();
     // 自动滚动到最新消息位置
-    document.documentElement.scrollTop = document.documentElement.scrollHeight;
+    scrollTopBottom();
   });
 });
+
+function scrollTopBottom() {
+  if (chatPage.value) {
+    const chatView = chatPage.value;
+    chatView.scrollTo({
+      top: chatView.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+}
 </script>
 
 <style scoped>
+.chat-page {
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+  height: calc(100vh - 190px);
+  margin: 0 2px;
+}
+
 .chat-window {
-  margin-top: 30px;
   width: 43vw;
-  padding: 0 22vw;
 }
 
 .chat-window .last-msg {
@@ -878,8 +890,6 @@ onMounted(async () => {
   width: 43vw;
   position: fixed;
   float: bottom;
-  bottom: 20px;
-  padding: 0 22vw;
 }
 
 .input-container .welcome {
@@ -969,6 +979,7 @@ onMounted(async () => {
 
 .record-list {
   display: block;
+  padding-bottom: 25px;
 }
 
 .record-list.active {

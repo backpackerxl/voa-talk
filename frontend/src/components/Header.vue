@@ -102,34 +102,11 @@ const handleCommand = (command) => {
 
 <style scoped>
 .chat-header {
-  height: 70px;
+  height: inherit;
   display: flex;
   justify-content: space-between;
-  width: 100%;
   align-items: center;
-  padding: 0px 40px;
-  box-sizing: border-box;
-  flex-wrap: wrap;
   background: var(--me-body-bg-color);
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 99;
-}
-
-.el-dropdown-link {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-left: auto;
-}
-
-.el-dropdown-link:hover {
-  background-color: #0056b3;
 }
 
 .el-avatar--circle {
@@ -138,7 +115,8 @@ const handleCommand = (command) => {
 
 .chat-header p {
   color: var(--el-text-color-primary);
-  margin-left: 240px;
+  padding: 0;
+  margin: 0;
 }
 
 p .edit-icon {
