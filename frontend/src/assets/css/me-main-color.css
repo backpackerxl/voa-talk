@@ -4,6 +4,7 @@
     --me-table-th-color: #f0f0f0;
     --me-switch-bg-color: #eeeeee;
     --me-share-bg-color: #e9e9eb;
+    --me-report-text-color: #6e7079;
 }
 
 :root {
@@ -112,4 +113,5 @@ html.dark {
     --me-table-th-color: #383838;
     --me-switch-bg-color: #383838;
     --me-share-bg-color: #141414;
+    --me-report-text-color: #b9b8ce;
 }
