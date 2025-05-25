@@ -34,17 +34,33 @@ export function hexToRGB(hex, alpha = 1) {
 
 // 用法 import { hexToRGB } from "@/utils/tools";
 // const sysThemColor = {
-  //   "--el-color-primary": `${hexToRGB(item.bgColor)} !important`,
-  //   "--el-color-primary-light-3": `${hexToRGB(item.bgColor, 0.7)} !important`,
-  //   "--el-color-primary-light-5": `${hexToRGB(item.bgColor, 0.5)} !important`,
-  //   "--el-color-primary-light-7": `${hexToRGB(item.bgColor, 0.3)} !important`,
-  //   "--el-color-primary-light-8": `${hexToRGB(item.bgColor, 0.2)} !important`,
-  //   "--el-color-primary-light-9": `${hexToRGB(item.bgColor, 0.1)} !important`,
-  //   "--el-color-primary-dark-2": `${hexToRGB(item.bgColor)} !important`,
-  // };
-  // let str = "";
-  // for (const [key, value] of Object.entries(sysThemColor)) {
-  //   str += `${key}: ${value};\n`;
-  //   // document.documentElement.classList.add().style.setProperty(key, value);
-  // }
-  // console.log(str);
+//   "--el-color-primary": `${hexToRGB(item.bgColor)} !important`,
+//   "--el-color-primary-light-3": `${hexToRGB(item.bgColor, 0.7)} !important`,
+//   "--el-color-primary-light-5": `${hexToRGB(item.bgColor, 0.5)} !important`,
+//   "--el-color-primary-light-7": `${hexToRGB(item.bgColor, 0.3)} !important`,
+//   "--el-color-primary-light-8": `${hexToRGB(item.bgColor, 0.2)} !important`,
+//   "--el-color-primary-light-9": `${hexToRGB(item.bgColor, 0.1)} !important`,
+//   "--el-color-primary-dark-2": `${hexToRGB(item.bgColor)} !important`,
+// };
+// let str = "";
+// for (const [key, value] of Object.entries(sysThemColor)) {
+//   str += `${key}: ${value};\n`;
+//   // document.documentElement.classList.add().style.setProperty(key, value);
+// }
+// console.log(str);
+
+export function formatDateTime(date) {
+    // 如果传入的是时间戳或字符串，先转换为 Date 对象
+    if (typeof date === 'number' || typeof date === 'string') {
+        date = new Date(date);
+    }
+
+    // 获取年、月、日
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    // 返回格式化后的字符串
+    return `${year}-${month}-${day}`;
+}
+

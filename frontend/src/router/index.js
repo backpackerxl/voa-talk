@@ -50,6 +50,10 @@ const routes = [
                 path: 'model',
                 component: () => import('@/views/async/model/index.vue'),
             },
+            {
+                path: 'report',
+                component: () => import('@/views/async/report/index.vue'),
+            }
         ],
     },
     {

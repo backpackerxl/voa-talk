@@ -728,7 +728,12 @@ const sendMessage = async () => {
             nextTick(function () {
               updateCursorPosition();
               // 自动滚动到最新消息位置
-              scrollTopBottom();
+              if (chatPage.value) {
+                const chatView = chatPage.value;
+                chatView.scrollTo({
+                  top: chatView.scrollHeight,
+                });
+              }
             });
           }
         });
@@ -915,11 +920,10 @@ function scrollTopBottom() {
   line-height: 1.5;
   padding: 0;
   background-color: transparent;
-  caret-color: var(--el-text-color-primary);
+  caret-color: var(--el-color-primary);
 }
 
 .input-container :deep(.el-textarea__inner.is-focus) {
-  padding: 2px 15px;
   border-radius: none !important;
   box-shadow: none !important;
   resize: none;
@@ -1067,6 +1071,7 @@ function scrollTopBottom() {
   border-radius: 6px !important;
   box-shadow: 0 0 0 2px var(--el-color-primary) inset !important;
   background-color: var(--el-bg-color);
+  caret-color: var(--el-color-primary);
   resize: none;
 }
 

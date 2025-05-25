@@ -280,6 +280,11 @@ const isSuperAdmin = computed(() => userRole.value === 1);
 if (isSuperAdmin.value) {
   menuData.value = [
     {
+      url: "/home/report",
+      label: "运行报表",
+      icon: "fa-solid fa-chart-simple",
+    },
+    {
       url: "/home/model",
       label: "模型配置",
       icon: "fa-solid fa-robot",
@@ -448,5 +453,9 @@ onMounted(() => {
 .el-menu {
   height: 200px;
   overflow: auto;
+}
+
+.el-menu i.fa-solid.fa-chart-simple {
+  width: 17.5px;
 }
 </style>
