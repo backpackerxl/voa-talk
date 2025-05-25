@@ -4,25 +4,25 @@
       <el-col :span="8">
         <div class="grid-content header">
           <i class="fa-regular fa-comments"></i>
-          <p>对话数量</p>
+          <p class="name">对话数量</p>
           <p class="number">{{ headerObj.talk_count }}</p>
-          <p>系统使用过程中的所有对话数量</p>
+          <p class="desc">系统使用过程中的所有对话数量</p>
         </div>
       </el-col>
       <el-col :span="8">
         <div class="grid-content header">
           <i class="fa-solid fa-robot"></i>
-          <p>模型数量</p>
+          <p class="name">模型数量</p>
           <p class="number">{{ headerObj.model_count }}</p>
-          <p>系统已接入的大模型的数量</p>
+          <p class="desc">系统已接入的大模型的数量</p>
         </div>
       </el-col>
       <el-col :span="8">
         <div class="grid-content header">
           <i class="fa-solid fa-user-plus"></i>
-          <p>用户数量</p>
+          <p class="name">用户数量</p>
           <p class="number">{{ headerObj.user_count }}</p>
-          <p>系统注册的用户数量</p>
+          <p class="desc">系统注册的用户数量</p>
         </div>
       </el-col>
     </el-row>
@@ -71,7 +71,7 @@
         <div class="grid-content bottom">
           <h2 class="title">Tokens 调用量周榜</h2>
           <div class="box" v-for="(item, index) in topTalkList" :key="index">
-            <p>{{ item.talk_name }}</p>
+            <p><i class="fa-regular fa-comments"></i>{{ item.talk_name }}</p>
             <span>{{ item.tokens }}</span>
           </div>
         </div>
@@ -406,8 +406,9 @@ onMounted(() => {
 }
 
 .grid-content .title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
+  color: var(--el-text-color-regular);
   margin: 0;
   padding: 4px;
   display: flex;
@@ -445,14 +446,24 @@ onMounted(() => {
   line-height: 1.8em;
   margin-left: 40px;
   padding-left: 10px;
-  color: var(--el-text-color-primary);
-  border-left: 1px solid var(--el-color-info-light-5);
+  border-left: 1px solid var(--me-report-text-color);
 }
 
 .header .number {
   font-size: 22px;
   font-weight: 600;
   color: var(--el-color-primary);
+}
+
+.header .name {
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--el-text-color-regular);
+}
+
+.header .desc {
+  font-size: 16px;
+  color: var(--me-report-text-color);
 }
 
 .midle {
@@ -468,5 +479,10 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--el-color-info-light-5);
+  color: var(--me-report-text-color);
+}
+
+.bottom .box i.fa-comments {
+  margin-right: 10px;
 }
 </style>
