@@ -29,6 +29,8 @@ const props = defineProps({
   },
 });
 
+const chartRefs = ref([]);
+
 const chartRef = ref(null);
 let myChart = null;
 
@@ -37,18 +39,30 @@ const initChart = () => {
   if (!chartRef.value) return;
 
   myChart = echarts.init(chartRef.value, store.state.app.them);
-  
+
   myChart.setOption(props.option);
 
   // 监听窗口大小变化
   if (props.autoResize) {
     window.addEventListener("resize", handleResize);
+    // 开始观察
+    observer.observe(chartRef.value);
+    chartRefs.value.push(chartRef.value);
   }
 };
 
+// 创建 ResizeObserver 实例
+const observer = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    handleResize();
+  }
+});
+
 // 处理窗口大小变化
 const handleResize = () => {
-  myChart?.resize();
+  if (myChart) {
+    myChart.resize();
+  }
 };
 
 // 销毁图表
@@ -90,6 +104,9 @@ defineExpose({
 
 onUnmounted(() => {
   destroyChart();
+  chartRefs.value.forEach((item) => {
+    observer.unobserve(item);
+  });
 });
 </script>
 
