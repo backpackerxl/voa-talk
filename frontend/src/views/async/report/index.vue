@@ -165,23 +165,7 @@ const lineChartOption = ref({});
 const barChartOption = ref({});
 
 // 饼图配置
-const pieChartOption = ref({
-  backgroundColor: "transparent",
-  tooltip: {
-    trigger: "item",
-  },
-  legend: {
-    show: false,
-  },
-  series: [
-    {
-      name: "销售渠道",
-      type: "pie",
-      radius: "50%",
-      data: [],
-    },
-  ],
-});
+const pieChartOption = ref({});
 
 function handleBarData() {
   const stm = formatDateTime(barDate.value[0]);
@@ -202,7 +186,7 @@ function handlePieData() {
   const etm = formatDateTime(pieDate.value[1]);
   modelTalks({ stm, etm })
     .then((obj) => {
-      pieChartOption.value.series[0].data = obj.data;
+      setPieOptione(obj.data);
     })
     .catch((err) => {
       console.log(err);
@@ -310,6 +294,26 @@ function setLineOption(xData, yData) {
   };
 }
 
+function setPieOptione(vData) {
+  pieChartOption.value = {
+    backgroundColor: "transparent",
+    tooltip: {
+      trigger: "item",
+    },
+    legend: {
+      show: false,
+    },
+    series: [
+      {
+        name: "销售渠道",
+        type: "pie",
+        radius: "50%",
+        data: vData,
+      },
+    ],
+  };
+}
+
 // 模拟数据加载
 onMounted(() => {
   store.subscribe((mutation, state) => {
@@ -350,7 +354,7 @@ onMounted(() => {
 
   modelTalks({ stm, etm })
     .then((obj) => {
-      pieChartOption.value.series[0].data = obj.data;
+      setPieOptione(obj.data);
     })
     .catch((err) => {
       console.log(err);
