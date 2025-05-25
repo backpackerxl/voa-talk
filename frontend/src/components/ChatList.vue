@@ -267,6 +267,7 @@ onMounted(function () {
   padding-right: 18px;
   border-top: 1px solid var(--el-color-info-light-8);
   background: var(--el-bg-color);
+  box-sizing: border-box;
 }
 
 .header-container .his-icon {
@@ -278,7 +279,7 @@ onMounted(function () {
 }
 
 .infinite-list-wrapper {
-  height: 62vh;
+  height: calc(100vh - 360px);
   padding: 0 5px;
 }
 

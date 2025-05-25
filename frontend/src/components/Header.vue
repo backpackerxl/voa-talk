@@ -1,11 +1,31 @@
 <template>
   <div class="chat-header">
-    <p>
-      {{ props.title }}
-      <el-icon class="edit-icon" v-if="props.title" @click="editTitle"
-        ><EditPen
-      /></el-icon>
-    </p>
+    <div class="opt">
+      <div class="menu" v-if="!props.menu">
+        <svg
+          t="1748089203220"
+          class="menu-icon"
+          viewBox="0 0 1024 1024"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          p-id="8748"
+          width="20"
+          height="20"
+          @click="handleMenu"
+        >
+          <path
+            d="M640 448h128V320h-128v128z m256-384H128a64 64 0 0 0-64 64v704a64 64 0 0 0 64 64h768a64 64 0 0 0 64-64V128a64 64 0 0 0-64-64zM448 768H256a64 64 0 0 1-64-64V256a64 64 0 0 1 64-64h192v576z m384-64a64 64 0 0 1-64 64H576V192h192a64 64 0 0 1 64 64v448z m-192-64h128V512h-128v128z"
+            p-id="8749"
+          ></path>
+        </svg>
+      </div>
+      <p>
+        {{ props.title }}
+        <el-icon class="edit-icon" v-if="props.title" @click="editTitle"
+          ><EditPen
+        /></el-icon>
+      </p>
+    </div>
 
     <div class="opt-menu">
       <ThemSwitch />
@@ -46,13 +66,14 @@ import { useRouter } from "vue-router";
 import { useStore } from "vuex"; // Use Vuex's useStore function
 import { defineEmits, computed, ref } from "vue";
 
-let emit = defineEmits(["submit"]);
-import { EditPen } from "@element-plus/icons-vue";
+let emit = defineEmits(["submit", "open-menu"]);
+import { EditPen, Plus } from "@element-plus/icons-vue";
 import ThemSwitch from "@/components/ThemSwitch";
 
 const props = defineProps({
   id: Number,
   title: String,
+  menu: Boolean,
 });
 
 const isVisible = ref(false);
@@ -63,6 +84,10 @@ const imageUrl = computed(() => store.state.app.avatar || null);
 
 function editTitle() {
   emit("submit", props);
+}
+
+function handleMenu() {
+  emit("open-menu", props);
 }
 
 function handleVisibleChange(visible) {
@@ -117,6 +142,24 @@ const handleCommand = (command) => {
   color: var(--el-text-color-primary);
   padding: 0;
   margin: 0;
+}
+
+.opt {
+  display: flex;
+  align-items: center;
+}
+
+.menu {
+  border-right: 1px solid var(--el-text-color-primary);
+  padding-right: 8px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.menu svg.menu-icon {
+  fill: var(--el-text-color-primary);
+  cursor: pointer;
 }
 
 p .edit-icon {

@@ -1,127 +1,154 @@
 <template>
   <el-container class="me-container">
-    <el-aside width="240px">
-      <h2 class="mb">VoaTalk</h2>
-      <div class="new-chat">
-        <el-button
-          class="open-chat"
-          type="primary"
-          size="large"
-          @click="openNewChat"
-        >
+    <transition name="el-zoom-in-left">
+      <el-aside width="240px" v-if="sliderMenu">
+        <div class="me-header">
+          <h2 class="mb">VoaTalk</h2>
           <svg
+            t="1748089203220"
+            class="menu-icon"
+            viewBox="0 0 1024 1024"
+            version="1.1"
             xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            width="97"
-            height="99.33775329589844"
-            viewBox="0 0 97 99.33775329589844"
-            fill="none"
-            class="logo"
+            p-id="8748"
+            width="20"
+            height="20"
+            @click="handleMenu"
           >
-            <g filter="url(#filter_3_22)">
+            <path
+              d="M640 448h128V320h-128v128z m256-384H128a64 64 0 0 0-64 64v704a64 64 0 0 0 64 64h768a64 64 0 0 0 64-64V128a64 64 0 0 0-64-64zM448 768H256a64 64 0 0 1-64-64V256a64 64 0 0 1 64-64h192v576z m384-64a64 64 0 0 1-64 64H576V192h192a64 64 0 0 1 64 64v448z m-192-64h128V512h-128v128z"
+              p-id="8749"
+            ></path>
+          </svg>
+        </div>
+        <div class="new-chat">
+          <el-button
+            class="open-chat"
+            type="primary"
+            size="large"
+            @click="openNewChat"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="97"
+              height="99.33775329589844"
+              viewBox="0 0 97 99.33775329589844"
+              fill="none"
+              class="logo"
+            >
+              <g filter="url(#filter_3_22)">
+                <path
+                  fill="rgba(255, 255, 255, 1)"
+                  d="M22.3333 16.0013L74.6667 16.0013C84.7919 16.0013 93 24.2095 93 34.3347L93 67.668C93 77.7932 84.7919 86.0013 74.6667 86.0013L22.3333 86.0013C12.2081 86.0013 4 77.7932 4 67.668L4 34.3347C4 24.2095 12.2081 16.0013 22.3333 16.0013ZM22.3333 26.0013C17.731 26.0013 14 29.7323 14 34.3347L14 67.668C14 72.2704 17.731 76.0013 22.3333 76.0013L74.6667 76.0013C79.269 76.0013 83 72.2704 83 67.668L83 34.3347C83 29.7323 79.269 26.0013 74.6667 26.0013L22.3333 26.0013Z"
+                ></path>
+              </g>
               <path
                 fill="rgba(255, 255, 255, 1)"
-                d="M22.3333 16.0013L74.6667 16.0013C84.7919 16.0013 93 24.2095 93 34.3347L93 67.668C93 77.7932 84.7919 86.0013 74.6667 86.0013L22.3333 86.0013C12.2081 86.0013 4 77.7932 4 67.668L4 34.3347C4 24.2095 12.2081 16.0013 22.3333 16.0013ZM22.3333 26.0013C17.731 26.0013 14 29.7323 14 34.3347L14 67.668C14 72.2704 17.731 76.0013 22.3333 76.0013L74.6667 76.0013C79.269 76.0013 83 72.2704 83 67.668L83 34.3347C83 29.7323 79.269 26.0013 74.6667 26.0013L22.3333 26.0013Z"
+                d="M61.3015 17.6882L66.4318 3.59278L75.8288 7.01298L70.6985 21.1084L61.3015 17.6882ZM75.8288 7.01298C74.8843 9.60787 72.0151 10.9458 69.4202 10.0013C66.8253 9.05688 65.4874 6.18767 66.4318 3.59278C67.3763 0.997892 70.2455 -0.340044 72.8404 0.604418C75.4353 1.54888 76.7732 4.41809 75.8288 7.01298Z"
               ></path>
-            </g>
-            <path
-              fill="rgba(255, 255, 255, 1)"
-              d="M61.3015 17.6882L66.4318 3.59278L75.8288 7.01298L70.6985 21.1084L61.3015 17.6882ZM75.8288 7.01298C74.8843 9.60787 72.0151 10.9458 69.4202 10.0013C66.8253 9.05688 65.4874 6.18767 66.4318 3.59278C67.3763 0.997892 70.2455 -0.340044 72.8404 0.604418C75.4353 1.54888 76.7732 4.41809 75.8288 7.01298Z"
-            ></path>
-            <path
-              fill="rgba(255, 255, 255, 1)"
-              d="M33.6985 3.29124L38.8288 17.3866L29.4318 20.8068L24.3015 6.71144L33.6985 3.29124ZM24.3015 6.71144C23.3571 4.11655 24.695 1.24734 27.2899 0.30288C29.8848 -0.641582 32.754 0.696353 33.6985 3.29124C34.6429 5.88613 33.305 8.75534 30.7101 9.69981C28.1152 10.6443 25.246 9.30633 24.3015 6.71144Z"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M40.6018 50.5092L29 41.0013"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M27 57.837L40.3519 51.0013"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M66 43.0013L66 59.0013"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M28 94.3378L67.9994 94.1135"
-            ></path>
-            <defs>
-              <filter
-                id="filter_3_22"
-                x="0"
-                y="14.0013427734375"
-                width="97"
-                height="78"
-                filterUnits="userSpaceOnUse"
-                color-interpolation-filters="sRGB"
-              >
-                <feFlood flood-opacity="0" result="feFloodId_3_22" />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha_3_22"
-                />
-                <feOffset dx="0" dy="2" />
-                <feGaussianBlur stdDeviation="2" />
-                <feComposite in2="hardAlpha_3_22" operator="out" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="feFloodId_3_22"
-                  result="dropShadow_1_3_22"
-                />
-                <feBlend
-                  mode="normal"
-                  in="SourceGraphic"
-                  in2="dropShadow_1_3_22"
-                  result="shape_3_22"
-                />
-              </filter>
-            </defs>
-          </svg>
-          开启新对话</el-button
+              <path
+                fill="rgba(255, 255, 255, 1)"
+                d="M33.6985 3.29124L38.8288 17.3866L29.4318 20.8068L24.3015 6.71144L33.6985 3.29124ZM24.3015 6.71144C23.3571 4.11655 24.695 1.24734 27.2899 0.30288C29.8848 -0.641582 32.754 0.696353 33.6985 3.29124C34.6429 5.88613 33.305 8.75534 30.7101 9.69981C28.1152 10.6443 25.246 9.30633 24.3015 6.71144Z"
+              ></path>
+              <path
+                stroke="rgba(255, 255, 255, 1)"
+                stroke-width="10"
+                stroke-linecap="round"
+                d="M40.6018 50.5092L29 41.0013"
+              ></path>
+              <path
+                stroke="rgba(255, 255, 255, 1)"
+                stroke-width="10"
+                stroke-linecap="round"
+                d="M27 57.837L40.3519 51.0013"
+              ></path>
+              <path
+                stroke="rgba(255, 255, 255, 1)"
+                stroke-width="10"
+                stroke-linecap="round"
+                d="M66 43.0013L66 59.0013"
+              ></path>
+              <path
+                stroke="rgba(255, 255, 255, 1)"
+                stroke-width="10"
+                stroke-linecap="round"
+                d="M28 94.3378L67.9994 94.1135"
+              ></path>
+              <defs>
+                <filter
+                  id="filter_3_22"
+                  x="0"
+                  y="14.0013427734375"
+                  width="97"
+                  height="78"
+                  filterUnits="userSpaceOnUse"
+                  color-interpolation-filters="sRGB"
+                >
+                  <feFlood flood-opacity="0" result="feFloodId_3_22" />
+                  <feColorMatrix
+                    in="SourceAlpha"
+                    type="matrix"
+                    values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                    result="hardAlpha_3_22"
+                  />
+                  <feOffset dx="0" dy="2" />
+                  <feGaussianBlur stdDeviation="2" />
+                  <feComposite in2="hardAlpha_3_22" operator="out" />
+                  <feColorMatrix
+                    type="matrix"
+                    values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                  />
+                  <feBlend
+                    mode="normal"
+                    in2="feFloodId_3_22"
+                    result="dropShadow_1_3_22"
+                  />
+                  <feBlend
+                    mode="normal"
+                    in="SourceGraphic"
+                    in2="dropShadow_1_3_22"
+                    result="shape_3_22"
+                  />
+                </filter>
+              </defs>
+            </svg>
+            开启新对话</el-button
+          >
+        </div>
+        <el-menu
+          :default-active="activeMenu"
+          class="el-menu-vertical-demo"
+          :router="true"
         >
-      </div>
-      <el-menu
-        :default-active="activeMenu"
-        class="el-menu-vertical-demo"
-        :router="true"
-      >
-        <el-menu-item
-          v-for="(menuData, index) in menuData"
-          :key="index"
-          :index="menuData.url"
-          class="menu-item"
-        >
-          <i :class="menuData.icon"></i>
-          <span style="margin-left: 15px">{{ menuData.label }}</span>
-        </el-menu-item>
-      </el-menu>
-      <div class="history-chat">
-        <ChatList :chat="chatObj" @change-data="handleChatData" />
-      </div>
-    </el-aside>
-    <el-container>
-      <el-header
-        ><Header :title="chatTitle" :id="chatId" @submit="submitEditMsg"
-      /></el-header>
-      <el-main id="chatView" class="chat-view"><router-view /></el-main>
-    </el-container>
+          <el-menu-item
+            v-for="(menuData, index) in menuData"
+            :key="index"
+            :index="menuData.url"
+            class="menu-item"
+          >
+            <i :class="menuData.icon"></i>
+            <span style="margin-left: 15px">{{ menuData.label }}</span>
+          </el-menu-item>
+        </el-menu>
+        <div class="history-chat">
+          <ChatList :chat="chatObj" @change-data="handleChatData" />
+        </div>
+      </el-aside>
+    </transition>
+    <transition name="el-fade-in">
+      <el-container>
+        <el-header
+          ><Header
+            :title="chatTitle"
+            :menu="sliderMenu"
+            :id="chatId"
+            @submit="submitEditMsg"
+            @open-menu="openMenu"
+        /></el-header>
+        <el-main id="chatView" class="chat-view"><router-view /></el-main>
+      </el-container>
+    </transition>
   </el-container>
   <el-dialog
     v-model="centerDialogVisible"
@@ -174,6 +201,7 @@ const chatTitleValue = ref("");
 const chatId = ref(-1);
 const store = useStore(); // Initialize the store
 const chatObj = ref(null);
+const sliderMenu = ref(JSON.parse(store.state.app.sliderMenu));
 
 watch(
   () => routePath,
@@ -324,6 +352,16 @@ function submitEditMsg(row) {
   chatId.value = row.id;
 }
 
+function openMenu(row) {
+  sliderMenu.value = !row.menu;
+  store.dispatch("app/setSliderMenu", sliderMenu.value);
+}
+
+function handleMenu() {
+  sliderMenu.value = !sliderMenu.value;
+  store.dispatch("app/setSliderMenu", sliderMenu.value);
+}
+
 onMounted(() => {
   chatId.value = Number(routePath.params.id);
   nextTick(() => {
@@ -353,25 +391,28 @@ onMounted(() => {
   background-color: var(--el-bg-color);
 }
 
-.menu-icon {
-  width: 18px;
-  margin-right: 10px;
-}
-
 .mb {
   font-size: 18px;
   color: var(--el-text-color-primary);
-  margin-left: 20px;
-  margin-top: 20px;
+}
+
+.me-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+.me-header svg.menu-icon {
+  fill: var(--el-text-color-primary);
+  cursor: pointer;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-}
-
-.menu-item el-icon {
-  margin-right: 8px; /* 图标和文字之间的间距 */
 }
 
 .menu-item span {

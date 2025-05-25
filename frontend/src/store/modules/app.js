@@ -6,6 +6,7 @@ const state = {
     sliderData: null,
     them: localStorage.getItem('them') || 'light', // 初始化
     mainColor: localStorage.getItem('mainColor') || null,
+    sliderMenu: localStorage.getItem('sliderMenu') || true,
 };
 
 const mutations = {
@@ -50,6 +51,12 @@ const mutations = {
     },
     CLEAR_MAIN_COLOR(state) {
         state.mainColor = null
+    },
+    SET_SLIDER_MENU(state, sliderMenu) {
+        state.sliderMenu = sliderMenu;
+    },
+    CLEAR_SLIDER_MENU(state) {
+        state.sliderMenu = true
     },
 };
 
@@ -106,6 +113,14 @@ const actions = {
     },
     clearMainColor({ commit }) {
         commit('CLEAR_MAIN_COLOR');
+    },
+    setSliderMenu({ commit }, sliderMenu) {
+        commit('SET_SLIDER_MENU', sliderMenu);
+        localStorage.setItem('sliderMenu', sliderMenu); // 同步保存到 localStorage
+    },
+    clearSliderMenu({ commit }) {
+        commit('CLEAR_SLIDER_MENU');
+        localStorage.setItem('sliderMenu', true);
     },
 };
 

@@ -238,6 +238,24 @@
               </div>
             </div>
           </div>
+          <div class="box-share" v-if="isShare">
+            <!-- 全选控制区域 -->
+            <div class="select-controls">
+              <div class="custom-checkbox">
+                <input
+                  type="checkbox"
+                  id="select-all"
+                  v-model="isAllSelected"
+                  class="checkbox-input"
+                />
+                <label for="select-all" class="checkbox-label">全选</label>
+              </div>
+              <div>
+                <el-button @click="noShare">取消分享</el-button>
+                <el-button @click="copyLink" type="primary">复制链接</el-button>
+              </div>
+            </div>
+          </div>
         </div>
       </template>
     </el-skeleton>
@@ -296,24 +314,6 @@
       </div>
     </div>
   </div>
-  <div class="box-share" v-if="isShare">
-    <!-- 全选控制区域 -->
-    <div class="select-controls">
-      <div class="custom-checkbox">
-        <input
-          type="checkbox"
-          id="select-all"
-          v-model="isAllSelected"
-          class="checkbox-input"
-        />
-        <label for="select-all" class="checkbox-label">全选</label>
-      </div>
-      <div>
-        <el-button @click="noShare">取消分享</el-button>
-        <el-button @click="copyLink" type="primary">复制链接</el-button>
-      </div>
-    </div>
-  </div>
   <el-dialog
     v-model="centerDialogVisible"
     title="删除对话"
@@ -328,7 +328,6 @@
       </div>
     </template>
   </el-dialog>
-  <el-backtop :right="100" :bottom="100" />
 </template>
 
 <script setup>
@@ -1090,8 +1089,6 @@ function scrollTopBottom() {
   height: 45px;
   position: fixed;
   bottom: 0;
-  padding: 10px;
-  background-color: var(--el-bg-color);
 }
 
 .chat-window .message input[type="checkbox"] {
