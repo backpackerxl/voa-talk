@@ -22,6 +22,13 @@ from utils.encryptUtils import aes_decrypt
 snowflake = Snowflake(data_center_id=1, worker_id=2)
 
 sql_pool = {
+    'header_data': text("""
+            SELECT COUNT(su.id) AS num_count FROM sys_user su
+            UNION
+            SELECT COUNT(mc.id) AS num_count FROM model_config mc
+            UNION
+            SELECT COUNT(tl.id) AS num_count FROM talk_logs tl WHERE tl.create_date >= :start_time
+    """),
     'top_talk': text("""
         WITH t1 AS (
                 SELECT tl.talk_id, SUM(tl.tokens) AS tokens 
@@ -89,13 +96,11 @@ def header_data():
     # 创建今年 1 月 1 日 00:00:00 的日期时间对象
     new_year_date = datetime(current_year, 1, 1, 0, 0, 0)
     with DatabaseSession() as session:
-        user_count = session.query(SysUser).count()
-        model_count = session.query(ModelConfig).count()
-        talk_count = session.query(TalkLogs).filter(TalkLogs.create_date >= new_year_date).count()
+        result = session.execute(sql_pool['header_data'], {'start_time': new_year_date}).mappings().all()
         return ReturnTool.SuccessReturn({
-            'user_count': user_count,
-            'model_count': model_count,
-            'talk_count': talk_count,
+            'user_count': int(result[0]['num_count']),
+            'model_count': int(result[1]['num_count']),
+            'talk_count': int(result[2]['num_count']),
         })
 
 

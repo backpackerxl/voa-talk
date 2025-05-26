@@ -5,7 +5,13 @@
         <div class="grid-content header">
           <i class="fa-regular fa-comments"></i>
           <p class="name">对话数量</p>
-          <p class="number">{{ headerObj.talk_count }}</p>
+          <p class="number">
+            {{
+              headerObj.talk_count > 1000
+                ? `${(headerObj.talk_count / 1000).toFixed(1)} k`
+                : headerObj.talk_count
+            }}
+          </p>
           <p class="desc">系统使用过程中的所有对话数量</p>
         </div>
       </el-col>
@@ -72,7 +78,11 @@
           <h2 class="title">Tokens 调用量周榜</h2>
           <div class="box" v-for="(item, index) in topTalkList" :key="index">
             <p><i class="fa-regular fa-comments"></i>{{ item.talk_name }}</p>
-            <span>{{ item.tokens }}</span>
+            <span>{{
+              item.tokens > 1000
+                ? `${(item.tokens / 1000).toFixed(1)} k`
+                : item.tokens
+            }}</span>
           </div>
         </div>
       </el-col>
