@@ -416,8 +416,8 @@ onMounted(() => {
 }
 
 .grid-content .title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--el-text-color-regular);
   margin: 0;
   padding: 4px;
@@ -460,19 +460,19 @@ onMounted(() => {
 }
 
 .header .number {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--el-color-primary);
 }
 
 .header .name {
   font-weight: 600;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--el-text-color-regular);
 }
 
 .header .desc {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--me-report-text-color);
 }
 
