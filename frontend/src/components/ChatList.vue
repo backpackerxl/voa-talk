@@ -291,6 +291,7 @@ onMounted(function () {
 
   .infinite-list-wrapper {
     height: calc(100vh - 220px);
+    padding: 2px 0;
   }
 }
 
