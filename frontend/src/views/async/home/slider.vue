@@ -146,14 +146,20 @@
             @submit="submitEditMsg"
             @open-menu="openMenu"
         /></el-header>
-        <el-main id="chatView" class="chat-view"><router-view /></el-main>
+        <el-main
+          @click="closeMenu"
+          ref="mainView"
+          id="chatView"
+          class="chat-view"
+          ><router-view
+        /></el-main>
       </el-container>
     </transition>
   </el-container>
   <el-dialog
     v-model="centerDialogVisible"
     title="删除对话"
-    width="400"
+    width="380"
     align-center
   >
     <span>确定删除，对话内容将不可恢复</span>
@@ -167,7 +173,7 @@
   <el-dialog
     v-model="editDialogVisible"
     title="编辑对话名称"
-    width="400"
+    width="380"
     align-center
   >
     <el-input size="large" v-model="chatTitleValue" />
@@ -181,15 +187,18 @@
 </template>
 
 <script setup>
-import { onMounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
+import { onMounted, onUnmounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
 import { useStore } from "vuex"; // Use Vuex's useStore function
 import Header from "@/components/Header"; // 引入组件
 import ChatList from "@/components/ChatList"; // 引入组件
-import { queryTalkName } from "@/api/aiChat";
+import { queryTalkName, editChatName, deleteChat } from "@/api/aiChat";
 
 import { Plus } from "@element-plus/icons-vue";
 import router from "@/router";
 import { useRoute } from "vue-router";
+// using es modules
+import device from "current-device";
+import Hammer from "hammerjs";
 
 const routePath = useRoute();
 
@@ -201,7 +210,13 @@ const chatTitleValue = ref("");
 const chatId = ref(-1);
 const store = useStore(); // Initialize the store
 const chatObj = ref(null);
+const mainView = ref(null);
 const sliderMenu = ref(JSON.parse(store.state.app.sliderMenu));
+
+// 移动端默认关闭侧边栏
+if (device.mobile()) {
+  sliderMenu.value = false;
+}
 
 watch(
   () => routePath,
@@ -231,6 +246,9 @@ function handleChatData(data) {
     default:
       chatId.value = data.chatId;
       chatTitle.value = data.chatTitle;
+      if (device.mobile()) {
+        sliderMenu.value = false;
+      }
       break;
   }
 }
@@ -277,7 +295,7 @@ watch(
 
 const isSuperAdmin = computed(() => userRole.value === 1);
 
-if (isSuperAdmin.value) {
+if (isSuperAdmin.value && !device.mobile()) {
   menuData.value = [
     {
       url: "/home/report",
@@ -305,12 +323,13 @@ async function deleteUserOk() {
     type: "delete",
   };
   // console.log(chatObj.value);
-  centerDialogVisible.value = false;
+  await deleteChat({ talk_id: chatId.value + "" });
   if (chatId.value === +routePath.params.id) {
     chatTitle.value = "新对话";
     chatId.value = -1;
     router.replace("/home/chat");
   }
+  centerDialogVisible.value = false;
 }
 
 function handleDeleteMsg(row) {
@@ -331,6 +350,9 @@ function openNewChat() {
   router.replace("/home/chat");
   document.documentElement.querySelector("title").innerText =
     chatTitle.value || "VoaTalk 你的Ai助手";
+  if (device.mobile()) {
+    sliderMenu.value = false;
+  }
 }
 
 async function editMsgOk() {
@@ -339,8 +361,11 @@ async function editMsgOk() {
     talk_name: chatTitleValue.value,
     type: "update",
   };
+  // console.log(chatObj.value);
+  await editChatName(chatObj.value);
   if (chatId.value === +routePath.params.id) {
     chatTitle.value = chatTitleValue.value;
+    document.documentElement.querySelector("title").innerText = chatTitle.value;
   }
   editDialogVisible.value = false;
 }
@@ -360,6 +385,12 @@ function submitEditMsg(row) {
 function openMenu(row) {
   sliderMenu.value = !row.menu;
   store.dispatch("app/setSliderMenu", sliderMenu.value);
+}
+
+function closeMenu() {
+  if (sliderMenu.value && device.mobile()) {
+    handleMenu();
+  }
 }
 
 function handleMenu() {
@@ -383,7 +414,27 @@ onMounted(() => {
           console.log(err);
         });
     }
+
+    if (device.mobile()) {
+      const hammer = new Hammer(mainView.value.$el);
+      // 启用滑动手势
+      hammer
+        .get("pan")
+        .set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 });
+      // 监听滑动手势
+      hammer.on("panright", (e) => {
+        console.log(e.center.x);
+        if (e.center.x < 50) {
+          handleMenu();
+        }
+      });
+    }
   });
+});
+
+onUnmounted(() => {
+  // 清理 Hammer 实例
+  mainView.value.$el && new Hammer(mainView.value.$el).destroy();
 });
 </script>
 
@@ -394,6 +445,21 @@ onMounted(() => {
 
 .el-aside {
   background-color: var(--el-bg-color);
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+  .el-aside {
+    position: absolute;
+  }
+
+  .infinite-list-wrapper .list-item {
+    height: 48px;
+  }
+}
+
+.el-header {
+  --el-header-padding: 0px;
 }
 
 .mb {
@@ -451,7 +517,7 @@ onMounted(() => {
 }
 
 .el-menu {
-  height: 200px;
+  max-height: 200px;
   overflow: auto;
 }
 

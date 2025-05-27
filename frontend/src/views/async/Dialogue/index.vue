@@ -1,6 +1,6 @@
 <template>
   <div ref="chatPage" class="chat-page">
-    <el-skeleton style="width: 43vw" :loading="openLoading" animated>
+    <el-skeleton :loading="openLoading" animated>
       <template #template>
         <el-skeleton-item
           variant="text"
@@ -352,6 +352,7 @@ import "@/assets/css/github-markdown.css";
 import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
 import Logo from "@/components/Logo";
+import * as clipboard from "clipboard-polyfill";
 
 const routePath = useRoute();
 
@@ -468,14 +469,15 @@ async function copyLink() {
   };
   const obj = await shareChat(params);
   let req_url = window.location.origin;
-  navigator.clipboard
-    .writeText(req_url + "/thread/" + obj.data.share_id)
-    .then(() => {
+  clipboard.writeText(req_url + "/thread/" + obj.data.share_id).then(
+    () => {
       ElMessage.success("链接复制成功");
-    })
-    .catch((err) => {
+    },
+    () => {
+      ElMessage.error("链接复制失败");
       console.error("无法复制链接:", err);
-    });
+    }
+  );
   noShare();
 }
 
@@ -634,9 +636,8 @@ function rotateChat(id, que, optId) {
 }
 
 function copyContent(event, content) {
-  navigator.clipboard
-    .writeText(content)
-    .then(() => {
+  clipboard.writeText(content).then(
+    () => {
       const oCopy = event.target;
       oCopy.className = "fas fa-check"; // 切换为成功图标
       oCopy.style.color = "#28a745"; // 成功颜色
@@ -646,10 +647,12 @@ function copyContent(event, content) {
         oCopy.className = "fa-solid fa-copy";
         oCopy.style.color = "rgb(117 116 116)"; // 恢复原样
       }, 1000); // 2 秒后恢复原样
-    })
-    .catch((err) => {
-      console.error("无法复制代码:", err);
-    });
+    },
+    () => {
+      ElMessage.error("链接复制失败");
+      console.log("error!");
+    }
+  );
 }
 
 function handleShiftEnter(e) {
@@ -839,6 +842,10 @@ function scrollTopBottom() {
   overflow: auto;
   height: calc(100vh - 190px);
   margin: 0 2px;
+}
+
+.el-skeleton {
+  width: 43vw;
 }
 
 .chat-window {
@@ -1111,5 +1118,53 @@ function scrollTopBottom() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .chat-window {
+    width: 70vw;
+  }
+
+  .input-container {
+    width: 70vw;
+  }
+
+  .box-share {
+    width: 70vw;
+  }
+
+  .el-skeleton {
+    width: 70vw;
+  }
+
+  .user-message span {
+    max-width: 54vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-window {
+    width: 95vw;
+  }
+
+  .chat-page {
+    height: calc(100vh - 240px);
+  }
+
+  .input-container {
+    width: 95vw;
+  }
+
+  .box-share {
+    width: 95vw;
+  }
+
+  .el-skeleton {
+    width: 95vw;
+  }
+
+  .user-message span {
+    max-width: 60vw;
+  }
 }
 </style>

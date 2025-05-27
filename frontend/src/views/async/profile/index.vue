@@ -22,11 +22,11 @@
     </div>
 
     <h3 class="nick-name">{{ welcomStr }}</h3>
-    <el-form label-position="right" label-width="60px" style="width: 400px">
+    <el-form label-position="top" style="width: 330px">
       <el-form-item label="昵称" prop="nickName">
         <el-input
           v-model="welcomStr"
-          placeholder="请输入邮箱，系统将发送修改密码的邮件"
+          placeholder="请输入新的昵称"
           clearable
           size="large"
         ></el-input>
@@ -232,11 +232,15 @@ async function saveUserInfo() {
   }
 }
 
-let oldTag = ref(JSON.parse(store.state.app.mainColor).tag);
+let oldTag = ref(colorList.value[0].tag);
+
+if (store.state.app.mainColor) {
+  oldTag = ref(JSON.parse(store.state.app.mainColor).tag);
+}
 
 function selectColor(item) {
   checkThemId.value = item.id;
-  console.log(oldTag.value);
+  // console.log(oldTag.value);
   if (oldTag.value) {
     document.documentElement.classList.remove(oldTag.value);
   }
@@ -253,6 +257,7 @@ onMounted(function () {
   if (colorObj) {
     checkThemId.value = JSON.parse(colorObj).id;
   }
+  document.documentElement.querySelector("title").innerText = "我的主页";
 });
 </script>
 
@@ -261,7 +266,8 @@ onMounted(function () {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
+  margin-top: 20px;
+  height: calc(100vh - 120px);
 }
 
 :deep(.el-upload.el-upload--picture-card),
@@ -315,26 +321,26 @@ onMounted(function () {
   border-radius: 50%;
 }
 
-.button-group,
-.el-input {
-  width: 85%;
-}
-
 .button-group .el-button {
   margin: 15px 0;
-  width: 100% !important;
+  width: 330px;
   border: none;
   font-size: 16px;
 }
 
 :deep(.el-input__wrapper) {
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 4px var(--el-input-border-color);
+  transition: all 0.1s;
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 3px var(--el-input-border-color) inset !important;
   background-color: transparent !important;
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 4px var(--el-color-primary) !important;
+  box-shadow: 0 0 0 3px var(--el-color-primary) inset !important;
+}
+
+:deep(.el-form-item.is-error .el-input__wrapper) {
+  box-shadow: 0 0 0 3px var(--el-color-danger) inset !important;
 }
 
 .opt {
@@ -343,31 +349,31 @@ onMounted(function () {
 }
 
 .opt .el-button {
-  width: 280px;
+  width: 330px;
   margin: 10px 0;
   border: none;
   box-shadow: none;
 }
 
 .them-color {
-  width: 280px;
+  width: 330px;
   display: flex;
   flex-wrap: wrap;
 }
 
 .them-color .item {
-  width: 45px;
-  height: 45px;
-  border-radius: 4px;
-  margin: 5px;
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  margin: 8px;
   cursor: pointer;
 }
 
 .them-color .item i {
-  line-height: 45px;
+  line-height: 50px;
   text-align: center;
   color: #fff;
-  font-size: 24px;
+  font-size: 26px;
   display: none;
 }
 
@@ -385,7 +391,7 @@ onMounted(function () {
 .opt p::after {
   position: absolute;
   content: "";
-  background: var(--el-text-color-primary);
+  background: var(--me-report-text-color);
   height: 1px;
   width: 35%;
   top: 50%;
@@ -397,9 +403,9 @@ onMounted(function () {
 }
 
 .opt p::before {
-  left: 0;
+  left: 1px;
 }
 .opt p::after {
-  right: 0;
+  right: 1px;
 }
 </style>

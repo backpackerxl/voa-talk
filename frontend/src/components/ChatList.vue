@@ -1,7 +1,7 @@
 <template>
   <div class="header-container">
     <p>历史对话</p>
-    <div class="his-icon">
+    <div class="his-icon" v-if="showHis">
       <el-tooltip
         class="box-item"
         effect="light"
@@ -95,7 +95,9 @@ const props = defineProps({
 // 定义自定义事件
 const emits = defineEmits(["change-data"]);
 
-import { aiChatList, deleteChat, editChatName } from "@/api/aiChat";
+import { aiChatList } from "@/api/aiChat";
+// using es modules
+import device from "current-device";
 
 const count = ref(0);
 const totalCount = ref(0);
@@ -109,6 +111,7 @@ const contentRefs = ref([]);
 const isVisible = ref(false);
 const moreIcon = ref(null);
 const talkIdOn = ref(-1);
+const showHis = ref(!device.mobile());
 
 function handleVisibleChange(visible) {
   isVisible.value = visible;
@@ -218,7 +221,6 @@ watch(
 );
 
 async function deleteUserOk(chat) {
-  await deleteChat({ talk_id: chat.talk_id + "" });
   tableData.value = tableData.value.filter(
     (item) => item.talk_id !== chat.talk_id
   );
@@ -234,7 +236,6 @@ function handleDeleteMsg(row) {
 }
 
 async function editMsgOk(chat) {
-  await editChatName(chat);
   tableData.value.forEach((item) => {
     if (item.talk_id === chat.talk_id) {
       item.talk_name = chat.talk_name;
@@ -281,6 +282,16 @@ onMounted(function () {
 .infinite-list-wrapper {
   height: calc(100vh - 360px);
   padding: 0 5px;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    margin-top: 50px;
+  }
+
+  .infinite-list-wrapper {
+    height: calc(100vh - 220px);
+  }
 }
 
 .infinite-list-wrapper .list {

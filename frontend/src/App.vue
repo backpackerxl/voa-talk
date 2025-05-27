@@ -1,5 +1,5 @@
 <template>
-    <router-view />
+  <router-view />
 </template>
 
 <script setup>
@@ -19,6 +19,10 @@ onMounted(function () {
 });
 </script>
 <style>
+html {
+  overflow: hidden;
+}
+
 body {
   background-color: var(--me-body-bg-color);
   margin: 0;
@@ -44,6 +48,14 @@ body {
 /* 滚动条滑块悬停状态 */
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--el-color-info-light-5);
+}
+
+@media (max-width: 768px) {
+  /* 滚动条整体样式 */
+  ::-webkit-scrollbar {
+    width: 4px; /* 垂直滚动条宽度 */
+    height: 4px; /* 水平滚动条高度 */
+  }
 }
 
 .pre-container {

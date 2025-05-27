@@ -5,6 +5,9 @@ import hljs from "highlight.js";
 import html from 'highlight.js/lib/languages/xml';
 import javascript from 'highlight.js/lib/languages/javascript';
 import css from 'highlight.js/lib/languages/css';
+import * as clipboard from "clipboard-polyfill";
+import { ElMessage } from "element-plus";
+
 // 注册语言
 hljs.registerLanguage('html', html);
 hljs.registerLanguage('javascript', javascript);
@@ -91,20 +94,33 @@ export function addCopy() {
     document.querySelectorAll('i.copy-icon').forEach(el => {
         // 绑定点击事件
         el.addEventListener("click", () => {
-            navigator.clipboard
-                .writeText(el.parentElement.nextElementSibling.innerText)
-                .then(() => {
+            clipboard.writeText(el.parentElement.nextElementSibling.innerText).then(
+                () => {
                     el.className = "copy-icon fas fa-check"; // 切换为成功图标
                     el.style.color = "#28a745"; // 成功颜色
+                    ElMessage.success("复制成功");
 
                     setTimeout(() => {
                         el.className = "copy-icon fa-solid fa-copy";
                         el.style.color = "rgb(121, 122, 123)"; // 恢复原样
                     }, 2000); // 2 秒后恢复原样
-                })
-                .catch((err) => {
-                    console.error("无法复制代码:", err);
-                });
+                },
+                () => { ElMessage.error("复制失败"); console.error("无法复制代码:", err); }
+            );
+            // navigator.clipboard
+            //     .writeText(el.parentElement.nextElementSibling.innerText)
+            //     .then(() => {
+            //         el.className = "copy-icon fas fa-check"; // 切换为成功图标
+            //         el.style.color = "#28a745"; // 成功颜色
+
+            //         setTimeout(() => {
+            //             el.className = "copy-icon fa-solid fa-copy";
+            //             el.style.color = "rgb(121, 122, 123)"; // 恢复原样
+            //         }, 2000); // 2 秒后恢复原样
+            //     })
+            //     .catch((err) => {
+            //         console.error("无法复制代码:", err);
+            //     });
         });
     });
 

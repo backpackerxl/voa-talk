@@ -249,6 +249,7 @@ const handleDelete = (row) => {
 
 onMounted(() => {
   fetchData();
+   document.documentElement.querySelector("title").innerText = "模型配置";
 });
 </script>
 
@@ -261,6 +262,12 @@ onMounted(() => {
 
 .body .data-inner {
   width: 65vw;
+}
+
+@media (max-width: 1024px) {
+  .body .data-inner {
+    width: 95vw;
+  }
 }
 
 .header {

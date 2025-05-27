@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <el-row :gutter="24">
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="grid-content header">
           <i class="fa-regular fa-comments"></i>
           <p class="name">对话数量</p>
@@ -15,7 +15,7 @@
           <p class="desc">系统使用过程中的所有对话数量</p>
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="grid-content header">
           <i class="fa-solid fa-robot"></i>
           <p class="name">模型数量</p>
@@ -23,12 +23,20 @@
           <p class="desc">系统已接入的大模型的数量</p>
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="grid-content header">
           <i class="fa-solid fa-user-plus"></i>
           <p class="name">用户数量</p>
           <p class="number">{{ headerObj.user_count }}</p>
           <p class="desc">系统注册的用户数量</p>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="grid-content header">
+          <i class="fa-solid fa-envelope"></i>
+          <p class="name">邮件数量</p>
+          <p class="number">8</p>
+          <p class="desc">系统发送的邮件数量</p>
         </div>
       </el-col>
     </el-row>
@@ -326,6 +334,7 @@ function setPieOptione(vData) {
 
 // 模拟数据加载
 onMounted(() => {
+  document.documentElement.querySelector("title").innerText = "运行报表";
   store.subscribe((mutation, state) => {
     if (mutation.type === "app/SET_THEM") {
       barChart.value && barChart.value.toggleThem();
@@ -482,6 +491,17 @@ onMounted(() => {
 
 .bottom {
   height: 360px;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 20px;
+  }
+
+  .header {
+    margin-top: 100px;
+    height: 130px;
+  }
 }
 
 .bottom .box {

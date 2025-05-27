@@ -19,12 +19,14 @@
           ></path>
         </svg>
       </div>
-      <p>
-        {{ props.title }}
+      <div class="title-text">
+        <p :class="!props.menu ? 'has' : 'no'">
+          {{ props.title }}
+        </p>
         <el-icon class="edit-icon" v-if="props.title" @click="editTitle"
           ><EditPen
         /></el-icon>
-      </p>
+      </div>
     </div>
 
     <div class="opt-menu">
@@ -132,15 +134,45 @@ const handleCommand = (command) => {
   justify-content: space-between;
   align-items: center;
   background: var(--me-body-bg-color);
+  padding: 0 15px;
 }
 
 .el-avatar--circle {
   outline: none;
 }
 
+.title-text {
+  display: flex;
+  align-items: center;
+}
+
+.title-text .edit-icon {
+  opacity: 0;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.title-text:hover .edit-icon {
+  opacity: 1;
+}
+
+.chat-header p.no {
+  border-left: 0;
+}
+
+.chat-header p.has {
+  border-left: 1px solid var(--el-text-color-primary);
+}
+
 .chat-header p {
+  border-left: 1px solid var(--el-text-color-primary);
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--el-text-color-primary);
   padding: 0;
+  padding-left: 6px;
   margin: 0;
 }
 
@@ -150,9 +182,7 @@ const handleCommand = (command) => {
 }
 
 .menu {
-  border-right: 1px solid var(--el-text-color-primary);
-  padding-right: 8px;
-  margin-right: 8px;
+  margin-right: 6px;
   display: flex;
   align-items: center;
 }
@@ -162,19 +192,16 @@ const handleCommand = (command) => {
   cursor: pointer;
 }
 
-p .edit-icon {
-  opacity: 0;
-  cursor: pointer;
-}
-
-p:hover .edit-icon {
-  opacity: 1;
-}
-
 .opt-menu {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 120px;
+  width: 110px;
+}
+
+@media (max-width: 768px) {
+  .chat-header p {
+    max-width: 180px;
+  }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="warper">
-      <el-skeleton style="width: 43vw" :loading="openLoading" animated>
+      <el-skeleton :loading="openLoading" animated>
         <template #template>
           <el-skeleton-item
             variant="text"
@@ -22,71 +22,57 @@
           />
           <el-skeleton-item
             variant="text"
-            style="width: 90%; height: 80px; margin-top: 20px"
-          />
-          <el-skeleton-item
-            variant="text"
-            style="width: 70%; height: 45px; margin-left: 20%; margin-top: 20px"
-          />
-          <el-skeleton-item
-            variant="text"
             style="width: 90%; height: 240px; margin-top: 20px"
-          />
-          <el-skeleton-item
-            variant="text"
-            style="width: 50%; height: 45px; margin-left: 40%; margin-top: 20px"
-          />
-          <el-skeleton-item
-            variant="text"
-            style="width: 90%; height: 200px; margin-top: 20px"
           />
         </template>
         <template #default>
-          <div class="header">
-            <h1>{{ title }}</h1>
-            <p v-if="messages.length > 0">
-              {{ shareTime }} • 内容由 AI 生成，不能完全保障真实
-            </p>
-          </div>
-          <div class="content-body">
-            <div
-              v-for="(message, index) in messages"
-              :key="index"
-              class="message"
-            >
-              <div v-if="message.type === 'user'" class="user-message">
-                <span>{{ message.content }}</span>
-                <div class="tools">
-                  <el-tooltip
-                    class="box-item"
-                    effect="light"
-                    content="复制"
-                    placement="top"
-                  >
-                    <i
-                      @click="copyContent($event, message.content)"
-                      class="fa-solid fa-copy"
-                    ></i>
-                  </el-tooltip>
+          <div class="inner-container">
+            <div class="header">
+              <h1>{{ title }}</h1>
+              <p v-if="messages.length > 0">
+                {{ shareTime }} • 内容由 AI 生成，不能完全保障真实
+              </p>
+            </div>
+            <div class="content-body">
+              <div
+                v-for="(message, index) in messages"
+                :key="index"
+                class="message"
+              >
+                <div v-if="message.type === 'user'" class="user-message">
+                  <span>{{ message.content }}</span>
+                  <div class="tools">
+                    <el-tooltip
+                      class="box-item"
+                      effect="light"
+                      content="复制"
+                      placement="top"
+                    >
+                      <i
+                        @click="copyContent($event, message.content)"
+                        class="fa-solid fa-copy"
+                      ></i>
+                    </el-tooltip>
+                  </div>
                 </div>
-              </div>
-              <div class="markdown-body" v-else>
-                <div
-                  class="inner"
-                  v-html="markdwonToHTML(message.content)"
-                ></div>
-                <div class="tools">
-                  <el-tooltip
-                    class="box-item"
-                    effect="light"
-                    content="复制"
-                    placement="top"
-                  >
-                    <i
-                      @click="copyContent($event, message.content)"
-                      class="fa-solid fa-copy"
-                    ></i>
-                  </el-tooltip>
+                <div class="markdown-body" v-else>
+                  <div
+                    class="inner"
+                    v-html="markdwonToHTML(message.content)"
+                  ></div>
+                  <div class="tools">
+                    <el-tooltip
+                      class="box-item"
+                      effect="light"
+                      content="复制"
+                      placement="top"
+                    >
+                      <i
+                        @click="copyContent($event, message.content)"
+                        class="fa-solid fa-copy"
+                      ></i>
+                    </el-tooltip>
+                  </div>
                 </div>
               </div>
             </div>
@@ -116,6 +102,7 @@ import { ChatDotSquare } from "@element-plus/icons-vue";
 import router from "@/router";
 
 import { getRedisChat } from "@/api/aiChat";
+import * as clipboard from "clipboard-polyfill";
 
 const routePath = useRoute();
 const messages = ref([]);
@@ -128,9 +115,8 @@ function goHome() {
 }
 
 function copyContent(event, content) {
-  navigator.clipboard
-    .writeText(content)
-    .then(() => {
+  clipboard.writeText(content).then(
+    () => {
       const oCopy = event.target;
       oCopy.className = "fas fa-check"; // 切换为成功图标
       oCopy.style.color = "#28a745"; // 成功颜色
@@ -140,10 +126,12 @@ function copyContent(event, content) {
         oCopy.className = "fa-solid fa-copy";
         oCopy.style.color = "rgb(117 116 116)"; // 恢复原样
       }, 1000); // 2 秒后恢复原样
-    })
-    .catch((err) => {
-      console.error("无法复制代码:", err);
-    });
+    },
+    () => {
+      ElMessage.error("链接复制失败");
+      console.log("error!");
+    }
+  );
 }
 
 onMounted(async function () {
@@ -175,16 +163,26 @@ onMounted(async function () {
   width: 100%;
   display: flex;
   justify-content: center;
+  overflow: auto;
+  height: 100vh;
 }
 
 .warper {
   width: 43vw;
-  box-shadow: 0 8px 12px var(--me-share-bg-color);
-  margin: 40px 0px;
+}
+
+.warper .inner-container {
+  box-shadow: 0 6px 12px 0.5px var(--me-share-bg-color);
+  margin: 80px 0px;
   border-radius: 24px;
   padding: 48px;
   box-sizing: border-box;
-  min-height: calc(100vh - 80px);
+}
+
+.el-skeleton {
+  margin: 80px 0px;
+  padding: 48px;
+  width: 43vw;
 }
 
 .to-voa {
@@ -265,5 +263,41 @@ onMounted(async function () {
   padding: 6px;
   background: rgb(117, 116, 116, 0.1);
   border-radius: 4px;
+}
+
+@media (max-width: 1024px) {
+  .warper {
+    width: 70vw;
+  }
+
+  .warper .inner-container {
+    padding: 15px;
+  }
+
+  .el-skeleton {
+    width: 70vw;
+  }
+
+  .user-message span {
+    max-width: 54vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .warper {
+    width: 95vw;
+  }
+
+  .warper .inner-container {
+    padding: 15px;
+  }
+
+  .el-skeleton {
+    width: 95vw;
+  }
+
+  .user-message span {
+    max-width: 60vw;
+  }
 }
 </style>

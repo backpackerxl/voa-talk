@@ -144,17 +144,16 @@ const handleResetPwd = async () => {
 }
 
 :deep(.el-input__wrapper) {
-  --el-input-height: 46px;
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 4px var(--el-input-border-color) inset !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 3px var(--el-input-border-color) inset !important;
   background-color: transparent !important;
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 4px var(--el-color-primary) inset !important;
+  box-shadow: 0 0 0 3px var(--el-color-primary) inset !important;
 }
 
 :deep(.el-form-item.is-error .el-input__wrapper) {
-  box-shadow: 0 0 0 4px var(--el-color-danger) inset !important;
+  box-shadow: 0 0 0 3px var(--el-color-danger) inset !important;
 }
 </style>

@@ -304,18 +304,17 @@ export default {
 }
 
 :deep(.el-input__wrapper) {
-  --el-input-height: 46px;
-  border-radius: 8px !important;
-  box-shadow: 0 0 0 4px var(--el-input-border-color) inset !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 3px var(--el-input-border-color) inset !important;
   background-color: transparent !important;
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 4px var(--el-color-primary) inset !important;
+  box-shadow: 0 0 0 3px var(--el-color-primary) inset !important;
 }
 
 :deep(.el-form-item.is-error .el-input__wrapper) {
-  box-shadow: 0 0 0 4px var(--el-color-danger) inset !important;
+  box-shadow: 0 0 0 3px var(--el-color-danger) inset !important;
 }
 
 .captcha-input {
@@ -324,7 +323,7 @@ export default {
 
 .captcha-image {
   width: 35%; /* 图片占据一半宽度 */
-  height: 46px; /* 您可以根据需要调整 */
+  height: 40px; /* 您可以根据需要调整 */
   text-align: right;
 }
 
