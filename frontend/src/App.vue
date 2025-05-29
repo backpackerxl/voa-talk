@@ -6,9 +6,11 @@
 import store from "@/store";
 import { onMounted } from "vue";
 import "@/assets/css/me-main-color.css";
+import { handleThem } from "@/utils/tools";
 
 onMounted(function () {
-  document.documentElement.className = store.state.app.them;
+  const item = JSON.parse(store.state.app.them);
+  handleThem(item);
   let colorObj = store.state.app.mainColor;
   if (colorObj) {
     let tag = JSON.parse(colorObj).tag;
@@ -59,14 +61,16 @@ body {
 }
 
 .pre-container {
-  border-radius: 10px;
+  border-radius: 6px;
   background: var(--me-bg-color);
+  border: 1px solid var(--borderColor-default);
+  margin: 12px 0;
 }
 
 .pre-header {
-  height: 30px;
+  height: 32px;
   padding: 0 10px;
-  color: var(--el-text-color-primary);
+  color: var(--me-report-text-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -75,7 +79,7 @@ body {
 
 .pre-header .pre-button {
   padding: 4px;
-  color: var(--el-text-color-primary);
+  color: var(--me-report-text-color);
   outline: none;
   border: none;
   background: transparent;

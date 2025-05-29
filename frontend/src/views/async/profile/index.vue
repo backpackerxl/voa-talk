@@ -22,8 +22,33 @@
     </div>
 
     <h3 class="nick-name">{{ welcomStr }}</h3>
-    <el-form label-position="top" style="width: 330px">
-      <el-form-item label="昵称" prop="nickName">
+    <el-form label-position="left" style="width: 330px">
+      <el-form-item label="主题: " class="them-item">
+        <el-dropdown>
+          <el-button plain>
+            <div class="me-icon">
+              <span :class="them.icon"></span>
+            </div>
+            &nbsp;{{ them.label
+            }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="(item, index) in themList"
+                :key="index"
+                @click="changeThem(item)"
+              >
+                <div class="me-icon">
+                  <span :class="item.icon"></span>
+                </div>
+                &nbsp;{{ item.label }}</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-form-item>
+      <el-form-item label="昵称: " prop="nickName">
         <el-input
           v-model="welcomStr"
           placeholder="请输入新的昵称"
@@ -98,6 +123,8 @@ import router from "@/router";
 import { updateUser } from "@/api/apiUser";
 import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
+import { handleThem } from "@/utils/tools";
+import { ArrowDown } from "@element-plus/icons-vue";
 
 const avatarUrl = store.state.app.avatar;
 const imageUrl = ref(avatarUrl);
@@ -177,6 +204,30 @@ const colorList = ref([
 ]);
 
 const uploadRef = ref(null);
+const them = ref(JSON.parse(store.state.app.them));
+const themList = ref([
+  {
+    them: "light",
+    label: "浅色",
+    icon: "icon theme-light",
+  },
+  {
+    them: "dark",
+    label: "深色",
+    icon: "icon theme-dark",
+  },
+  {
+    them: "os",
+    label: "跟随系统",
+    icon: "icon theme-os",
+  },
+]);
+
+function changeThem(item) {
+  handleThem(item);
+  them.value = item;
+  store.dispatch("app/setThem", JSON.stringify(item));
+}
 
 function handleSuccess(response, file, fileList) {
   saveUrl.value = response.image_url;
@@ -407,5 +458,37 @@ onMounted(function () {
 }
 .opt p::after {
   right: 1px;
+}
+
+:deep(.them-item .el-form-item__content) {
+  justify-content: end;
+}
+
+.me-icon .icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  background-color: var(--me-report-text-color);
+}
+
+.el-dropdown-menu__item:not(.is-disabled):focus .me-icon .icon,
+.el-dropdown-menu__item:not(.is-disabled):hover .me-icon .icon,
+.el-button:hover .me-icon .icon {
+  background-color: var(--el-dropdown-menuItem-hover-color);
+}
+
+.me-icon .icon.theme-os {
+  -webkit-mask-image: url("@/assets/images/theme-os.svg");
+  mask-image: url("@/assets/images/theme-os.svg");
+}
+
+.me-icon .icon.theme-light {
+  -webkit-mask-image: url("@/assets/images/theme-light.svg");
+  mask-image: url("@/assets/images/theme-light.svg");
+}
+
+.me-icon .icon.theme-dark {
+  -webkit-mask-image: url("@/assets/images/theme-dark.svg");
+  mask-image: url("@/assets/images/theme-dark.svg");
 }
 </style>

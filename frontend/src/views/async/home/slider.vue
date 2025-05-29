@@ -187,7 +187,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
+import { onMounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
 import { useStore } from "vuex"; // Use Vuex's useStore function
 import Header from "@/components/Header"; // 引入组件
 import ChatList from "@/components/ChatList"; // 引入组件
@@ -431,11 +431,6 @@ onMounted(() => {
     }
   });
 });
-
-onUnmounted(() => {
-  // 清理 Hammer 实例
-  mainView.value.$el && new Hammer(mainView.value.$el).destroy();
-});
 </script>
 
 <style scoped>
@@ -445,6 +440,7 @@ onUnmounted(() => {
 
 .el-aside {
   background-color: var(--el-bg-color);
+  height: 100vh;
   z-index: 999;
 }
 

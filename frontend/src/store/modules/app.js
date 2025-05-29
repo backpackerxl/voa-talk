@@ -4,7 +4,11 @@ const state = {
     nickName: localStorage.getItem('nickName') || '', // 初始化
     avatar: localStorage.getItem('avatar') || '', // 初始化
     sliderData: null,
-    them: localStorage.getItem('them') || 'light', // 初始化
+    them: localStorage.getItem('them') || JSON.stringify({
+        them: "light",
+        label: "浅色",
+        icon: "fa-solid fa-sun",
+    }), // 初始化
     mainColor: localStorage.getItem('mainColor') || null,
     sliderMenu: localStorage.getItem('sliderMenu') || true,
 };
@@ -44,7 +48,11 @@ const mutations = {
         state.them = them;
     },
     CLEAR_THEM(state) {
-        state.them = 'light';
+        state.them = JSON.stringify({
+            them: "light",
+            label: "浅色",
+            icon: "fa-solid fa-sun",
+        });
     },
     SET_MAIN_COLOR(state, colorObj) {
         state.mainColor = colorObj;
@@ -105,7 +113,11 @@ const actions = {
     },
     clearThem({ commit }) {
         commit('CLEAR_THEM');
-        localStorage.setItem('them', 'light'); // 同步保存到 localStorage
+        localStorage.setItem('them', JSON.stringify({
+            them: "light",
+            label: "浅色",
+            icon: "fa-solid fa-sun",
+        })); // 同步保存到 localStorage
     },
     setMainColor({ commit }, colorObj) {
         commit('SET_MAIN_COLOR', colorObj);

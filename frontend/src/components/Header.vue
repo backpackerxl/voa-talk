@@ -30,7 +30,6 @@
     </div>
 
     <div class="opt-menu">
-      <ThemSwitch />
       <el-dropdown
         @visible-change="handleVisibleChange"
         @command="handleCommand"
@@ -69,8 +68,7 @@ import { useStore } from "vuex"; // Use Vuex's useStore function
 import { defineEmits, computed, ref } from "vue";
 
 let emit = defineEmits(["submit", "open-menu"]);
-import { EditPen, Plus } from "@element-plus/icons-vue";
-import ThemSwitch from "@/components/ThemSwitch";
+import { EditPen } from "@element-plus/icons-vue";
 
 const props = defineProps({
   id: Number,
@@ -190,13 +188,6 @@ const handleCommand = (command) => {
 .menu svg.menu-icon {
   fill: var(--el-text-color-primary);
   cursor: pointer;
-}
-
-.opt-menu {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 110px;
 }
 
 @media (max-width: 768px) {

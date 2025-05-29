@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div ref="pageContainer" class="container">
     <div class="warper">
       <el-skeleton :loading="openLoading" animated>
         <template #template>
@@ -109,6 +109,7 @@ const messages = ref([]);
 const title = ref(null);
 const shareTime = ref(null);
 const openLoading = ref(false);
+const pageContainer = ref(null);
 
 function goHome() {
   router.replace("/home/chat");
@@ -153,7 +154,7 @@ onMounted(async function () {
   openLoading.value = false;
 
   nextTick(function () {
-    addCopy();
+    addCopy(pageContainer.value);
   });
 });
 </script>

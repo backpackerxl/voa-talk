@@ -71,7 +71,7 @@ export function markdwonToHTML(content) {
             oDivH.className = 'pre-header'
             oButton.className = 'pre-button';
             copyIcon.className = "copy-icon fa-solid fa-copy"; // Font Awesome 复制图标
-            upIcon.className = "fas fa-angle-up"; // Font Awesome 复制图标
+            upIcon.className = "prebtn-arrow fas fa-angle-up"; // Font Awesome 复制图标
 
             oButton.appendChild(upIcon);
 
@@ -90,10 +90,10 @@ export function markdwonToHTML(content) {
 };
 
 
-export function addCopy() {
-    document.querySelectorAll('i.copy-icon').forEach(el => {
-        // 绑定点击事件
-        el.addEventListener("click", () => {
+export function addCopy(chatPage) {
+    chatPage.addEventListener("click", function (e) {
+        const el = e.target;
+        if (el.tagName == "I" && el.classList.contains("copy-icon")) {
             clipboard.writeText(el.parentElement.nextElementSibling.innerText).then(
                 () => {
                     el.className = "copy-icon fas fa-check"; // 切换为成功图标
@@ -107,33 +107,35 @@ export function addCopy() {
                 },
                 () => { ElMessage.error("复制失败"); console.error("无法复制代码:", err); }
             );
-            // navigator.clipboard
-            //     .writeText(el.parentElement.nextElementSibling.innerText)
-            //     .then(() => {
-            //         el.className = "copy-icon fas fa-check"; // 切换为成功图标
-            //         el.style.color = "#28a745"; // 成功颜色
+        }
 
-            //         setTimeout(() => {
-            //             el.className = "copy-icon fa-solid fa-copy";
-            //             el.style.color = "rgb(121, 122, 123)"; // 恢复原样
-            //         }, 2000); // 2 秒后恢复原样
-            //     })
-            //     .catch((err) => {
-            //         console.error("无法复制代码:", err);
-            //     });
-        });
-    });
+        if (el.tagName == "I" && el.classList.contains("prebtn-arrow")) {
+            const oP = el.parentElement.parentElement;
+            if (el.classList.contains('fa-angle-up')) {
+                el.classList.remove('fa-angle-up');
+                el.classList.add('fa-angle-down');
+                oP.parentElement.style.width = el.parentElement.getBoundingClientRect().width + 20 + 'px';
+                oP.parentElement.style.height = '32px';
+                oP.parentElement.style.overflow = 'hidden';
+                oP.querySelector('i.copy-icon').style.display = 'none';
+            } else {
+                el.classList.remove('fa-angle-down');
+                el.classList.add('fa-angle-up');
+                oP.parentElement.style.width = '';
+                oP.parentElement.style.overflow = '';
+                oP.parentElement.style.height = '';
+                oP.querySelector('i.copy-icon').style.display = '';
+            }
+        }
 
-    document.querySelectorAll('button.pre-button').forEach(el => {
-        // 绑定点击事件
-        el.addEventListener("click", () => {
+        if (el.tagName == "BUTTON" && el.classList.contains("pre-button")) {
             const oI = el.querySelector('i');
             if (oI) {
                 if (oI.classList.contains('fa-angle-up')) {
                     oI.classList.remove('fa-angle-up');
                     oI.classList.add('fa-angle-down');
                     el.parentElement.parentElement.style.width = el.getBoundingClientRect().width + 20 + 'px';
-                    el.parentElement.parentElement.style.height = '30px';
+                    el.parentElement.parentElement.style.height = '32px';
                     el.parentElement.parentElement.style.overflow = 'hidden';
                     el.parentElement.querySelector('i.copy-icon').style.display = 'none';
                 } else {
@@ -145,7 +147,7 @@ export function addCopy() {
                     el.parentElement.querySelector('i.copy-icon').style.display = '';
                 }
             }
-        });
+        }
     });
 }
 

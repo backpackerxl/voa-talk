@@ -15,64 +15,68 @@
     </div>
   </div>
   <div class="infinite-list-wrapper" style="overflow: auto">
-    <ul
-      v-infinite-scroll="load"
-      class="list"
-      :infinite-scroll-disabled="disabled"
-    >
-      <li
-        v-for="(chat, index) in tableData"
-        :key="index"
-        :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'"
-        @click="openChatHis($event, chat)"
-        :data-index="index"
+    <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
+      <ul
+        v-infinite-scroll="load"
+        class="list"
+        :infinite-scroll-disabled="disabled"
       >
-        <el-tooltip
-          class="box-item"
-          effect="light"
-          :content="chat.talk_name"
-          placement="right"
-          :disabled="!shouldShowTooltip(index)"
+        <li
+          v-for="(chat, index) in tableData"
+          :key="index"
+          :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'"
+          @click="openChatHis($event, chat)"
+          :data-index="index"
+          @contextmenu.prevent="openMenu($event, chat)"
         >
-          <template #content>
-            {{ chat.talk_name }}
-          </template>
-          <div class="content">
-            <span :ref="(el) => handleRef(el, index)" class="text-truncate"
-              ><i class="fa-regular fa-comments"></i>{{ chat.talk_name }}</span
-            >
-            <el-dropdown
-              trigger="click"
-              @visible-change="handleVisibleChange"
-              placement="bottom-end"
-            >
-              <span class="el-dropdown-link">
-                <i
-                  ref="trigger"
-                  :data-index="index"
-                  class="fa-solid fa-ellipsis"
-                ></i>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu
-                  :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
-                >
-                  <el-dropdown-item :icon="EditPen" @click="handleEditMsg(chat)"
-                    >重命名</el-dropdown-item
+          <el-tooltip
+            class="box-item"
+            effect="light"
+            :content="chat.talk_name"
+            placement="right"
+            :disabled="!shouldShowTooltip(index)"
+          >
+            <template #content>
+              {{ chat.talk_name }}
+            </template>
+            <div class="content">
+              <span :ref="(el) => handleRef(el, index)" class="text-truncate"
+                ><i class="fa-regular fa-comments"></i
+                >{{ chat.talk_name }}</span
+              >
+              <el-dropdown
+                trigger="click"
+                @visible-change="handleVisibleChange"
+                placement="bottom-end"
+              >
+                <span class="el-dropdown-link">
+                  <i
+                    ref="trigger"
+                    :data-index="index"
+                    class="fa-solid fa-ellipsis"
+                  ></i>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu
+                    :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
                   >
-                  <el-dropdown-item
-                    :icon="Delete"
-                    class="delete"
-                    @click="handleDeleteMsg(chat)"
-                    >删除</el-dropdown-item
-                  >
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
-        </el-tooltip>
-      </li>
-    </ul>
+                    <el-dropdown-item @click="handleEditMsg(chat)"
+                      ><i class="fa-regular fa-pen-to-square"></i
+                      >重命名</el-dropdown-item
+                    >
+                    <el-dropdown-item
+                      class="delete"
+                      @click="handleDeleteMsg(chat)"
+                      ><i class="fa-solid fa-trash"></i>删除</el-dropdown-item
+                    >
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </el-tooltip>
+        </li>
+      </ul>
+    </RightClickMenu>
     <div class="last-msg" v-loading="loading"></div>
   </div>
 </template>
@@ -80,8 +84,8 @@
 <script setup>
 import { computed, ref, onMounted, defineEmits, defineProps, watch } from "vue";
 import router from "@/router";
-import { EditPen, Delete } from "@element-plus/icons-vue";
 import { useRoute } from "vue-router";
+import RightClickMenu from "@/components/RightClickMenu";
 
 const routePath = useRoute();
 
@@ -112,6 +116,31 @@ const isVisible = ref(false);
 const moreIcon = ref(null);
 const talkIdOn = ref(-1);
 const showHis = ref(!device.mobile());
+
+const rightClickMenu = ref(null);
+
+const menuItems = ref([
+  {
+    icon: "fa-regular fa-pen-to-square",
+    label: "重命名",
+    classList: [],
+    action: (data) => {
+      handleEditMsg(data);
+    },
+  },
+  {
+    icon: "fa-solid fa-trash",
+    label: "删除",
+    classList: ["delete"],
+    action: (data) => {
+      handleDeleteMsg(data);
+    },
+  },
+]);
+
+function openMenu(event, chat) {
+  rightClickMenu.value && rightClickMenu.value.openMenu(event, chat);
+}
 
 function handleVisibleChange(visible) {
   isVisible.value = visible;
@@ -224,7 +253,6 @@ async function deleteUserOk(chat) {
   tableData.value = tableData.value.filter(
     (item) => item.talk_id !== chat.talk_id
   );
-  getAiChatList();
 }
 
 function handleDeleteMsg(row) {
@@ -291,7 +319,6 @@ onMounted(function () {
 
   .infinite-list-wrapper {
     height: calc(100vh - 220px);
-    padding: 2px 0;
   }
 }
 
@@ -379,5 +406,15 @@ onMounted(function () {
 
 :deep(.el-loading-spinner .path) {
   stroke-width: 4 !important;
+}
+
+.context-menu-item.delete {
+  color: rgb(255, 59, 48);
+}
+
+.context-menu-item.delete:hover {
+  background-color: rgb(255, 59, 48, 0.1);
+  border-radius: 6px;
+  color: rgb(255, 59, 48);
 }
 </style>

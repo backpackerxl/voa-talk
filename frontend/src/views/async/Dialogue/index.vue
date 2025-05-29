@@ -352,6 +352,7 @@ import "@/assets/css/github-markdown.css";
 import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
 import Logo from "@/components/Logo";
+import RightClickMenu from "@/components/RightClickMenu";
 import * as clipboard from "clipboard-polyfill";
 
 const routePath = useRoute();
@@ -491,7 +492,6 @@ watch(
       const obj = await queryRecommend({ talk_id: chatId.value });
       recordList.value = obj.data.reco_list;
       nextTick(function () {
-        addCopy();
         // 自动滚动到最新消息位置
         scrollTopBottom();
       });
@@ -755,7 +755,6 @@ const sendMessage = async () => {
       let endThink = Date.now();
       thinkTime.value = (endThink - startThink) / 1000;
       cursorElement.value.style.display = "none";
-      addCopy();
       changeIcon.value = false;
       // 自动滚动到最新消息位置
       scrollTopBottom();
@@ -818,7 +817,7 @@ onMounted(async () => {
       console.error("Failed to load model config:", error);
     });
   nextTick(function () {
-    addCopy();
+    addCopy(chatPage.value);
     // 自动滚动到最新消息位置
     scrollTopBottom();
   });

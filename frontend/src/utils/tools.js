@@ -64,3 +64,21 @@ export function formatDateTime(date) {
     return `${year}-${month}-${day}`;
 }
 
+const match = matchMedia("(prefers-color-scheme: dark)");
+
+function followOS() {
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(match.matches ? "dark" : "light");
+}
+
+export function handleThem(item) {
+    document.documentElement.classList.remove("light", "dark");
+    if (item.them === "os") {
+        followOS();
+        document.documentElement.classList.add(match.matches ? "dark" : "light");
+        match.addEventListener("change", followOS);
+    } else {
+        document.documentElement.classList.add(item.them);
+        match.removeEventListener("change", followOS);
+    }
+}
