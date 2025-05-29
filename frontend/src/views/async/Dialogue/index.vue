@@ -1252,6 +1252,10 @@ function scrollTopBottom() {
     width: 95vw;
   }
 
+  .message .tools {
+    opacity: 1;
+  }
+
   .user-message span {
     max-width: 60vw;
   }
