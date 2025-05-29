@@ -21,6 +21,10 @@ onMounted(function () {
 });
 </script>
 <style>
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
   overflow: hidden;
 }

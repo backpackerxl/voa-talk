@@ -34,7 +34,7 @@
             effect="light"
             :content="chat.talk_name"
             placement="right"
-            :disabled="!shouldShowTooltip(index)"
+            :disabled="!shouldShowTooltip(index) || !showHis"
           >
             <template #content>
               {{ chat.talk_name }}
@@ -45,6 +45,7 @@
                 >{{ chat.talk_name }}</span
               >
               <el-dropdown
+                v-if="showHis"
                 trigger="click"
                 @visible-change="handleVisibleChange"
                 placement="bottom-end"
@@ -332,6 +333,11 @@ onMounted(function () {
 .infinite-list-wrapper .list-item {
   height: 40px;
   color: var(--el-text-color-primary);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .infinite-list-wrapper .list-item:hover,
@@ -357,6 +363,11 @@ onMounted(function () {
   align-items: center;
   height: inherit;
   padding: 0 10px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .list-item .content .text-truncate {
