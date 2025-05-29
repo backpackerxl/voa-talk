@@ -196,7 +196,6 @@ import { queryTalkName, editChatName, deleteChat } from "@/api/aiChat";
 import { Plus } from "@element-plus/icons-vue";
 import router from "@/router";
 import { useRoute } from "vue-router";
-// using es modules
 import device from "current-device";
 import Hammer from "hammerjs";
 

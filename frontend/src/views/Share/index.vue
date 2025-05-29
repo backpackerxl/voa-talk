@@ -33,49 +33,59 @@
                 {{ shareTime }} • 内容由 AI 生成，不能完全保障真实
               </p>
             </div>
-            <div class="content-body">
-              <div
-                v-for="(message, index) in messages"
-                :key="index"
-                class="message"
-              >
-                <div v-if="message.type === 'user'" class="user-message">
-                  <span>{{ message.content }}</span>
-                  <div class="tools">
-                    <el-tooltip
-                      class="box-item"
-                      effect="light"
-                      content="复制"
-                      placement="top"
-                    >
-                      <i
-                        @click="copyContent($event, message.content)"
-                        class="fa-solid fa-copy"
-                      ></i>
-                    </el-tooltip>
-                  </div>
-                </div>
-                <div class="markdown-body" v-else>
+            <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
+              <div class="content-body">
+                <div
+                  v-for="(message, index) in messages"
+                  :key="index"
+                  class="message"
+                >
                   <div
-                    class="inner"
-                    v-html="markdwonToHTML(message.content)"
-                  ></div>
-                  <div class="tools">
-                    <el-tooltip
-                      class="box-item"
-                      effect="light"
-                      content="复制"
-                      placement="top"
-                    >
-                      <i
-                        @click="copyContent($event, message.content)"
-                        class="fa-solid fa-copy"
-                      ></i>
-                    </el-tooltip>
+                    v-if="message.type === 'user'"
+                    class="user-message"
+                    @contextmenu.prevent="openMenu($event, message)"
+                  >
+                    <span>{{ message.content }}</span>
+                    <div v-if="isMob" class="tools">
+                      <el-tooltip
+                        class="box-item"
+                        effect="light"
+                        content="复制"
+                        placement="top"
+                      >
+                        <i
+                          @click="copyContent($event, message.content)"
+                          class="fa-solid fa-copy"
+                        ></i>
+                      </el-tooltip>
+                    </div>
+                  </div>
+                  <div
+                    class="markdown-body"
+                    v-else
+                    @contextmenu.prevent="openMenu($event, message)"
+                  >
+                    <div
+                      class="inner"
+                      v-html="markdwonToHTML(message.content)"
+                    ></div>
+                    <div v-if="isMob" class="tools">
+                      <el-tooltip
+                        class="box-item"
+                        effect="light"
+                        content="复制"
+                        placement="top"
+                      >
+                        <i
+                          @click="copyContent($event, message.content)"
+                          class="fa-solid fa-copy"
+                        ></i>
+                      </el-tooltip>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </RightClickMenu>
           </div>
         </template>
       </el-skeleton>
@@ -88,6 +98,14 @@
     </div>
   </div>
   <el-backtop :right="100" :bottom="100" />
+  <el-drawer
+    v-model="drawer"
+    title="选取文本复制"
+    :with-header="true"
+    size="100%"
+  >
+    <span class="select-content">{{ selectContent }}</span>
+  </el-drawer>
 </template>
 
 <script setup>
@@ -103,6 +121,8 @@ import router from "@/router";
 
 import { getRedisChat } from "@/api/aiChat";
 import * as clipboard from "clipboard-polyfill";
+import device from "current-device";
+import RightClickMenu from "@/components/RightClickMenu";
 
 const routePath = useRoute();
 const messages = ref([]);
@@ -110,9 +130,48 @@ const title = ref(null);
 const shareTime = ref(null);
 const openLoading = ref(false);
 const pageContainer = ref(null);
+const isMob = ref(!device.mobile());
+const rightClickMenu = ref(null);
+const drawer = ref(false);
+const selectContent = ref("");
 
 function goHome() {
   router.replace("/home/chat");
+}
+
+const menuItems = ref([
+  {
+    icon: "fa-solid fa-copy",
+    label: "复制内容",
+    classList: [],
+    action: (data) => {
+      clipboard.writeText(data.content).then(
+        () => {
+          ElMessage.success("复制成功");
+        },
+        () => {
+          ElMessage.error("链接复制失败");
+          console.log("error!");
+        }
+      );
+    },
+  },
+]);
+
+if (!isMob.value) {
+  menuItems.value.push({
+    icon: "fa-regular fa-object-ungroup",
+    label: "选取文字",
+    classList: [],
+    action: (data) => {
+      selectContent.value = data.content;
+      drawer.value = true;
+    },
+  });
+}
+
+function openMenu(event, message) {
+  rightClickMenu.value && rightClickMenu.value.openMenu(event, message);
 }
 
 function copyContent(event, content) {
@@ -266,6 +325,16 @@ onMounted(async function () {
   border-radius: 4px;
 }
 
+.select-content {
+  display: inline-flex;
+  white-space: pre-wrap;
+  text-align: left;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
 @media (max-width: 1024px) {
   .warper {
     width: 70vw;
@@ -287,6 +356,14 @@ onMounted(async function () {
 @media (max-width: 768px) {
   .warper {
     width: 95vw;
+  }
+
+  .content-body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   .warper .inner-container {
