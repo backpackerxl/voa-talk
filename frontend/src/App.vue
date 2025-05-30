@@ -90,12 +90,17 @@ body {
   font-size: 14px;
 }
 
-.pre-header i.copy-icon {
+.pre-header-tools i {
+  margin-right: 2px;
   padding: 4px;
 }
 
+.pre-header-tools i:last-child {
+  margin-right: 0;
+}
+
 .pre-header .pre-button:hover,
-.pre-header i.copy-icon:hover {
+.pre-header-tools i:hover {
   background: rgb(117, 116, 116, 0.2);
   border-radius: 6px;
   padding: 4px;
@@ -103,5 +108,40 @@ body {
 
 .pre-header .pre-button i {
   margin-left: 4px;
+}
+
+.code-container i.fa-xmark {
+  font-size: 22px;
+  padding: 2px 6px;
+}
+
+.code-container .code-container-header {
+  height: 60px;
+  padding: 5px;
+  text-align: right;
+  padding: 0 15px;
+  line-height: 60px;
+  border-bottom: 1px solid var(--me-switch-bg-color);
+  box-shadow: 0 2px 4px 0 var(--me-box-shadow);
+}
+
+.code-container i.fa-xmark:hover {
+  background: rgb(117, 116, 116, 0.2);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
+.code-container {
+  width: 100vw;
+  height: 100vh;
+  background: var(--me-body-bg-color);
+  box-sizing: border-box;
+  box-shadow: 0 6px 10px 0 var(--me-box-shadow);
+}
+
+.code-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 </style>

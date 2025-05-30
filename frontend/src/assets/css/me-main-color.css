@@ -5,6 +5,7 @@
     --me-switch-bg-color: #eeeeee;
     --me-share-bg-color: #e9e9eb;
     --me-report-text-color: #6e7079;
+    --me-box-shadow: rgba(42, 60, 79, 0.1);
 }
 
 :root {
@@ -114,4 +115,5 @@ html.dark {
     --me-switch-bg-color: #383838;
     --me-share-bg-color: #141414;
     --me-report-text-color: #b9b8ce;
+    --me-box-shadow: rgba(119, 119, 119, 0.1);
 }

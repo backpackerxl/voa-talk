@@ -67,7 +67,7 @@
                   >
                     <div
                       class="inner"
-                      v-html="markdwonToHTML(message.content)"
+                      v-html="markdwonToHTML(message.content, false)"
                     ></div>
                     <div v-if="isMob" class="tools">
                       <el-tooltip

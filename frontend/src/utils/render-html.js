@@ -7,6 +7,7 @@ import javascript from 'highlight.js/lib/languages/javascript';
 import css from 'highlight.js/lib/languages/css';
 import * as clipboard from "clipboard-polyfill";
 import { ElMessage } from "element-plus";
+import device from "current-device";
 
 // 注册语言
 hljs.registerLanguage('html', html);
@@ -44,7 +45,7 @@ marked.setOptions({
 });
 
 // 添加复制图标的方法
-export function markdwonToHTML(content) {
+export function markdwonToHTML(content, showPlayIcon) {
     const oDiv = document.createElement("div");
     oDiv.innerHTML = DOMPurify.sanitize(marked.parse(content));
     renderMathInElement(oDiv, {
@@ -61,6 +62,7 @@ export function markdwonToHTML(content) {
         if (!block.parentNode.querySelector(".copy-icon")) {
             const oDivC = document.createElement("div");
             const oDivH = document.createElement("div");
+            const oDivTools = document.createElement("div");
             const oButton = document.createElement("button");
 
             oButton.innerText = block.classList[0].split('-')[1] || 'code';
@@ -69,15 +71,22 @@ export function markdwonToHTML(content) {
             const upIcon = document.createElement("i");
             oDivC.className = 'pre-container'
             oDivH.className = 'pre-header'
+            oDivTools.className = 'pre-header-tools'
             oButton.className = 'pre-button';
             copyIcon.className = "copy-icon fa-solid fa-copy"; // Font Awesome 复制图标
             upIcon.className = "prebtn-arrow fas fa-angle-up"; // Font Awesome 复制图标
+            oDivTools.appendChild(copyIcon);
+            if (oButton.innerText === "html" && !device.mobile() && showPlayIcon) {
+                const playIcon = document.createElement("i");
+                playIcon.className = "play-icon fa-regular fa-circle-play"; // 播放图标
+                oDivTools.appendChild(playIcon);
+            }
 
             oButton.appendChild(upIcon);
 
             // 将图标插入到 <pre> 元素中
             oDivH.appendChild(oButton);
-            oDivH.appendChild(copyIcon);
+            oDivH.appendChild(oDivTools);
             oDivC.appendChild(oDivH);
             let preBefore = block.parentNode.previousElementSibling;
             oDivC.appendChild(block.parentNode);
@@ -94,7 +103,7 @@ export function addCopy(chatPage) {
     chatPage.addEventListener("click", function (e) {
         const el = e.target;
         if (el.tagName == "I" && el.classList.contains("copy-icon")) {
-            clipboard.writeText(el.parentElement.nextElementSibling.innerText).then(
+            clipboard.writeText(el.parentElement.parentElement.nextElementSibling.innerText).then(
                 () => {
                     el.className = "copy-icon fas fa-check"; // 切换为成功图标
                     el.style.color = "#28a745"; // 成功颜色
@@ -109,6 +118,38 @@ export function addCopy(chatPage) {
             );
         }
 
+        if (el.tagName == "I" && el.classList.contains("play-icon")) {
+            const oAside = chatPage.parentElement.parentElement.previousElementSibling;
+            const oMain = chatPage.parentElement.parentElement.parentElement;
+            const code = el.parentElement.parentElement.nextElementSibling.innerText;
+            const oCC = oMain.querySelector("#me-code-container");
+            let ifr = document.createElement('iframe');
+            if (oCC) {
+                ifr = oCC.querySelector("iframe");
+                ifr.srcdoc = code;
+                return;
+            }
+            const oDivC = document.createElement("div");
+            const oDivH = document.createElement("div");
+            const oI = document.createElement("i");
+            oI.className = "fa-solid fa-xmark";
+            oDivC.className = "code-container";
+            oDivC.id = "me-code-container";
+            oDivH.className = "code-container-header";
+            oDivH.appendChild(oI);
+            ifr.className = 'code-play';
+            ifr.srcdoc = code;
+            oDivC.appendChild(oDivH);
+            oDivC.appendChild(ifr);
+            oAside.classList.add("code-play");
+            oMain.appendChild(oDivC);
+
+            oI.addEventListener('click', function () {
+                oAside.classList.remove("code-play");
+                oDivC.remove();
+            });
+        }
+
         if (el.tagName == "I" && el.classList.contains("prebtn-arrow")) {
             const oP = el.parentElement.parentElement;
             if (el.classList.contains('fa-angle-up')) {
@@ -117,14 +158,14 @@ export function addCopy(chatPage) {
                 oP.parentElement.style.width = el.parentElement.getBoundingClientRect().width + 20 + 'px';
                 oP.parentElement.style.height = '32px';
                 oP.parentElement.style.overflow = 'hidden';
-                oP.querySelector('i.copy-icon').style.display = 'none';
+                oP.querySelector('.pre-header-tools').style.display = 'none';
             } else {
                 el.classList.remove('fa-angle-down');
                 el.classList.add('fa-angle-up');
                 oP.parentElement.style.width = '';
                 oP.parentElement.style.overflow = '';
                 oP.parentElement.style.height = '';
-                oP.querySelector('i.copy-icon').style.display = '';
+                oP.querySelector('.pre-header-tools').style.display = '';
             }
         }
 
@@ -137,14 +178,14 @@ export function addCopy(chatPage) {
                     el.parentElement.parentElement.style.width = el.getBoundingClientRect().width + 20 + 'px';
                     el.parentElement.parentElement.style.height = '32px';
                     el.parentElement.parentElement.style.overflow = 'hidden';
-                    el.parentElement.querySelector('i.copy-icon').style.display = 'none';
+                    el.parentElement.querySelector('.pre-header-tools').style.display = 'none';
                 } else {
                     oI.classList.remove('fa-angle-down');
                     oI.classList.add('fa-angle-up');
                     el.parentElement.parentElement.style.width = '';
                     el.parentElement.parentElement.style.overflow = '';
                     el.parentElement.parentElement.style.height = '';
-                    el.parentElement.querySelector('i.copy-icon').style.display = '';
+                    el.parentElement.querySelector('.pre-header-tools').style.display = '';
                 }
             }
         }

@@ -141,7 +141,7 @@
               >
                 <div
                   class="inner"
-                  v-html="markdwonToHTML(message.content)"
+                  v-html="markdwonToHTML(message.content, true)"
                 ></div>
                 <div class="tools" v-if="!isShare">
                   <el-tooltip
@@ -220,7 +220,7 @@
               <div
                 ref="oOutPut"
                 class="markdown-body now"
-                v-html="markdwonToHTML(respStr)"
+                v-html="markdwonToHTML(respStr, true)"
               ></div>
               <div class="thinking" v-if="modelTokens !== 0">
                 <p>

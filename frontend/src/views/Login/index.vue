@@ -1,6 +1,5 @@
 <template>
   <div class="loginbody">
-    <GitHubLink url="https://github.com/backpackerxl/voa-talk" />
     <div class="logindata">
       <el-card>
         <p class="logintext">
@@ -92,7 +91,6 @@ import store from "@/store"; // 导入Vuex store
 import { Picture, User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
 import { config } from "@/utils/config";
-import GitHubLink from "@/components/GitHubLink";
 import Logo from "@/components/Logo";
 
 export default {
@@ -101,7 +99,6 @@ export default {
     Picture,
     User,
     Lock,
-    GitHubLink,
     Logo,
   },
   setup() {

@@ -490,6 +490,10 @@ onMounted(() => {
   padding: 0px !important;
 }
 
+.el-aside.code-play {
+  display: none;
+}
+
 .el-container {
   width: 100%;
 }
