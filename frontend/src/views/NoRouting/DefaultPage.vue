@@ -4,15 +4,14 @@
     <p>很抱歉，您尝试访问的页面不存在。</p>
     <router-link to="/home">返回首页</router-link>
   </div>
+  <Beian />
 </template>
   
-  <script>
-export default {
-  name: "DefaultPage",
-};
+<script setup>
+import Beian from "@/components/Beian";
 </script>
   
-  <style scoped>
+<style scoped>
 .default-page {
   display: flex;
   flex-direction: column;

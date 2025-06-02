@@ -111,6 +111,7 @@ body {
 }
 
 .code-container i.fa-xmark {
+  color: var(--me-report-text-color);
   font-size: 22px;
   padding: 2px 6px;
 }

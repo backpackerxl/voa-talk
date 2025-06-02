@@ -50,6 +50,7 @@
       </el-card>
     </div>
   </div>
+  <Beian />
 </template>
 
 <script setup>
@@ -58,6 +59,7 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { enrollUser } from "@/api/login";
 import Logo from "@/components/Logo";
+import Beian from "@/components/Beian";
 
 const registerForm = ref({
   name: "",

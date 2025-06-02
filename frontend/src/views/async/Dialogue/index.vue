@@ -540,6 +540,7 @@ function noShare() {
 async function copyLink() {
   if (checkList.value.length <= 0) {
     ElMessage.warning("请选择要分享的对话");
+    return;
   }
   let params = {
     ids: checkList.value,
@@ -975,7 +976,6 @@ function scrollTopBottom() {
 .input-container {
   width: 43vw;
   position: fixed;
-  float: bottom;
 }
 
 .input-container .welcome {

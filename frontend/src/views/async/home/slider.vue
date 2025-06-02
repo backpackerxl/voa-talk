@@ -128,7 +128,7 @@
             class="menu-item"
           >
             <i :class="menuData.icon"></i>
-            <span style="margin-left: 15px">{{ menuData.label }}</span>
+            <span>&nbsp;&nbsp;{{ menuData.label }}</span>
           </el-menu-item>
         </el-menu>
         <div class="history-chat">
@@ -151,8 +151,8 @@
           ref="mainView"
           id="chatView"
           class="chat-view"
-          ><router-view
-        /></el-main>
+          ><router-view />
+        </el-main>
       </el-container>
     </transition>
   </el-container>
@@ -189,8 +189,8 @@
 <script setup>
 import { onMounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
 import { useStore } from "vuex"; // Use Vuex's useStore function
-import Header from "@/components/Header"; // 引入组件
-import ChatList from "@/components/ChatList"; // 引入组件
+import Header from "@/components/Header";
+import ChatList from "@/components/ChatList";
 import { queryTalkName, editChatName, deleteChat } from "@/api/aiChat";
 
 import { Plus } from "@element-plus/icons-vue";
@@ -299,7 +299,12 @@ if (isSuperAdmin.value && !device.mobile()) {
     {
       url: "/home/report",
       label: "运行报表",
-      icon: "fa-solid fa-chart-simple",
+      icon: "fa-solid fa-chart-line",
+    },
+    {
+      url: "/home/email",
+      label: "邮件管理",
+      icon: "fa-solid fa-envelope",
     },
     {
       url: "/home/model",

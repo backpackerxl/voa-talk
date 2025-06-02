@@ -82,6 +82,7 @@
       </el-card>
     </div>
   </div>
+  <Beian />
 </template>
 
 <script>
@@ -92,6 +93,7 @@ import { Picture, User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
 import { config } from "@/utils/config";
 import Logo from "@/components/Logo";
+import Beian from "@/components/Beian";
 
 export default {
   name: "LogIn",
@@ -100,6 +102,7 @@ export default {
     User,
     Lock,
     Logo,
+    Beian,
   },
   setup() {
     const router = useRouter();

@@ -18,11 +18,16 @@
           />
           <el-skeleton-item
             variant="text"
-            style="width: 40%; height: 45px; margin-left: 50%; margin-top: 20px"
+            style="width: 40%; height: 35px; margin-left: 40%; margin-top: 20px"
           />
           <el-skeleton-item
             variant="text"
-            style="width: 90%; height: 240px; margin-top: 20px"
+            style="
+              width: 80%;
+              height: 240px;
+              margin-right: 20%;
+              margin-top: 20px;
+            "
           />
         </template>
         <template #default>
@@ -86,6 +91,13 @@
                 </div>
               </div>
             </RightClickMenu>
+            <footer class="footer">
+              <p class="beian">
+                <a target="_blank" href="https://beian.miit.gov.cn"
+                  >蜀ICP备2025143448号</a
+                >
+              </p>
+            </footer>
           </div>
         </template>
       </el-skeleton>
@@ -229,19 +241,18 @@ onMounted(async function () {
 
 .warper {
   width: 43vw;
+  padding: 80px 0;
 }
 
 .warper .inner-container {
   box-shadow: 0 6px 12px 0.5px var(--me-share-bg-color);
-  margin: 80px 0px;
   border-radius: 24px;
-  padding: 48px;
+  padding: 25px;
   box-sizing: border-box;
 }
 
 .el-skeleton {
-  margin: 80px 0px;
-  padding: 48px;
+  padding: 25px;
   width: 43vw;
 }
 
@@ -377,5 +388,16 @@ onMounted(async function () {
   .user-message span {
     max-width: 60vw;
   }
+}
+
+.beian {
+  text-align: center;
+  font-size: 14px;
+}
+
+.beian a {
+  font-size: 14px;
+  color: var(--me-report-text-color);
+  text-decoration: none;
 }
 </style>

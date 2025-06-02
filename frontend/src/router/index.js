@@ -53,7 +53,11 @@ const routes = [
             {
                 path: 'report',
                 component: () => import('@/views/async/report/index.vue'),
-            }
+            },
+            {
+                path: 'email',
+                component: () => import('@/views/async/email/index.vue'),
+            },
         ],
     },
     {

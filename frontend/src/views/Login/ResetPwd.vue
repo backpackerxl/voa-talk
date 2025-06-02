@@ -38,6 +38,7 @@
       </el-card>
     </div>
   </div>
+  <Beian />
 </template>
 
 <script setup>
@@ -47,6 +48,7 @@ import { ElMessage } from "element-plus";
 import { resetPWD } from "@/api/login";
 import { encryptAes } from "@/utils/tools";
 import Logo from "@/components/Logo";
+import Beian from "@/components/Beian";
 
 const registerForm = ref({
   pwd: "",
