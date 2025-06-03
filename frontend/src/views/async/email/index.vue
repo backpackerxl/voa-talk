@@ -78,11 +78,13 @@
                 title=""
                 content=""
                 trigger="hover"
-                width="180"
+                width="200"
               >
                 <el-tag
                   v-for="(ev, index) in JSON.parse(row.send_users)"
                   :key="index"
+                  :type="typeList[index % typeList.length]"
+                  style="margin-bottom: 6px"
                   >{{ ev }}</el-tag
                 >
                 <template #reference>
@@ -90,6 +92,7 @@
                     <el-tag
                       v-for="(ev, index) in JSON.parse(row.send_users)"
                       :key="index"
+                      :type="typeList[index % typeList.length]"
                       >{{ ev }}</el-tag
                     >
                   </div>
@@ -331,6 +334,8 @@ const tableCount = ref(0);
 // 当前页码
 const currentPage = ref(1);
 const userNameList = ref("");
+
+const typeList = ["primary", "success", "info", "warning", "danger"];
 
 // 每页显示数量
 const pageSize = ref(20);
