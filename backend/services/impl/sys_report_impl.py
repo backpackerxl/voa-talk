@@ -28,6 +28,8 @@ sql_pool = {
             SELECT COUNT(mc.id) AS num_count FROM model_config mc
             UNION
             SELECT COUNT(tl.id) AS num_count FROM talk_logs tl WHERE tl.create_date >= :start_time
+            UNION
+            SELECT COUNT(el.id) AS num_count FROM email_logs el WHERE el.create_date >= :start_time
     """),
     'top_talk': text("""
         WITH t1 AS (
@@ -101,6 +103,7 @@ def header_data():
             'user_count': int(result[0]['num_count']),
             'model_count': int(result[1]['num_count']),
             'talk_count': int(result[2]['num_count']),
+            'email_count': int(result[3]['num_count']),
         })
 
 

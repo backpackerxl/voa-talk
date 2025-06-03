@@ -4,3 +4,4 @@ from .RequestLogs import RequestLogs
 from .TalkLogs import TalkLogs
 from .TalkUserRelation import TalkUserRelation
 from .TalkRecommendation import TalkRecommendation
+from .EmailLogs import EmailLogs

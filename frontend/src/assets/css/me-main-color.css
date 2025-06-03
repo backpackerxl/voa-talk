@@ -1,14 +1,4 @@
 :root {
-    --me-bg-color: #e9e9eb;
-    --me-body-bg-color: #ffffff;
-    --me-table-th-color: #f0f0f0;
-    --me-switch-bg-color: #eeeeee;
-    --me-share-bg-color: #e9e9eb;
-    --me-report-text-color: #6e7079;
-    --me-box-shadow: rgba(42, 60, 79, 0.1);
-}
-
-:root {
     --el-color-primary: rgb(77, 107, 254, 1) !important;
     --el-color-primary-light-3: rgb(77, 107, 254, 0.7) !important;
     --el-color-primary-light-5: rgb(77, 107, 254, 0.5) !important;
@@ -108,6 +98,33 @@
     --el-color-primary-dark-2: rgb(253, 0, 119, 1) !important;
 }
 
+:root {
+    --me-bg-color: #e9e9eb;
+    --me-body-bg-color: #ffffff;
+    --me-table-th-color: #f0f0f0;
+    --me-switch-bg-color: #eeeeee;
+    --me-share-bg-color: #e9e9eb;
+    --me-report-text-color: #6e7079;
+    /* 富文本编辑器主题定制 */
+    --me-box-shadow: rgba(42, 60, 79, 0.1);
+    --w-e-textarea-bg-color: #fff;
+    --w-e-textarea-color: #333;
+    --w-e-textarea-border-color: #ccc;
+    --w-e-textarea-slight-border-color: #e8e8e8;
+    --w-e-textarea-slight-color: #d4d4d4;
+    --w-e-textarea-slight-bg-color: #f5f2f0;
+    --w-e-textarea-selected-border-color: #B4D5FF;
+    --w-e-textarea-handler-bg-color: #4290f7;
+    --w-e-toolbar-color: #595959;
+    --w-e-toolbar-bg-color: #fff;
+    --w-e-toolbar-active-color: #333;
+    --w-e-toolbar-active-bg-color: #f1f1f1;
+    --w-e-toolbar-disabled-color: #999;
+    --w-e-toolbar-border-color: #e8e8e8;
+    --w-e-modal-button-bg-color: var(--el-color-primary) !important;
+    --w-e-modal-button-border-color: #d9d9d9;
+}
+
 html.dark {
     --me-bg-color: #404045;
     --me-body-bg-color: #292a2d;
@@ -116,4 +133,38 @@ html.dark {
     --me-share-bg-color: #141414;
     --me-report-text-color: #b9b8ce;
     --me-box-shadow: rgba(119, 119, 119, 0.1);
+    /* 富文本编辑器主题定制 */
+    --w-e-textarea-bg-color: rgb(20, 20, 20);
+    --w-e-textarea-color: #fff;
+    --w-e-textarea-border-color: #383838;
+    --w-e-textarea-slight-border-color: #383838;
+    --w-e-textarea-slight-color: rgb(172, 175, 182);
+    --w-e-textarea-slight-bg-color: rgba(56, 56, 56, 0.5);
+    --w-e-textarea-selected-border-color: #383838;
+    --w-e-textarea-handler-bg-color: #4290f7;
+    --w-e-toolbar-color: #fff;
+    --w-e-toolbar-bg-color: rgb(20, 20, 20);
+    --w-e-toolbar-active-color: #fff;
+    --w-e-toolbar-active-bg-color: rgba(56, 56, 56, 0.5);
+    --w-e-toolbar-disabled-color: #999;
+    --w-e-toolbar-border-color: #383838;
+    --w-e-modal-button-bg-color: var(--el-color-primary);
+    --w-e-modal-button-border-color: #383838;
+}
+
+.w-e-bar-item button:hover {
+    border-radius: 6px;
+}
+
+.w-e-bar-item .active {
+    border-radius: 6px;
+}
+
+.w-e-modal button {
+    border: none !important;
+    color: #fff !important;
+}
+
+.w-e-modal input[type=text]:focus {
+    border: 1px solid var(--el-color-primary);
 }

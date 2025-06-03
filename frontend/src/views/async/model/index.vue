@@ -62,6 +62,7 @@
                 title=""
                 :content="row.desc"
                 trigger="hover"
+                width="180"
               >
                 <template #reference>
                   <div class="text-truncate">{{ row.desc }}</div>
@@ -249,7 +250,7 @@ const handleDelete = (row) => {
 
 onMounted(() => {
   fetchData();
-   document.documentElement.querySelector("title").innerText = "模型配置";
+  document.documentElement.querySelector("title").innerText = "模型配置";
 });
 </script>
 
@@ -262,6 +263,7 @@ onMounted(() => {
 
 .body .data-inner {
   width: 65vw;
+  padding: 15px 0;
 }
 
 @media (max-width: 1024px) {
@@ -277,7 +279,6 @@ onMounted(() => {
   box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
   box-sizing: border-box;
-  margin-top: 20px;
 }
 
 .header .option {
@@ -316,7 +317,7 @@ onMounted(() => {
 }
 
 .el-table {
-  height: 66vh !important;
+  height: 70vh !important;
 }
 
 .el-table thead {

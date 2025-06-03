@@ -35,7 +35,7 @@
         <div class="grid-content header">
           <i class="fa-solid fa-envelope"></i>
           <p class="name">邮件数量</p>
-          <p class="number">8</p>
+          <p class="number">{{ headerObj.email_count }}</p>
           <p class="desc">系统发送的邮件数量</p>
         </div>
       </el-col>
@@ -138,6 +138,7 @@ const headerObj = ref({
   user_count: 0,
   model_count: 0,
   talk_count: 0,
+  email_count: 0,
 });
 
 const topTalkList = ref([]);
