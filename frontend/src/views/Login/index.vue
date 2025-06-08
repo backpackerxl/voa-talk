@@ -42,23 +42,6 @@
                 </template>
               </el-input>
             </el-form-item>
-            <!-- 验证码 -->
-            <el-form-item label="验证码" prop="captchaCode">
-              <el-input
-                class="captcha-input in-box"
-                v-model="form.captchaCode"
-                size="large"
-                clearable
-                placeholder="请输入验证码"
-              >
-                <template #prefix>
-                  <el-icon><Picture /></el-icon>
-                </template>
-              </el-input>
-              <div class="captcha-image" v-loading="loading">
-                <img :src="captchaImage" @click="refreshCaptcha" alt="验证码" />
-              </div>
-            </el-form-item>
           </el-form>
         </div>
         <div class="tool">
@@ -113,11 +96,7 @@ export default {
       form: {
         username: null,
         password: null,
-        captchaCode: null,
       },
-      captchaImage: null,
-      loading: false, // 新增的属性，验证码加载使用
-      captchaCode: null,
       checked: false,
       rules: {
         username: [
@@ -128,43 +107,13 @@ export default {
           { required: true, message: "请输入密码", trigger: "blur" },
           { max: 10, message: "不能大于10个字符", trigger: "blur" },
         ],
-        captchaCode: [
-          { required: true, message: "请输入验证码", trigger: "blur" },
-          { max: 6, message: "不能大于6个字符", trigger: "blur" },
-        ],
       },
     };
   },
 
-  mounted() {
-    this.refreshCaptcha(); // 加载验证码图片
-  },
+  mounted() {},
 
   methods: {
-    // 获取验证码图片
-    async refreshCaptcha() {
-      this.loading = true; // 请求开始时设置为true
-      try {
-        const response = await loginCode();
-        const binaryData = response.data.vCode;
-        this.captchaImage = `data:image/png;base64,${binaryData}`;
-        this.$notify({
-          title: "成功",
-          message: "验证码加载成功",
-          type: "success",
-        });
-      } catch (error) {
-        this.loading = false;
-        this.$notify.error({
-          title: "错误",
-          message: "验证码加载失败",
-        });
-        console.error("Error fetching the captcha:", error);
-      } finally {
-        this.loading = false; // 请求结束时设置为false
-      }
-    },
-
     submitLogin() {
       this.$refs.form.validate((valid) => {
         if (valid) {
@@ -183,11 +132,7 @@ export default {
         const password = this.form.password;
         let encryptedPassword = encryptAes(password);
         // 使用加密后的密码进行登录
-        const response = await loginUser(
-          this.form.username,
-          encryptedPassword,
-          this.form.captchaCode
-        );
+        const response = await loginUser(this.form.username, encryptedPassword);
         // 假设这是登录成功后的处理逻辑
         if (response.code === 200) {
           this.$message({
@@ -214,11 +159,9 @@ export default {
             type: "error",
             showClose: true,
           });
-          this.refreshCaptcha();
         }
       } catch (error) {
         console.error(error);
-        this.refreshCaptcha();
       }
     },
     // 记住密码
@@ -315,21 +258,5 @@ export default {
 
 :deep(.el-form-item.is-error .el-input__wrapper) {
   box-shadow: 0 0 0 3px var(--el-color-danger) inset !important;
-}
-
-.captcha-input {
-  width: 65%; /* 输入框占据一半宽度 */
-}
-
-.captcha-image {
-  width: 35%; /* 图片占据一半宽度 */
-  height: 40px; /* 您可以根据需要调整 */
-  text-align: right;
-}
-
-.captcha-image img {
-  height: 45px;
-  object-fit: cover;
-  cursor: pointer;
 }
 </style>

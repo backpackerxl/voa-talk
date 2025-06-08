@@ -15,8 +15,6 @@ def login_service(request):
     data = request.get_json()
     if len(data) == 0:
         return ErrorReturn("参数不能为空")
-    if not RedisHandler().check_code(data.get('verifyCode')):
-        return ErrorReturn("验证码错误")
     return LoginImp.login_impl(request)
 
 

@@ -1,10 +1,10 @@
 import request from '@/utils/request';
 
-export function loginUser(userName, passWord, verifyCode) {
+export function loginUser(userName, passWord) {
     return request({
         url: '/login/login',
         method: 'post',
-        params: {userName, passWord, verifyCode},
+        params: {userName, passWord},
     });
 }
 
