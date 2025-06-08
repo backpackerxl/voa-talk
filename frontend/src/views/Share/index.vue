@@ -127,7 +127,7 @@ import { ElMessage } from "element-plus";
 import "@/assets/css/github-markdown.css";
 import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
-import { markdwonToHTML, addCopy } from "@/utils/render-html";
+import { markdwonToHTML, addCopy, renderMermaid } from "@/utils/render-html";
 import { ChatDotSquare } from "@element-plus/icons-vue";
 import router from "@/router";
 
@@ -225,6 +225,7 @@ onMounted(async function () {
   openLoading.value = false;
 
   nextTick(function () {
+    renderMermaid();
     addCopy(pageContainer.value);
   });
 });
