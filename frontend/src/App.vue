@@ -69,6 +69,26 @@ body {
   background: var(--me-bg-color);
   border: 1px solid var(--borderColor-default);
   margin: 12px 0;
+  transition: all 0.1s;
+}
+
+.pre-container .mermaid {
+  min-height: 330px;
+  background-color: #fff;
+  cursor: grab;
+}
+
+.pre-container .mermaid.dragging {
+  cursor: grabbing;
+}
+
+.pre-container .mermaid svg {
+  min-height: 330px;
+  user-select: none;
+}
+
+.pre-container .mermaid-code {
+  padding: 1em;
 }
 
 .pre-header {
@@ -91,7 +111,7 @@ body {
 }
 
 .pre-header-tools i {
-  margin-right: 2px;
+  margin-right: 4px;
   padding: 4px;
 }
 

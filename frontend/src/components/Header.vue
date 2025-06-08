@@ -192,7 +192,7 @@ const handleCommand = (command) => {
 
 @media (max-width: 768px) {
   .chat-header p {
-    max-width: 180px;
+    max-width: 220px;
   }
 }
 </style>

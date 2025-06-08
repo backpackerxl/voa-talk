@@ -427,8 +427,12 @@ onMounted(() => {
         .set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 });
       // 监听滑动手势
       hammer.on("panright", (e) => {
-        console.log(e.center.x);
-        if (e.center.x < 50) {
+        // console.log(e);
+        const isCodeBlock =
+          e.target.closest("pre") ||
+          e.target.closest("code") ||
+          e.target.closest("div.mermaid");
+        if (!isCodeBlock && e.center.x < 50) {
           handleMenu();
         }
       });

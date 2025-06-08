@@ -365,7 +365,7 @@ import {
 import { ApiModelList } from "@/api/modelConfig";
 import { Position, ArrowDown } from "@element-plus/icons-vue";
 import { getGreeting } from "@/utils/tools";
-import { markdwonToHTML, addCopy } from "@/utils/render-html";
+import { markdwonToHTML, addCopy, renderMermaid } from "@/utils/render-html";
 import { useRoute } from "vue-router";
 import store from "@/store";
 import { ElMessage } from "element-plus";
@@ -570,6 +570,7 @@ watch(
       recordList.value = obj.data.reco_list;
       nextTick(function () {
         // 自动滚动到最新消息位置
+        renderMermaid();
         scrollTopBottom();
       });
     } else {
@@ -834,6 +835,7 @@ const sendMessage = async () => {
       cursorElement.value.style.display = "none";
       changeIcon.value = false;
       // 自动滚动到最新消息位置
+      renderMermaid();
       scrollTopBottom();
     });
 
@@ -857,6 +859,7 @@ const sendMessage = async () => {
       recordList.value = obj.data.reco_list;
       nextTick(function () {
         // 自动滚动到最新消息位置
+        renderMermaid();
         scrollTopBottom();
       });
     }
@@ -894,6 +897,7 @@ onMounted(async () => {
       console.error("Failed to load model config:", error);
     });
   nextTick(function () {
+    renderMermaid();
     addCopy(chatPage.value);
     // 自动滚动到最新消息位置
     scrollTopBottom();
