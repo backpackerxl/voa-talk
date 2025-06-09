@@ -74,7 +74,6 @@ body {
 
 .pre-container .mermaid {
   min-height: 330px;
-  background-color: #fff;
   cursor: grab;
 }
 

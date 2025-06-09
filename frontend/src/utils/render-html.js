@@ -309,6 +309,7 @@ function setupZoomAndDrag() {
         // 鼠标按下事件 - 开始拖动
 
         let moveContainer = null;
+        container.style.backgroundColor = '#fff';
 
         container.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return; // 只响应左键
