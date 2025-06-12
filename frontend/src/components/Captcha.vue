@@ -148,13 +148,14 @@ onMounted(function () {
 <style scoped>
 .container {
   width: 360px;
-  background: white;
+  background: var(--el-bg-color-overlay);
   padding: 20px;
   text-align: center;
   box-sizing: border-box;
 }
 
 .container p {
+  color: var(--el-text-color);
   padding: 0px;
   margin: 0px;
 }
@@ -170,14 +171,7 @@ onMounted(function () {
 .bg-image {
   object-fit: cover;
 }
-.slider-track {
-  height: 70px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  position: relative;
-  margin: 15px 0;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+
 .slider {
   position: absolute;
   background-size: 100% 100%;
@@ -186,15 +180,10 @@ onMounted(function () {
   z-index: 10;
 }
 
-.slider:active {
-  cursor: grabbing;
-  transform: translateY(-50%) scale(1.05);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
 .progress-container {
   height: 30px;
   border-radius: 15px;
-  background: #cfd0d1;
+  background: var(--me-switch-bg-color);
   margin-bottom: 20px;
   overflow: hidden;
   position: relative;
@@ -203,7 +192,7 @@ onMounted(function () {
   width: 40px;
   height: 26px;
   border-radius: 15px;
-  background: #fff;
+  background: var(--me-body-bg-color);
   position: absolute;
   top: 2px;
   left: 2px;
@@ -212,7 +201,7 @@ onMounted(function () {
 
 .progress-container .progress-bar {
   height: 100%;
-  background: #00b458;
+  background: var(--el-color-primary);
   width: 0%;
   border-radius: 15px;
 }
