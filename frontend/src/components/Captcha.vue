@@ -220,7 +220,7 @@ defineExpose({
   background-size: 100% 100%;
   left: 0px;
   transition: transform 0.1s;
-  z-index: 10;
+  z-index: 5;
 }
 
 .progress-container {
