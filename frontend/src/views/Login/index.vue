@@ -7,7 +7,7 @@
         </p>
         <div class="formdata">
           <el-form
-            ref="form"
+            ref="loginForm"
             :model="form"
             :rules="rules"
             label-position="top"
@@ -64,131 +64,123 @@
         </div>
       </el-card>
     </div>
-    <Captcha />
   </div>
   <Beian />
+  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380">
+    <Captcha ref="myCaptcha" @verify="verifyImg" />
+  </el-dialog>
 </template>
 
-<script>
-import { loginUser, loginCode } from "@/api/login";
+<script setup>
+import { loginUser } from "@/api/login";
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
-import { Picture, User, Lock } from "@element-plus/icons-vue";
+import { User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
 import { config } from "@/utils/config";
 import Logo from "@/components/Logo";
 import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
+import { ElMessage } from "element-plus";
+import { ref, reactive } from "vue";
+const router = useRouter();
 
-export default {
-  name: "LogIn",
-  components: {
-    Picture,
-    User,
-    Lock,
-    Logo,
-    Beian,
-    Captcha,
-  },
-  setup() {
-    const router = useRouter();
-    return { router };
-  },
-  data() {
-    return {
-      form: {
-        username: null,
-        password: null,
-      },
-      checked: false,
-      rules: {
-        username: [
-          { required: true, message: "请输入用户名", trigger: "blur" },
-          { max: 20, message: "不能大于20个字符", trigger: "blur" },
-        ],
-        password: [
-          { required: true, message: "请输入密码", trigger: "blur" },
-          { max: 10, message: "不能大于10个字符", trigger: "blur" },
-        ],
-      },
-    };
-  },
+const form = ref({
+  username: null,
+  password: null,
+});
 
-  mounted() {},
+const loginForm = ref(null);
 
-  methods: {
-    submitLogin() {
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          // 校验通过，发送请求
-          this.sendPostRequest();
-        } else {
-          // 校验失败，提示用户
-          this.$message.error("请填写完整登录信息");
-          return false;
-        }
-      });
-    },
+const checked = ref(false);
 
-    async sendPostRequest() {
-      try {
-        const password = this.form.password;
-        let encryptedPassword = encryptAes(password);
-        // 使用加密后的密码进行登录
-        const response = await loginUser(this.form.username, encryptedPassword);
-        // 假设这是登录成功后的处理逻辑
-        if (response.code === 200) {
-          this.$message({
-            type: "success",
-            message: "登录成功",
-            showClose: true,
-          });
-          // console.log("服务响应：", response);
+const myCaptcha = ref(null);
 
-          // 往浏览器存入token
-          // localStorage.setItem("token", response.data.data.jwtToken);
-          store.dispatch("app/setAuthorization", response.data.jwtToken);
-          store.dispatch("app/setUserRole", response.data.superAdmin);
-          store.dispatch("app/setNickName", response.data.nickName);
-          const avater = response.data.avatar;
-          if (avater) {
-            store.dispatch("app/setAvatar", config.BASE_URL + avater);
-          }
+const captchaCode = ref("-1");
 
-          this.$router.replace("/home/chat");
-        } else {
-          this.$message({
-            message: response.msg,
-            type: "error",
-            showClose: true,
-          });
-        }
-      } catch (error) {
-        this.$message({
-          message: "服务异常",
-          type: "error",
-          showClose: true,
-        });
-        console.error(error);
-      }
-    },
-    // 记住密码
-    remenber(data) {
-      this.checked = data;
-      if (this.checked) {
-        localStorage.setItem("password", JSON.stringify(this.form));
-      } else {
-        localStorage.removeItem("password");
-      }
-    },
-    forgetpas() {
-      this.router.push("/forget");
-    },
-    register() {
-      this.router.push("/register");
-    },
-  },
+let state = reactive({
+  open: false,
+});
+
+const rules = {
+  username: [
+    { required: true, message: "请输入用户名", trigger: "blur" },
+    { max: 20, message: "不能大于20个字符", trigger: "blur" },
+  ],
+  password: [
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { max: 10, message: "不能大于10个字符", trigger: "blur" },
+  ],
 };
+
+function verifyImg(obj) {
+  if (obj.tag === true) {
+    captchaCode.value = obj.token;
+    sendPostRequest();
+    state.open = false;
+  } else {
+    ElMessage.error("验证不通过");
+  }
+}
+
+function submitLogin() {
+  loginForm.value.validate((valid) => {
+    if (valid) {
+      // 校验通过，发送请求
+      state.open = true;
+      myCaptcha.value && myCaptcha.value.init();
+    } else {
+      // 校验失败，提示用户
+      ElMessage.error("请填写完整登录信息");
+      return false;
+    }
+  });
+}
+
+async function sendPostRequest() {
+  try {
+    const password = form.value.password;
+    let encryptedPassword = encryptAes(password);
+    // 使用加密后的密码进行登录
+    const response = await loginUser(
+      form.value.username,
+      encryptedPassword,
+      captchaCode.value
+    );
+    if (response.code === 200) {
+      ElMessage.success("登录成功");
+
+      store.dispatch("app/setAuthorization", response.data.jwtToken);
+      store.dispatch("app/setUserRole", response.data.superAdmin);
+      store.dispatch("app/setNickName", response.data.nickName);
+      const avater = response.data.avatar;
+      if (avater) {
+        store.dispatch("app/setAvatar", config.BASE_URL + avater);
+      }
+
+      router.replace("/home/chat");
+    } else {
+      ElMessage.error(response.msg);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+// 记住密码
+function remenber(data) {
+  checked.value = data;
+  if (checked.value) {
+    localStorage.setItem("password", JSON.stringify(form.value));
+  } else {
+    localStorage.removeItem("password");
+  }
+}
+function forgetpas() {
+  router.push("/forget");
+}
+function register() {
+  router.push("/register");
+}
 </script>
 
 <style scoped>

@@ -17,7 +17,7 @@ def verify(token, user_x):
     gap_x = data["gap_x"]
 
     if abs(user_x - gap_x) <= Captcha.ALLOWED_OFFSET:
-        RedisHandler().remove_key(token)
+        RedisHandler().save_key(token, json.dumps(True), 300)  # 通过后五分钟有效
         return ReturnTool.SuccessReturn({
             'refresh': True,
             'msg': "验证成功"

@@ -1,19 +1,18 @@
 <template>
   <div class="container">
-    <p>请拖动滑块完成验证</p>
-
-    <div class="captcha-container" v-loading="loading">
+    <div
+      :class="successTag ? 'captcha-container success' : 'captcha-container'"
+      v-loading="loading"
+    >
       <img :src="bgBase64" class="bg-image" ref="bgImage" />
       <div class="slider" ref="slider"></div>
     </div>
-
     <transition name="el-zoom-in-top">
       <div v-show="pContainer" class="progress-container">
         <div class="progress-bar" ref="progress"></div>
         <div class="slider-block" ref="sliderBlock"></div>
       </div>
     </transition>
-
     <el-button type="primary" @click="init" :icon="RefreshRight"
       >刷新验证码</el-button
     >
@@ -22,9 +21,12 @@
 
 <script setup>
 import { verify, refresh } from "@/api/captcha";
-import { onMounted, ref } from "vue";
+import { nextTick, ref } from "vue";
 import { RefreshRight } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+
+let emit = defineEmits(["verify"]);
+
 const bgBase64 = ref("");
 const slider = ref(null);
 const bgImage = ref(null);
@@ -32,6 +34,7 @@ const progress = ref(null);
 const sliderBlock = ref(null);
 const token = ref("");
 const loading = ref(false);
+const successTag = ref(false);
 const pContainer = ref(false);
 
 const maxLeft = 280;
@@ -105,7 +108,14 @@ async function verifyPosition() {
 
     if (response.data.refresh) {
       pContainer.value = false;
-      ElMessage.success(response.data.msg);
+      successTag.value = true;
+      setTimeout(function () {
+        emit("verify", {
+          tag: true,
+          token: token.value,
+        });
+        successTag.value = false;
+      }, 800);
     } else {
       init();
       ElMessage.error(response.data.msg);
@@ -119,8 +129,12 @@ async function verifyPosition() {
 
 async function init() {
   pContainer.value = false;
-  sliderBlock.value.style.left = "2px";
-  progress.value.style.width = `0%`;
+  if (sliderBlock.value) {
+    sliderBlock.value.style.left = "2px";
+  }
+  if (progress.value) {
+    progress.value.style.width = `0%`;
+  }
   loading.value = true;
   const obj = await refresh();
   bgBase64.value = "data:image/png;base64," + obj.data.bg_base64;
@@ -135,13 +149,20 @@ async function init() {
   loading.value = false;
   pContainer.value = true;
 }
-onMounted(function () {
+
+nextTick(function () {
   init();
   // 事件监听
-  sliderBlock.value.addEventListener("mousedown", startDrag);
-  sliderBlock.value.addEventListener("touchstart", handleTouchStart, {
-    passive: false,
-  });
+  if (sliderBlock.value) {
+    sliderBlock.value.addEventListener("mousedown", startDrag);
+    sliderBlock.value.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+  }
+});
+
+defineExpose({
+  init,
 });
 </script>
 
@@ -154,12 +175,6 @@ onMounted(function () {
   box-sizing: border-box;
 }
 
-.container p {
-  color: var(--el-text-color);
-  padding: 0px;
-  margin: 0px;
-}
-
 .captcha-container {
   position: relative;
   margin: 20px 0;
@@ -168,6 +183,34 @@ onMounted(function () {
   height: 150px;
   text-align: right;
 }
+
+.captcha-container.success {
+  position: relative;
+}
+
+.captcha-container.success::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: var(--el-overlay-color-lighter);
+  z-index: 9;
+}
+
+.captcha-container.success::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  background: url("@/assets/images/success.svg") no-repeat center / contain;
+  z-index: 10;
+}
+
 .bg-image {
   object-fit: cover;
 }
