@@ -1,18 +1,18 @@
+import datetime
 import hashlib
 import json
-import uuid
+import time
+
+import bcrypt
+from sqlalchemy import or_
 
 from dbinfo import DatabaseSession
-from sqlalchemy import or_
 from dto import SysUserDTO
-from entity import SysUser
-from utils import DbTools, Config, encryptUtils, Tools
+from entity import SysUser, EmailLogs
+from utils import DbTools, Config, Tools
 from utils import ReturnTool
-import bcrypt
-
-from utils import TimeToolClass
-
 from utils import SendMail
+from utils import TimeToolClass
 from utils.GetChatId import Snowflake
 from utils.RedisUtils import RedisHandler
 from utils.encryptUtils import aes_decrypt
@@ -110,6 +110,16 @@ def enroll_impl(name, username, email):
             return ReturnTool.ErrorReturn('用户名已存在或邮箱已被注册')
         if SendMail.send_email(email, subject, body) != '电子邮件发送成功！':
             return ReturnTool.ErrorReturn('邮件发送失败，请检查邮箱是否正确')
+        # 保存发送记录
+        now = datetime.datetime.fromtimestamp(time.time())
+        request_data = {
+            "subject": subject,
+            "body": body,
+            "send_users": json.dumps([email]),
+            "create_date": now,
+        }
+        DbTools.saveOrUpdate(session, request_data, EmailLogs)
+        # 保存用户记录
         hashed_password, salt = Tools.generate_hashed_password(password)
         sql_data = {
             'user_name': username, 'nick_name': name, 'email': email, 'pass_word': hashed_password, 'salt': salt,
@@ -135,6 +145,14 @@ def forget_pwd_impl(email, req_url):
                     "user_name": user_exist.user_name,
                     "email": user_exist.email,
                 }), 600)  # 链接10分钟保活
+                now = datetime.datetime.fromtimestamp(time.time())
+                request_data = {
+                    "subject": subject,
+                    "body": body,
+                    "send_users": json.dumps([user_exist.email]),
+                    "create_date": now,
+                }
+                DbTools.saveOrUpdate(session, request_data, EmailLogs)
         else:
             return ReturnTool.ErrorReturn('此邮箱未注册')
 

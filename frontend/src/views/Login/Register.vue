@@ -51,21 +51,44 @@
     </div>
   </div>
   <Beian />
+
+  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380">
+    <Captcha ref="myCaptcha" @verify="verifyImg" />
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { enrollUser } from "@/api/login";
 import Logo from "@/components/Logo";
 import Beian from "@/components/Beian";
+import Captcha from "@/components/Captcha";
 
 const registerForm = ref({
   name: "",
   username: "",
   email: "",
 });
+
+const myCaptcha = ref(null);
+
+const captchaCode = ref("-1");
+
+let state = reactive({
+  open: false,
+});
+
+function verifyImg(obj) {
+  if (obj.tag === true) {
+    captchaCode.value = obj.token;
+    sendRegister();
+    state.open = false;
+  } else {
+    ElMessage.error("验证不通过");
+  }
+}
 
 const rules = {
   name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
@@ -91,24 +114,33 @@ const rules = {
 const registerFormRef = ref(null);
 const router = useRouter();
 
-const handleRegister = async () => {
-  registerFormRef.value.validate(async (valid) => {
-    if (valid) {
-      const { name, username, email } = registerForm.value;
-      console.log("注册数据:", { name, username, email });
+async function sendRegister() {
+  const { name, username, email } = registerForm.value;
 
-      try {
-        const res = await enrollUser({ name, username, email });
-        // console.log("注册后端返回：", res);
-        if (res.code === 200) {
-          ElMessage.success("注册成功,密码已发送到您的注册邮箱。");
-          router.push("/");
-        } else {
-          ElMessage.error(res.msg);
-        }
-      } catch (error) {
-        console.log(error);
-      }
+  try {
+    const res = await enrollUser({
+      name,
+      username,
+      email,
+      captcha_code: captchaCode.value,
+    });
+    // console.log("注册后端返回：", res);
+    if (res.code === 200) {
+      ElMessage.success("注册成功,密码已发送到您的注册邮箱。");
+      router.push("/");
+    } else {
+      ElMessage.error(res.msg);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const handleRegister = () => {
+  registerFormRef.value.validate((valid) => {
+    if (valid) {
+      state.open = true;
+      myCaptcha.value && myCaptcha.value.init();
     } else {
       ElMessage.error("请完善注册信息。");
     }

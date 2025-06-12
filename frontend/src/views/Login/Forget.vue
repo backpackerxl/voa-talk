@@ -27,19 +27,41 @@
     </div>
   </div>
   <Beian />
+  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380">
+    <Captcha ref="myCaptcha" @verify="verifyImg" />
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { forgetPwd } from "@/api/login";
 import Logo from "@/components/Logo";
 import Beian from "@/components/Beian";
+import Captcha from "@/components/Captcha";
 
 const registerForm = ref({
   email: "",
 });
+
+const myCaptcha = ref(null);
+
+const captchaCode = ref("-1");
+
+let state = reactive({
+  open: false,
+});
+
+function verifyImg(obj) {
+  if (obj.tag === true) {
+    captchaCode.value = obj.token;
+    sendForget();
+    state.open = false;
+  } else {
+    ElMessage.error("验证不通过");
+  }
+}
 
 const rules = {
   email: [
@@ -53,28 +75,37 @@ const rules = {
   ],
 };
 
+async function sendForget() {
+  const { email } = registerForm.value;
+  let req_url = window.location.origin;
+  req_url = req_url + "/resetPwd";
+  // console.log("邮箱：:", { email, req_url });
+
+  try {
+    const res = await forgetPwd({
+      email,
+      req_url,
+      captcha_code: captchaCode.value,
+    });
+    if (res.code === 200) {
+      ElMessage.success("发送成功！请检查邮箱以完成验证。");
+      router.push("/");
+    } else {
+      ElMessage.error(res.msg);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const registerFormRef = ref(null);
 const router = useRouter();
 
-const handleForget = async () => {
-  registerFormRef.value.validate(async (valid) => {
+const handleForget = () => {
+  registerFormRef.value.validate((valid) => {
     if (valid) {
-      const { email } = registerForm.value;
-      let req_url = window.location.origin;
-      req_url = req_url + "/resetPwd";
-      console.log("邮箱：:", { email, req_url });
-
-      try {
-        const res = await forgetPwd({ email, req_url });
-        if (res.code === 200) {
-          ElMessage.success("发送成功！请检查邮箱以完成验证。");
-          router.push("/");
-        } else {
-          ElMessage.error(res.msg);
-        }
-      } catch (error) {
-        console.log(error);
-      }
+      state.open = true;
+      myCaptcha.value && myCaptcha.value.init();
     } else {
       ElMessage.error("请填写完整的邮箱信息。");
     }

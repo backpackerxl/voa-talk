@@ -39,21 +39,43 @@
     </div>
   </div>
   <Beian />
+  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380">
+    <Captcha ref="myCaptcha" @verify="verifyImg" />
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { resetPWD } from "@/api/login";
 import { encryptAes } from "@/utils/tools";
 import Logo from "@/components/Logo";
 import Beian from "@/components/Beian";
+import Captcha from "@/components/Captcha";
 
 const registerForm = ref({
   pwd: "",
   pwd_ok: "",
 });
+
+const myCaptcha = ref(null);
+
+const captchaCode = ref("-1");
+
+let state = reactive({
+  open: false,
+});
+
+function verifyImg(obj) {
+  if (obj.tag === true) {
+    captchaCode.value = obj.token;
+    sendResetPwd();
+    state.open = false;
+  } else {
+    ElMessage.error("验证不通过");
+  }
+}
 
 const validatePassword = (rule, value, callback) => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
@@ -87,25 +109,33 @@ const registerFormRef = ref(null);
 const router = useRouter();
 const routePath = useRoute();
 
-const handleResetPwd = async () => {
-  registerFormRef.value.validate(async (valid) => {
+async function sendResetPwd() {
+  const { pwd, pwd_ok } = registerForm.value;
+  const secret_key = routePath.params.secretKey || "";
+  // console.log("密码重置数据:", { pwd, pwd_ok, secret_key });
+  try {
+    const res = await resetPWD({
+      pwd: encryptAes(pwd),
+      secret_key,
+      captcha_code: captchaCode.value,
+    });
+    // console.log("密码重置后端返回：", res);
+    if (res.code === 200) {
+      ElMessage.success("密码重置成功！");
+      router.push("/");
+    } else {
+      ElMessage.error(res.msg);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const handleResetPwd = () => {
+  registerFormRef.value.validate((valid) => {
     if (valid) {
-      // Aa!#123456
-      const { pwd, pwd_ok } = registerForm.value;
-      const secret_key = routePath.params.secretKey || "";
-      console.log("密码重置数据:", { pwd, pwd_ok, secret_key });
-      try {
-        const res = await resetPWD({ pwd: encryptAes(pwd), secret_key });
-        // console.log("密码重置后端返回：", res);
-        if (res.code === 200) {
-          ElMessage.success("密码重置成功！");
-          router.push("/");
-        } else {
-          ElMessage.error(res.msg);
-        }
-      } catch (error) {
-        console.log(error);
-      }
+      state.open = true;
+      myCaptcha.value && myCaptcha.value.init();
     } else {
       ElMessage.error("请填写完整的密码信息。");
     }

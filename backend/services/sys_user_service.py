@@ -1,9 +1,13 @@
+import json
+
 from services.impl import sys_user_impl
 
 from utils import ReturnTool
 
 from utils import Config
 from utils.JwtUtils import JWTHandler
+from utils.RedisUtils import RedisHandler
+from utils.ReturnTool import ErrorReturn
 
 
 def api_sys_user_find_list_page_service(request):
@@ -34,6 +38,13 @@ def enroll_service(request):
     name = data.get("name")
     username = data.get("username")
     email = data.get("email")
+    res = RedisHandler().get_key(data["captcha_code"])
+    if res is None:
+        return ErrorReturn("请通过验证后，再尝试注册")
+
+    if not json.loads(res):
+        return ErrorReturn("请通过验证后，再尝试注册")
+
     return sys_user_impl.enroll_impl(name, username, email)
 
 
@@ -44,6 +55,12 @@ def forget_pwd_service(request):
     data = request.get_json()
     email = data.get("email")
     req_url = data.get("req_url")
+    res = RedisHandler().get_key(data["captcha_code"])
+    if res is None:
+        return ErrorReturn("请通过验证后，再尝试找回密码")
+
+    if not json.loads(res):
+        return ErrorReturn("请通过验证后，再尝试找回密码")
 
     return sys_user_impl.forget_pwd_impl(email, req_url)
 
@@ -55,6 +72,13 @@ def reset_pwd(request):
     data = request.get_json()
     pwd = data.get('pwd')
     secret_key = data.get('secret_key')
+    res = RedisHandler().get_key(data["captcha_code"])
+    if res is None:
+        return ErrorReturn("请通过验证后，再尝试重置密码")
+
+    if not json.loads(res):
+        return ErrorReturn("请通过验证后，再尝试重置密码")
+
     return sys_user_impl.reset_pwd(pwd, secret_key)
 
 
@@ -73,6 +97,7 @@ def get_req_user(request):
     # nick_name = payload.get("nickName")
     # super_admin = payload.get("superAdmin")
     return payload
+
 
 def api_user_update_nickname(request):
     data = request.get_json()
