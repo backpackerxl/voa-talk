@@ -73,6 +73,7 @@ const handleForget = async () => {
           ElMessage.error(res.msg);
         }
       } catch (error) {
+        ElMessage.error("服务异常");
         console.log(error);
       }
     } else {

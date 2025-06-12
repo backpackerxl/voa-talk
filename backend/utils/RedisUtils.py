@@ -38,11 +38,23 @@ class RedisHandler:
         self.rd.set(key, value)
         self.rd.expire(key, cache_duration)
 
+    def remove_key(self, key):
+        '''
+        删除键
+        '''
+        self.rd.delete(key)
+
     def get_key(self, key):
         '''
         获取值
         '''
         return self.rd.get(key)
+
+    def get_expire(self, key):
+        '''
+        获取过期时间
+        '''
+        return self.rd.ttl(key)
 
     def check_code(self, code):
         """

@@ -38,7 +38,7 @@ service.interceptors.response.use(
       }
     },
     async error => {
-      console.log("error==>", error);
+      // console.log("error==>", error);
       // 响应失败处理
       if (error.response && (error.response.status === 401 || error.response.status === 408)) {
         const redirect = encodeURIComponent(window.location.href);
@@ -122,7 +122,7 @@ async function instance(options) {
       throw new Error('Invalid response structure');
     }
   } catch (e) {
-    console.error("Error in instance function:", e);
+    // console.error("Error in instance function:", e);
     return Promise.reject(e);
   } finally {
     window.$endLoading && window.$endLoading();

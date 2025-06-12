@@ -64,6 +64,7 @@
         </div>
       </el-card>
     </div>
+    <Captcha />
   </div>
   <Beian />
 </template>
@@ -76,6 +77,7 @@ import { Picture, User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
 import { config } from "@/utils/config";
 import Logo from "@/components/Logo";
+import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
 
 export default {
@@ -86,6 +88,7 @@ export default {
     Lock,
     Logo,
     Beian,
+    Captcha,
   },
   setup() {
     const router = useRouter();
@@ -161,6 +164,11 @@ export default {
           });
         }
       } catch (error) {
+        this.$message({
+          message: "服务异常",
+          type: "error",
+          showClose: true,
+        });
         console.error(error);
       }
     },
