@@ -71,6 +71,7 @@
         type="primary"
         @click="openChatHis"
         :icon="ChatLineRound"
+        v-if="isMob"
         >查看历史对话</el-button
       >
       <el-button
@@ -125,11 +126,13 @@ import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
 import { ArrowDown } from "@element-plus/icons-vue";
+import device from "current-device";
 
 const avatarUrl = store.state.app.avatar;
 const imageUrl = ref(avatarUrl);
 const saveUrl = ref(avatarUrl.replace(config.BASE_URL, ""));
 const checkThemId = ref(1);
+const isMob = ref(!device.mobile());
 const colorList = ref([
   {
     id: 1,

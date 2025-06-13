@@ -39,7 +39,7 @@
     </div>
   </div>
   <Beian />
-  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380">
+  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380" align-center>
     <Captcha ref="myCaptcha" @verify="verifyImg" />
   </el-dialog>
 </template>
