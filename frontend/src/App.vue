@@ -67,7 +67,6 @@ body {
 .pre-container {
   border-radius: 6px;
   background: var(--me-bg-color);
-  border: 1px solid var(--borderColor-default);
   margin: 12px 0;
   transition: all 0.1s;
 }
@@ -88,6 +87,18 @@ body {
 
 .pre-container .mermaid-code {
   padding: 1em;
+}
+
+.pre-header-container {
+  position: sticky;
+  top: 0;
+  background-color: var(--me-body-bg-color);
+}
+
+.pre-header-block {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background-color: var(--me-bg-color);
 }
 
 .pre-header {

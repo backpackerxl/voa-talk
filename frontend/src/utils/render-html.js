@@ -77,6 +77,8 @@ export function markdwonToHTML(content, showPlayIcon) {
         if (!block.parentNode.querySelector(".copy-icon")) {
             const oDivC = document.createElement("div");
             const oDivH = document.createElement("div");
+            const oDivHC = document.createElement("div");
+            const oDivHCB = document.createElement("div");
             const oDivTools = document.createElement("div");
             const oButton = document.createElement("button");
 
@@ -86,6 +88,8 @@ export function markdwonToHTML(content, showPlayIcon) {
             const upIcon = document.createElement("i");
             oDivC.className = 'pre-container'
             oDivH.className = 'pre-header'
+            oDivHC.className = 'pre-header-container'
+            oDivHCB.className = 'pre-header-block'
             oDivTools.className = 'pre-header-tools'
             oButton.className = 'pre-button';
             if (ismermaid) {
@@ -118,7 +122,9 @@ export function markdwonToHTML(content, showPlayIcon) {
             // 将图标插入到 <pre> 元素中
             oDivH.appendChild(oButton);
             oDivH.appendChild(oDivTools);
-            oDivC.appendChild(oDivH);
+            oDivHCB.appendChild(oDivH);
+            oDivHC.appendChild(oDivHCB);
+            oDivC.appendChild(oDivHC);
             let preBefore = block.parentNode.previousElementSibling;
             oDivC.appendChild(block.parentNode);
             preBefore.after(oDivC);
@@ -140,7 +146,7 @@ export function addCopy(chatPage) {
     chatPage.addEventListener("click", function (e) {
         const el = e.target;
         if (el.tagName == "I" && el.classList.contains("copy-icon")) {
-            clipboard.writeText(el.parentElement.parentElement.nextElementSibling.innerText).then(
+            clipboard.writeText(el.parentElement.parentElement.parentElement.parentElement.nextElementSibling.innerText).then(
                 () => {
                     el.className = "copy-icon fas fa-check"; // 切换为成功图标
                     el.style.color = "#28a745"; // 成功颜色
@@ -158,7 +164,7 @@ export function addCopy(chatPage) {
         if (el.tagName == "I" && el.classList.contains("play-icon")) {
             const oAside = chatPage.parentElement.parentElement.previousElementSibling;
             const oMain = chatPage.parentElement.parentElement.parentElement;
-            const code = el.parentElement.parentElement.nextElementSibling.innerText;
+            const code = el.parentElement.parentElement.parentElement.parentElement.nextElementSibling.innerText;
             const oCC = oMain.querySelector("#me-code-container");
             let ifr = document.createElement('iframe');
             if (oCC) {
@@ -188,7 +194,7 @@ export function addCopy(chatPage) {
         }
 
         if (el.tagName == "I" && el.classList.contains("prebtn-arrow")) {
-            const oP = el.parentElement.parentElement;
+            const oP = el.parentElement.parentElement.parentElement.parentElement;
             if (el.classList.contains('fa-angle-up')) {
                 el.classList.remove('fa-angle-up');
                 el.classList.add('fa-angle-down');
@@ -207,12 +213,12 @@ export function addCopy(chatPage) {
         }
 
         if (el.tagName == "I" && el.classList.contains("mermaid-show-code")) {
-            const oP = el.parentElement.parentElement;
+            const oP = el.parentElement.parentElement.parentElement.parentElement;
             changeTools(oP);
         }
 
         if (el.tagName == "I" && el.classList.contains("mermaid-scale-big")) {
-            const oP = el.parentElement.parentElement;
+            const oP = el.parentElement.parentElement.parentElement.parentElement;
             const MC = oP.nextElementSibling.querySelector('div.mermaid');
             let st = MC.dataset.scale * 1.2;
             MC.dataset.scale = st > 10 ? 10 : st;
@@ -223,7 +229,7 @@ export function addCopy(chatPage) {
         }
 
         if (el.tagName == "I" && el.classList.contains("mermaid-scale-small")) {
-            const oP = el.parentElement.parentElement;
+            const oP = el.parentElement.parentElement.parentElement.parentElement;
             const MC = oP.nextElementSibling.querySelector('div.mermaid');
             let st = MC.dataset.scale * 0.8;
             MC.dataset.scale = st < 0.3 ? 0.3 : st;
@@ -234,7 +240,7 @@ export function addCopy(chatPage) {
         }
 
         if (el.tagName == "I" && el.classList.contains("mermaid-reset-chart")) {
-            const oP = el.parentElement.parentElement;
+            const oP = el.parentElement.parentElement.parentElement.parentElement;
             const MC = oP.nextElementSibling.querySelector('div.mermaid');
             MC.dataset.scale = 1;
             MC.dataset.posx = 0;
@@ -244,27 +250,28 @@ export function addCopy(chatPage) {
         }
 
         if (el.tagName == "I" && el.classList.contains("mermaid-down-png")) {
-            const oP = el.parentElement.parentElement;
+            const oP = el.parentElement.parentElement.parentElement.parentElement;
             const MC = oP.nextElementSibling.querySelector('div.mermaid');
             downloadPNG(MC);
         }
 
         if (el.tagName == "BUTTON" && el.classList.contains("pre-button")) {
             const oI = el.querySelector('i');
+            const preC = el.parentElement.parentElement.parentElement.parentElement;
             if (oI) {
                 if (oI.classList.contains('fa-angle-up')) {
                     oI.classList.remove('fa-angle-up');
                     oI.classList.add('fa-angle-down');
-                    el.parentElement.parentElement.style.width = el.getBoundingClientRect().width + 20 + 'px';
-                    el.parentElement.parentElement.style.height = '32px';
-                    el.parentElement.parentElement.style.overflow = 'hidden';
+                    preC.style.width = el.getBoundingClientRect().width + 20 + 'px';
+                    preC.style.height = '32px';
+                    preC.style.overflow = 'hidden';
                     el.parentElement.querySelector('.pre-header-tools').style.display = 'none';
                 } else {
                     oI.classList.remove('fa-angle-down');
                     oI.classList.add('fa-angle-up');
-                    el.parentElement.parentElement.style.width = '';
-                    el.parentElement.parentElement.style.overflow = '';
-                    el.parentElement.parentElement.style.height = '';
+                    preC.style.width = '';
+                    preC.style.overflow = '';
+                    preC.style.height = '';
                     el.parentElement.querySelector('.pre-header-tools').style.display = '';
                 }
             }
