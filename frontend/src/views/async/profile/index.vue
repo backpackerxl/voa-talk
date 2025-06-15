@@ -56,9 +56,27 @@
           size="large"
         ></el-input>
       </el-form-item>
+      <el-form-item label="邮箱: " prop="email">
+        <div class="email-setting">
+          <div>
+            <el-tag size="large">{{
+              userEmail !== "" ? userEmail : "绑定邮箱可获取平台资讯"
+            }}</el-tag>
+          </div>
+          <div>
+            <el-button plain :icon="Edit" @click="changeEmail">{{
+              userEmail !== "" ? "更换" : "绑定"
+            }}</el-button>
+          </div>
+        </div>
+      </el-form-item>
       <el-form-item>
         <div class="button-group">
-          <el-button size="large" type="primary" @click="saveUserInfo"
+          <el-button
+            size="large"
+            type="primary"
+            @click="saveUserInfo"
+            :icon="Edit"
             >保 存</el-button
           >
         </div>
@@ -105,31 +123,97 @@
       </div>
     </div>
   </div>
+  <el-dialog
+    v-model="editDialogVisible"
+    title="修改邮箱号"
+    width="380"
+    align-center
+  >
+    <el-form
+      :model="registerForm"
+      :rules="rules"
+      ref="registerFormRef"
+      placeholder="请输入邮箱号"
+    >
+      <el-form-item label="邮箱号: " prop="email">
+        <el-input size="large" v-model="registerForm.email" />
+      </el-form-item>
+      <el-form-item label="验证码: " prop="code">
+        <el-input
+          type="number"
+          size="large"
+          v-model="registerForm.code"
+          placeholder="请输入验证码"
+        >
+          <template #suffix>
+            <el-button
+              class="get-code"
+              :disabled="codeDisabled"
+              @click="getEmailCode"
+              plain
+              >{{ emailCodeContent }}</el-button
+            >
+          </template>
+        </el-input>
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="editEmailOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog
+    v-model="state.open"
+    title="请拖动滑块完成验证"
+    width="380"
+    align-center
+  >
+    <Captcha ref="myCaptcha" @verify="verifyImg" />
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import store from "@/store";
 import {
-  Delete,
-  Download,
   Plus,
-  ZoomIn,
   ChatDotSquare,
   ChatLineRound,
   Edit,
+  ArrowDown,
 } from "@element-plus/icons-vue";
 const welcomStr = ref(store.state.app.nickName);
+const userEmail = ref(store.state.app.userEmail);
+
+const registerForm = ref({
+  email: userEmail.value,
+  code: "",
+});
+
+let state = reactive({
+  open: false,
+});
+
+const editDialogVisible = ref(false);
 import router from "@/router";
-import { updateUser } from "@/api/apiUser";
+import { updateUser, sendEmailCodeApi, updateUserEmail } from "@/api/apiUser";
 import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
-import { ArrowDown } from "@element-plus/icons-vue";
 import device from "current-device";
+import Captcha from "@/components/Captcha";
 
 const avatarUrl = store.state.app.avatar;
 const imageUrl = ref(avatarUrl);
+const myCaptcha = ref(null);
+const codeDisabled = ref(false);
+const emailCodeContent = ref("获取验证码");
+const reqCId = ref("-1");
+const captchaCode = ref("-1");
 const saveUrl = ref(avatarUrl.replace(config.BASE_URL, ""));
 const checkThemId = ref(1);
 const isMob = ref(!device.mobile());
@@ -225,12 +309,102 @@ const themList = ref([
     icon: "icon theme-os",
   },
 ]);
+const emailRule = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 function changeThem(item) {
   handleThem(item);
   them.value = item;
   store.dispatch("app/setThem", JSON.stringify(item));
 }
+
+function verifyImg(obj) {
+  if (obj.tag === true) {
+    captchaCode.value = obj.token;
+    sendEmailCode();
+    state.open = false;
+  } else {
+    ElMessage.error("验证不通过");
+  }
+}
+
+let countdown = 60;
+
+function startCountdown() {
+  const timer = setInterval(() => {
+    countdown--;
+    emailCodeContent.value = "重新发送 " + countdown + "s";
+
+    if (countdown <= 0) {
+      clearInterval(timer);
+      emailCodeContent.value = "重新发送";
+      codeDisabled.value = false;
+    }
+  }, 1000);
+}
+
+async function sendEmailCode() {
+  const reqIdObj = await sendEmailCodeApi({
+    nickName: welcomStr.value,
+    email: registerForm.value.email,
+    captcha_code: captchaCode.value,
+  });
+  reqCId.value = reqIdObj.data.reqId;
+  // 实现倒计时
+  codeDisabled.value = true;
+  countdown = 60;
+  startCountdown();
+}
+
+function getEmailCode() {
+  if (emailRule.test(registerForm.value.email)) {
+    state.open = true;
+    myCaptcha.value && myCaptcha.value.init();
+  } else {
+    ElMessage.error("请填写正确的邮箱号");
+  }
+}
+
+function changeEmail() {
+  editDialogVisible.value = true;
+}
+
+const registerFormRef = ref(null);
+
+function editEmailOk() {
+  registerFormRef.value.validate(async (valid) => {
+    if (valid) {
+      const resp = await updateUserEmail({
+        reqId: reqCId.value,
+        email: registerForm.value.email,
+        verCode: registerForm.value.code,
+      });
+      if (resp.code === 200) {
+        store.dispatch("app/setUserEmail", registerForm.value.email);
+        userEmail.value = registerForm.value.email;
+        ElMessage({
+          message: "修改成功",
+          type: "success",
+        });
+      } else {
+        ElMessage.error("修改失败");
+      }
+      editDialogVisible.value = false;
+    }
+  });
+}
+
+const rules = {
+  email: [
+    { required: true, message: "请输入邮箱", trigger: "blur" },
+    {
+      pattern: emailRule,
+      type: "email",
+      message: "邮箱格式不正确",
+      trigger: ["blur", "change"],
+    },
+  ],
+  code: [{ required: true, message: "请输入邮箱验证码", trigger: "blur" }],
+};
 
 function handleSuccess(response, file, fileList) {
   saveUrl.value = response.image_url;
@@ -343,6 +517,14 @@ onMounted(function () {
   width: 150px;
   height: 150px;
   border-radius: 50%;
+}
+
+.get-code {
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .avater:hover::after {
@@ -493,5 +675,11 @@ onMounted(function () {
 .me-icon .icon.theme-dark {
   -webkit-mask-image: url("@/assets/images/theme-dark.svg");
   mask-image: url("@/assets/images/theme-dark.svg");
+}
+
+.email-setting {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
 }
 </style>

@@ -10,7 +10,9 @@
     <transition name="el-zoom-in-top">
       <div v-show="pContainer" class="progress-container">
         <div class="progress-bar" ref="progress"></div>
-        <div class="slider-block" ref="sliderBlock"></div>
+        <div class="slider-block" ref="sliderBlock">
+          <el-icon><DArrowRight /></el-icon>
+        </div>
       </div>
     </transition>
     <el-button type="primary" @click="init" :icon="RefreshRight"
@@ -22,7 +24,7 @@
 <script setup>
 import { verify, refresh } from "@/api/captcha";
 import { nextTick, ref } from "vue";
-import { RefreshRight } from "@element-plus/icons-vue";
+import { RefreshRight, DArrowRight } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 
 let emit = defineEmits(["verify"]);
@@ -240,6 +242,9 @@ defineExpose({
   top: 2px;
   left: 2px;
   cursor: grab;
+  font-size: 16px;
+  color: var(--el-color-info);
+  line-height: 30px;
 }
 
 .progress-container .progress-bar {

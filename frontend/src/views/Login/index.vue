@@ -66,7 +66,12 @@
     </div>
   </div>
   <Beian />
-  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380" align-center>
+  <el-dialog
+    v-model="state.open"
+    title="请拖动滑块完成验证"
+    width="380"
+    align-center
+  >
     <Captcha ref="myCaptcha" @verify="verifyImg" />
   </el-dialog>
 </template>
@@ -129,10 +134,6 @@ function submitLogin() {
       // 校验通过，发送请求
       state.open = true;
       myCaptcha.value && myCaptcha.value.init();
-    } else {
-      // 校验失败，提示用户
-      ElMessage.error("请填写完整登录信息");
-      return false;
     }
   });
 }
@@ -153,6 +154,8 @@ async function sendPostRequest() {
       store.dispatch("app/setAuthorization", response.data.jwtToken);
       store.dispatch("app/setUserRole", response.data.superAdmin);
       store.dispatch("app/setNickName", response.data.nickName);
+      store.dispatch("app/setUserName", response.data.userName);
+      store.dispatch("app/setUserEmail", response.data.email);
       const avater = response.data.avatar;
       if (avater) {
         store.dispatch("app/setAvatar", config.BASE_URL + avater);

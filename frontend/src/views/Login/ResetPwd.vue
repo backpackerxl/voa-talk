@@ -39,7 +39,12 @@
     </div>
   </div>
   <Beian />
-  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380" align-center>
+  <el-dialog
+    v-model="state.open"
+    title="请拖动滑块完成验证"
+    width="380"
+    align-center
+  >
     <Captcha ref="myCaptcha" @verify="verifyImg" />
   </el-dialog>
 </template>
@@ -136,8 +141,6 @@ const handleResetPwd = () => {
     if (valid) {
       state.open = true;
       myCaptcha.value && myCaptcha.value.init();
-    } else {
-      ElMessage.error("请填写完整的密码信息。");
     }
   });
 };

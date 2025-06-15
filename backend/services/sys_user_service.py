@@ -82,6 +82,40 @@ def reset_pwd(request):
     return sys_user_impl.reset_pwd(pwd, secret_key)
 
 
+def send_email_code(request):
+    '''
+    用户获取验证码
+    '''
+    data = request.get_json()
+    nick_name = data["nickName"]
+    email = data["email"]
+    res = RedisHandler().get_key(data["captcha_code"])
+    if res is None:
+        return ErrorReturn("请通过验证后，再尝试重置密码")
+
+    if not json.loads(res):
+        return ErrorReturn("请通过验证后，再尝试重置密码")
+
+    return sys_user_impl.send_email_code(email, nick_name)
+
+
+def update_user_email(request):
+    '''
+    用户重置邮箱号
+    '''
+    data = request.get_json()
+    id = get_req_user(request).get('id')
+    email = data["email"]
+    res = RedisHandler().get_key(data["reqId"])
+    if res is None:
+        return ErrorReturn("验证码错误")
+
+    if res != data["verCode"]:
+        return ErrorReturn("验证码错误")
+
+    return sys_user_impl.update_user_email(email, id)
+
+
 def get_req_user(request):
     # 从请求头中获取 token
     token = request.headers.get('token')

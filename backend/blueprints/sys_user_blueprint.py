@@ -126,3 +126,37 @@ def reset_pwd():
         print(traceback.format_exc())
         logs.setup_logger().error(f'处理请求时出错: {e}')
         return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@sys_user_blueprint.route('/sendEmailCode', methods=['POST'])
+def send_email_code():
+    try:
+        response = sys_user_service.send_email_code(request)
+        return jsonify(response)
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f'处理请求时出错: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@sys_user_blueprint.route('/updateUserEmail', methods=['POST'])
+@token_on
+@add_update_time
+def update_user_email():
+    try:
+        response = sys_user_service.update_user_email(request)
+        return jsonify(response)
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f'处理请求时出错: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500

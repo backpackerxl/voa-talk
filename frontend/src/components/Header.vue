@@ -105,16 +105,19 @@ const handleCommand = (command) => {
     })
       .then(() => {
         // Perform logout action
-        console.log("用户点击退出");
+        // console.log("用户点击退出");
 
         // 清除 store 中的 authorization 和 userRole
-        store.dispatch("app/setAuthorization", "");
-        store.dispatch("app/setUserRole", 0);
-        store.dispatch("app/setAvatar", "");
 
         // 重定向到根路径
         router.push("/");
         // 这里可以添加实际的登出逻辑，比如清除 token 或者重定向到登录页面
+        store.dispatch("app/clearAvatar");
+        store.dispatch("app/clearAuthorization");
+        store.dispatch("app/clearUserRole");
+        store.dispatch("app/clearNickName");
+        store.dispatch("app/clearUserName");
+        store.dispatch("app/clearUserEmail");
       })
       .catch(() => {
         console.log("Logout canceled");

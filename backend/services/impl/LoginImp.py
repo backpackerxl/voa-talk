@@ -88,6 +88,7 @@ def login_impl(request):
             "userName": queue.user_name,
             "nickName": queue.nick_name,
             "avatar": queue.avatar,
+            "email": queue.email,
             "IP": ip,
             "superAdmin": queue.super_admin
         }

@@ -32,3 +32,19 @@ export function updateUser(params) {
         params: params,
     })
 }
+
+export function sendEmailCodeApi(params) {
+    return request({
+        url: 'sys_user/sendEmailCode',
+        method: 'post',
+        params: params,
+    })
+}
+
+export function updateUserEmail(params) {
+    return request({
+        url: 'sys_user/updateUserEmail',
+        method: 'post',
+        params: params,
+    })
+}

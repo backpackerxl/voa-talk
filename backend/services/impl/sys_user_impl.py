@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import json
 import time
+import random
 
 import bcrypt
 from sqlalchemy import or_
@@ -108,7 +109,10 @@ def enroll_impl(name, username, email):
             f'<strong>账号</strong></span><span style="color: rgb(96, 98, 102); background-color: rgb(255, 255, 255); font-size: 14px;">：{username}</span></p>'
             f'<p style="text-indent: 2em;"><span style="color: rgb(96, 98, 102); background-color: rgb(255, 255, 255); font-size: 14px;">'
             f'<strong>密码</strong></span><span style="color: rgb(96, 98, 102); background-color: rgb(255, 255, 255); font-size: 14px;">：{password}</span></p>'
-            f'<p style="text-indent: 2em;"><span style="color: rgb(225, 60, 57); background-color: rgb(255, 255, 255); font-size: 14px;">请妥善保管您的账号密码。</span></p>')
+            f'<p style="text-indent: 2em;"><span style="color: rgb(225, 60, 57); background-color: rgb(255, 255, 255); font-size: 14px;">请妥善保管您的账号密码。</span></p>'
+            f'<p style="text-indent: 2em;">voatalk 平台，欢迎您！</p>'
+            f'<p style="text-indent: 2em;">voatalk 平台项目组</p>'
+            f'<p style="text-indent: 2em;">{datetime.datetime.now().strftime("%Y年%m月%d日")}</p>')
 
     with DatabaseSession() as session:
         user_exist = session.query(SysUser).filter(
@@ -157,7 +161,9 @@ def forget_pwd_impl(email, req_url):
                 f'<span style="color: rgb(19, 24, 29); font-size: 14px;">，正在执行</span><span style="color: rgb(225, 60, 57); font-size: 14px;"><strong>重置密码</strong></span><span style="color: rgb(19, 24, 29); font-size: 14px;">操作</span></p>'
                 f'<p style="text-indent: 2em; text-align: left;"><span style="color: rgb(19, 24, 29); font-size: 14px;">请点击此链接：</span><a href="{req_url}/{key}" target="_blank">重置密码</a></p>'
                 f'<p style="text-indent: 2em; text-align: left;"><span style="color: rgb(19, 24, 29); font-size: 14px;">注意：此链接</span><span style="color: rgb(225, 60, 57); font-size: 14px;">10分钟内有效！</span>'
-                f'<span style="color: rgb(19, 24, 29); font-size: 14px;">若无此操作请忽略此邮件</span></p>')
+                f'<span style="color: rgb(19, 24, 29); font-size: 14px;">若无此操作请忽略此邮件</span></p>'
+                f'<p style="text-indent: 2em;">voatalk 平台项目组</p>'
+                f'<p style="text-indent: 2em;">{datetime.datetime.now().strftime("%Y年%m月%d日")}</p>')
             if SendMail.send_email(email, subject, body, True) != '电子邮件发送成功！':
                 return ReturnTool.ErrorReturn('邮件发送失败，请检查邮箱是否正确')
             else:
@@ -204,6 +210,59 @@ def reset_pwd(pwd, secret_key):
     return ReturnTool.SuccessReturn()
 
 
+def send_email_code(email, nick_name):
+    req_id = str(snowflake.next_id())
+    ver_code = random.randint(100000, 999999)
+    subject = nick_name + "绑定新邮箱"
+    body = f"""
+    <p style="text-indent: 2em;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGEAAABlCAYAAABdl421AAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAzeSURBVHic7Z1tbFvVGcf/zz3XKYS+uC2FwYC4MI1Nndp0KkLjJbXRYC1LaaZp2kAUGjS6kKYj/TKGhtR2sH3opDWlJVSs21Ixib2xprSwim6yG20tA9YGug5WQHUaxktZU6cvtLHvvc8+2I7vvY7tY8fn2knzk66c2MfnPD7/e8655+05wAQVh7xMrLEtEdSgz2NGgMnYsWuzL+Jl+sVwZyvXA0BNDaLdHRRTmZYnItzZGq8XpG8AEHR9FBUmhbq3UNQLO2RYstJsB2gNAH/mXeoSJtapslO5CE0tHDAFhwEEcgSJCR/NVn23ybBkJW8AuD3Hx1Hho/kq7NTKHaEbU2ANcgsAAH4jbuX64Z6x5CGjKY8AABBQZadyEQjJujVvGKKHm9rZXyicUjTt4UJBCHS/kqRVRGqH85eCNH4rgaWqbclFUwsHkN1eZUMILEqGLSselAREZcIxeLlaS3Jj6fI3wG4FjbMHJYEikkGDlaqSmPO2BcMQ0KsiffUikLFDNqxlQEmdm49UfyAgE5bZ2qjCBuUipDpkEZmwzNyk1JgREISCDfJwWEtEVNigXAQAYOa9kkGDjW2JoEpbsmG59Ii6VXXWPBFBr9E6pANbWlCZIS6SfQO5qgiWKV2tFosnIqR6mRGZsEQkXT2MGk3IPhXFdnbqXcrMUBVxNix7J/m9qJKST2Kyj8XStpdEuUSgQpdlnd4GQG7cxdKaZOIczWXGTemHAIvj2/LENWpKFcFuhGZ7FbZLt18vPu0/w2y9IBU50f3Bu1+f6Y6jvBc3y9jC4L4XOy/+W+p79t9n/92jEqXYL5Ht1XHd/sAnczVBfl3UzmMmv6aJuuxv03VE4iaZhJjNfWB+r0j7pCFNXyYXkt9jy9wHAJZl9oETfWxZMcNKRPf8atabANh2WfYvStsibXV2xmt3fPfjhTW+6cugiQYCZWf6eIcRtaz4roQx+MLLWy/fi6QI7LoKIiOC/e7XAIjb7uufd8mUK58BaF4Jpo9P2OwZig888fLWy3sAmHCWjLxiFBLBceeHvvXGtbWXfuExTfPdO1qbxy1s9pz55N8rwn+YdxQZMfKWinwi2BteEfzm67Mnf2b+7guy2ikSBvedPfXet8PPfr4XSSHs1VQWuURwCLD4wdh9es3U9XDMu05QgFhi6OQju7fO3IYCQowkgl0A/avNxxZeXHvVbpXWjmdODfzrpr3PzT2APEK4+wn2RljcurTn2otrr/qtckvHMVNmzHnu1qU91yHZt7Dn7zAjddbSnS7ftKtufgkTVdCoIFBdKh99yHTyHGiO8LZqaPGKWOtEI1weCFT3tQc+vheZ0uDoXZMjbFIA39zgk5fWzWk7hOJLQRSgCLPVp5F2dHSmVx8WW7OJtDqAm1Bk3jC479jhp255M/L9TwAYyLQPWcMQAkDNogdP/chXM/nRItKIgq11Kod7q40lrcZykLYBRYhhxGM//PMvZmwGEIetD+GujgQA3eebfLdsxAz0CpNCF5IAALCzU+8SJs3nIib/dd+Ue5AZCByuhdIiDLcHX160ow4kOdsERHVfda0l9ZLuLRTVfRSC5LIekJh746IddciMvAKufzQAYtaVNzbKGsFkNlfDGtJK0t1BMWFSSDa8P5m/9qFwspcEDYAQvslfkoqNqLual7Z7SbImoC6ZsPok/01wipBdHQkxaY5MZMToLtbYcQ2bUitKCJgG50QQ3CVBY2jTZCKLm5BdxnJBkJBdk0S+q5HKa9hEcMwXEMl10FSsyRzLyOZHKn8d+e6ujsoycT1BQRz5rbs+ULoExh9uC0JLLUG3EImFNkdUplfFOG54PU/AsuEPtwdImM4tUwJrpvesirBpro6FOpWsdq5iHDWOchH84XZ/lgAZgiRE2N+zal2sYZP8Usky0tiWCMLSgpqmnWTT7Nv5tO75U59bhPK3CZrRDlAgTwg/ARtm9KyqG2jYtLrs6edgeEMjIwACmBnQNDSutHotNppf6qxRWToLzieUOTW5fV4MtE/vWRX2h9uVz180tbM/145SAuoF6dubFGyLyoX6tahU1JBvkIR50B9uD6gyBwBSuzDzpRFI7Tr1BPUicNH9iUBSiLagAmsAABpRwdXYMrtOy4X67VIaukr4mp8Ehf09q5TsG2agYAbLhCkXykWI3frkRhCX1MilGuwNXrQTlcSb7VKG/o1ShWCgnXQjrLqdqCSeiBALdUTZ0EOEkqomgKmehBn2h1s9qyK8xLOdOrFQR2ygYVMzMa0rMYoACTEuS4SH26WSDCx8ci2bHILsrh0n6d73uMJzEQAgFtocYVPMh+zcrJOAP9zm+X5nlVREhGGIXynpe5p3j49e4Mkoqh1/uD2gCXMNw1wOnpi+ADwUwZ750pu5cmGpcfRRKbwYyi5f5gMA4e1YaPO4WmSgVAR/uLWehLld0vGUFATTs+Fur1Amgm02rVxDDlHN5MUnQp1vlym+qkFdSRDmwyiPAFEG1sUaNnWVIa6qRJkIxGga5TzduM/8NOpKQnGTOXaixLTNsrSuWKgjWk6TqhWVDXMvZDwsZhjO/JPVkfmeLXRWJgID20hSBAI6LFNs9DDzIyhgG5U2pFISyoYtYg2bugoNXRPQxaaYPdCwabW3VU9h/0UWq/VxZEfp2JFlitXMvA7Ooh21ZX5zJer9nU+JDuS50xno3dUp1nplj9LOWizUEQOwFsBaf7glAGj+alltJ3w030xgTbZ/bOrSTZQ651ESno0dxUJbol6lJUNqh9HqRS280UdmPQAIFr2V2Prl+ShqtZFa0h6tpA2VnU+YAMCECFWBW4SyjDZfiBThbD2GAl5ewGwckokpffDPBEnOn5cbpmHmQfd7dhGSfnjYygo0EgLmhAg2amTPYOBEP1w+j7KqI4vN01KRkea5m/1qRtbjvWGc/wA5qqNhZ3nnBo/+RTLd4JJWY7mskeOZlFvpoExYY+jEW3A5J9SQUYUBWP/r27NfOnXS1ni5maIaaWrhALHYLhv+P6+t/SOSbnaG3XXaS4IFwDq0b/X7ljn0d8k4A6bg8J2t8QuyfbCdISfVKFvm+X39bz07CJcvPHd1ZAIwz8aOFLOaISBIP9jYaq6t+DFdHtHUwoElK/nXpuCjKGIRw9CnH+5BKo9hE8G+qVkHUAOgFsDkxtZ4hEi/ulgDCehlUFUM0pUdgp+YA6VsIGE2+nd11gQBnAHwKZKOpwwArCPTJqTrKQNA4vSJw5umXjpvfdGJAfXwcKuRp3Dpvdnj/XseAZBAxvXacJXk7ieYqUCJvb+b/ydjaHDPKEyeIIVlnNv/6s6vv4qMCOnqCEB2Zy1dEuIA4r3h5keZjX4P7R13MBv9B/66rA2pPIXLCSGQdH7kZvhghjMn3zbIosiMz95yG5GcC54JMjDz4Dv/ePw70cNbPgRwHsAQnCWBAacI7lVCBIBOfLj37KRLrjgwbVb9zRNCyMNs9B/Zv+aeIweeiCIjQLo6cjQtuUoCwybK8eiLJ2GYkelXfuUGTfPNUmb5OME0z731ziuPf+/IwZ/2ATiHpABxJEXIcuWfy2F52lVzDYBJAC5KX7fd+25L7dTZy4hoolS4YObBobPHtu3ZNvsZJO/+9JUWwe60fJh8XuPTfQcfkmJchJQgl9Ut8s8L/XLFRZdcsVzNzxl7DJ073n30wM873+ld/z4yGX8emRKQroayvMYXOj8hLUS6I5cuGZMA+C6ru8N//Q0/Xjhl5py7NFH7xQupdDDzoJk4/erpgcN7P3q3+7V33/jZf5HM8CHXq4E8AgByJ4kMew6GU4x0CUm/r82u/8FltVOunjrj8gXXZ4y1xvyeKCKNASAxdOp0IhE7NfDRPz842rv+ODKP9AaSd3sczkdR95NQUSeJuD9Pey90n5/ms/0tbOHs7sXGugjs+nt4sBOZcaB0dZN+TWe+Y7Q0VwLFni6VLhV2QfIdADfeSAuQfjVdl31Iwt4Aj+p0qZHC2jNZG+HK6Vmy/vbfXzN15ueukUmspmaGVLhi0UTNNJAvZ9tlnB84dO7cx8f2b28Yaa7dfbCdPbPtx3pJZX6aUu5Wd8kY6XLEvXjF6ceEXrtyLDXclpX4zdnjh34SeX5Bn+1te+bmuuzhpBhNleE+AGOkVzQ+lHieNHHXKNKpGAzuOzNwcEHkuQUxx9sjv7r/lmY0i79GugscDVbjQ/FlY1UAIHkMy+Tp89vgrPcdw9DILgVFU64VeCMWTdL0+8oUf8VIuWorVP2MLo1yRJKHMT+5U8492LlQKwJ7t+9LFV5sm1IrAlFEafwewFD/G5SKIJI7XsZyaYgKn/pdO0pF6N5CUVhWMyq8CaNEIsKkkBdnBnkytNDUwgFLx1IGgmDZtUnKti3FOM+iZ03TThoW9r7U6d2ynf8DQxLWEHbYH+kAAAAASUVORK5CYII=" alt="logo" data-href="" style="width: 50.50px;height: 52.61px;"></p>
+    <p style="text-indent: 2em;">{nick_name}，您好：</p>
+    <p style="text-indent: 2em;">您正在绑定新邮箱号。</p>
+    <p style="text-indent: 2em;">您的验证码为：{ver_code}</p>
+    <p style="text-indent: 2em;">上述验证码10分钟内有效，如失效，请您重新申请发送邮箱验证码进行认证。</p>
+    <p style="text-indent: 2em;">voatalk 平台项目组</p>
+    <p style="text-indent: 2em;">{datetime.datetime.now().strftime("%Y年%m月%d日")}</p>
+    """
+    if SendMail.send_email(email, subject, body, True) != '电子邮件发送成功！':
+        return ReturnTool.ErrorReturn('邮件发送失败，请检查邮箱是否正确')
+    else:
+        RedisHandler().save_key(req_id, str(ver_code), 600)  # 链接10分钟保活
+        with DatabaseSession() as session:
+            now = datetime.datetime.fromtimestamp(time.time())
+            request_data = {
+                "subject": subject,
+                "body": body,
+                "send_users": json.dumps([email]),
+                "create_date": now,
+            }
+            DbTools.saveOrUpdate(session, request_data, EmailLogs)
+    return ReturnTool.SuccessReturn({
+        "reqId": req_id
+    })
+
+
+def update_user_email(email, id):
+    with DatabaseSession() as session:
+        queue = session.query(SysUser).filter(SysUser.id == id).first()
+        email_queue = session.query(SysUser).filter(SysUser.email == email).first()
+        if email_queue is not None:
+            return ReturnTool.ErrorReturn("邮箱已绑定，请确认！")
+
+        if queue is None:
+            return ReturnTool.ErrorReturn("用户未注册！")
+        sql_data = {
+            'id': queue.id,
+            'email': email,
+            "update_date": TimeToolClass.get_time()
+        }
+        # 使用 saveOrUpdate 函数
+        result = DbTools.saveOrUpdate(session, sql_data, SysUser)
+        if result:
+            return ReturnTool.SuccessReturn()
+        else:
+            return ReturnTool.ErrorReturn('修改失败！')
+
+
 def api_user_update_nickname(id, avatar, nick_name):
     with DatabaseSession() as session:
         queue = session.query(SysUser).filter(SysUser.id == id).first()
@@ -212,7 +271,8 @@ def api_user_update_nickname(id, avatar, nick_name):
         sql_data = {
             'id': id,
             'avatar': avatar,
-            'nick_name': nick_name
+            'nick_name': nick_name,
+            "update_date": TimeToolClass.get_time()
         }
         # 使用 saveOrUpdate 函数
         result = DbTools.saveOrUpdate(session, sql_data, SysUser)

@@ -176,7 +176,7 @@
     width="380"
     align-center
   >
-    <el-input size="large" v-model="chatTitleValue" />
+    <el-input class="edit-title" size="large" v-model="chatTitleValue" />
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="editDialogVisible = false">取消</el-button>
@@ -431,6 +431,7 @@ onMounted(() => {
         const isCodeBlock =
           e.target.closest("pre") ||
           e.target.closest("code") ||
+          e.target.closest(".el-dialog") ||
           e.target.closest("div.mermaid");
         if (!isCodeBlock && e.center.x < 50) {
           handleMenu();
@@ -442,6 +443,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.edit-title :deep(.el-input__wrapper) {
+  transition: all 0.1s;
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 3px var(--el-input-border-color) inset !important;
+  background-color: transparent !important;
+}
+
+.edit-title :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 3px var(--el-color-primary) inset !important;
+}
+
 .me-container {
   display: flex;
 }

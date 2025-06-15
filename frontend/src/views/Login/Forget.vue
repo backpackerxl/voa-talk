@@ -106,8 +106,6 @@ const handleForget = () => {
     if (valid) {
       state.open = true;
       myCaptcha.value && myCaptcha.value.init();
-    } else {
-      ElMessage.error("请填写完整的邮箱信息。");
     }
   });
 };

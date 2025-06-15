@@ -2,6 +2,8 @@ const state = {
     authorization: localStorage.getItem('token') || '', // 初始化时从 localStorage 获取 token
     userRole: Number(localStorage.getItem('userRole')) || 0, // 初始化时从 localStorage 获取用户角色，默认 0 表示非超级管理员
     nickName: localStorage.getItem('nickName') || '', // 初始化
+    userName: localStorage.getItem('userName') || '', // 初始化
+    userEmail: localStorage.getItem('userEmail') || '', // 初始化
     avatar: localStorage.getItem('avatar') || '', // 初始化
     sliderData: null,
     them: localStorage.getItem('them') || JSON.stringify({
@@ -31,6 +33,18 @@ const mutations = {
     },
     CLEAR_NICK_NAME(state) {
         state.nickName = '';
+    },
+    SET_USER_NAME(state, userName) {
+        state.userName = userName;
+    },
+    CLEAR_USER_NAME(state) {
+        state.userName = '';
+    },
+    SET_USER_EMAIL(state, userEmail) {
+        state.userEmail = userEmail;
+    },
+    CLEAR_USER_EMAIL(state) {
+        state.userEmail = '';
     },
     SET_AVATAR(state, avatar) {
         state.avatar = avatar;
@@ -92,6 +106,22 @@ const actions = {
     clearNickName({ commit }) {
         commit('CLEAR_NICK_NAME');
         localStorage.removeItem('nickName'); // 清除 localStorage 中的用户角色
+    },
+    setUserName({ commit }, userName) {
+        commit('SET_USER_NAME', userName);
+        localStorage.setItem('userName', userName); // 同步保存到 localStorage
+    },
+    clearUserName({ commit }) {
+        commit('CLEAR_USER_NAME');
+        localStorage.removeItem('userName'); // 清除 localStorage 中的用户
+    },
+    setUserEmail({ commit }, userEmail) {
+        commit('SET_USER_EMAIL', userEmail);
+        localStorage.setItem('userEmail', userEmail); // 同步保存到 localStorage
+    },
+    clearUserEmail({ commit }) {
+        commit('CLEAR_USER_EMAIL');
+        localStorage.removeItem('userEmail'); // 清除 localStorage 中的用户邮箱
     },
     setAvatar({ commit }, avatar) {
         commit('SET_AVATAR', avatar);
