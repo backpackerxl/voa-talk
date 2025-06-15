@@ -114,7 +114,20 @@ router.beforeEach((to, from, next) => {
         console.log("Not super admin, redirecting to /home/chat");
         // 如果不是超级管理员，重定向到其他页面
         next({ path: '/home/chat' });
-    } else {
+    }
+    else if (to.path === '/home/email' && Number(userRole) !== 1) {
+
+        console.log("Not super admin, redirecting to /home/chat");
+        // 如果不是超级管理员，重定向到其他页面
+        next({ path: '/home/chat' });
+    }
+    else if (to.path === '/home/report' && Number(userRole) !== 1) {
+
+        console.log("Not super admin, redirecting to /home/chat");
+        // 如果不是超级管理员，重定向到其他页面
+        next({ path: '/home/chat' });
+    }
+    else {
         // console.log("Proceeding to the requested route");
         next();
     }

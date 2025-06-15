@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from services import sys_report_service
 from utils import logs
 from utils.BusinessException import BusinessException
-from utils.JwtUtils import token_required, add_update_time, token_on
+from utils.JwtUtils import token_required
 from utils.ReturnTool import ErrorReturn
 
 sys_user_blueprint = Blueprint('report', __name__, url_prefix='/report')
@@ -60,7 +60,7 @@ def bar_talks():
 
 
 @sys_user_blueprint.route('/model_talks', methods=['GET'])
-@token_on
+@token_required
 def model_talks():
     try:
         response = sys_report_service.model_talks(request)
@@ -76,6 +76,7 @@ def model_talks():
 
 
 @sys_user_blueprint.route('/line_tokens', methods=['GET'])
+@token_required
 def line_tokens():
     try:
         response = sys_report_service.line_tokens(request)
