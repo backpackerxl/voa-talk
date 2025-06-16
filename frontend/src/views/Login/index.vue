@@ -112,7 +112,7 @@ import Logo from "@/components/Logo";
 import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
 import { ElMessage } from "element-plus";
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
 
 const form = ref({
@@ -198,11 +198,20 @@ async function sendPostRequest() {
 function remenber(data) {
   checked.value = data;
   if (checked.value) {
-    localStorage.setItem("password", JSON.stringify(form.value));
+    localStorage.setItem("userInfo", JSON.stringify(form.value));
   } else {
-    localStorage.removeItem("password");
+    localStorage.removeItem("userInfo");
   }
 }
+
+onMounted(function () {
+  const obj = localStorage.getItem("userInfo");
+  if (obj) {
+    form.value = JSON.parse(obj);
+    checked.value = true;
+  }
+});
+
 function forgetpas() {
   router.push("/forget");
 }
