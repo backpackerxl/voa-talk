@@ -1,5 +1,6 @@
 import base64
 import io
+import json
 import random
 
 import requests
@@ -52,7 +53,7 @@ def generate_captcha_image():
     bg_width, bg_height = background.size
 
     # 计算缺口位置（确保在图片范围内）
-    gap_x = random.randint(100, bg_width - SLIDER_WIDTH - 100)
+    gap_x = random.randint(60, bg_width - SLIDER_WIDTH - 10)
     gap_y = random.randint(
         max(GAP_Y_RANGE[0], SLIDER_HEIGHT),
         min(GAP_Y_RANGE[1], bg_height - SLIDER_HEIGHT)
@@ -108,3 +109,57 @@ def generate_captcha_image():
         "bg_width": bg_width,
         "bg_height": bg_height
     }
+
+
+def analyze_trace(trace):
+    speeds, accs = [], []
+    pauses, reverse_moves = 0, 0
+    last_v = None
+    init_x = -1
+    if len(trace) > 0:
+        init_x = trace[0]['x']
+
+    for i in range(1, len(trace)):
+        dx = trace[i]['x'] - trace[i - 1]['x']
+        dt = trace[i]['t'] - trace[i - 1]['t']
+        if dt == 0:
+            continue
+        v = dx / dt
+        speeds.append(v)
+        if last_v is not None:
+            a = (v - last_v) / dt
+            accs.append(a)
+            if (v > 0 > last_v) or (v < 0 < last_v):
+                reverse_moves += 1
+        last_v = v
+
+        if abs(dx) < 1 and dt > 200:
+            pauses += 1
+
+    return {
+        "mean_speed": sum(speeds) / len(speeds) if speeds else 0,
+        "max_speed": max(speeds) if speeds else 0,
+        "min_speed": min(speeds) if speeds else 0,
+        "mean_acc": sum(accs) / len(accs) if accs else 0,
+        "max_acc": max(accs) if accs else 0,
+        "min_acc": min(accs) if accs else 0,
+        "pauses": pauses,
+        "reverse_moves": reverse_moves,
+        "trace_points": len(trace),
+        "init_x": init_x
+    }
+
+
+def is_human_like(trace_features):
+    if trace_features["init_x"] != 0:
+        return False
+    # 你可以根据业务调整阈值
+    if trace_features["trace_points"] < 8:
+        return False
+    if not (0 <= trace_features["reverse_moves"] <= 3):
+        return False
+    if not (0 <= trace_features["pauses"] <= 3):
+        return False
+    if abs(trace_features["mean_speed"]) < 0.05 or abs(trace_features["mean_speed"]) > 1:
+        return False
+    return True

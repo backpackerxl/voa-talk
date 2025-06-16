@@ -30,10 +30,12 @@ import { ElMessage } from "element-plus";
 let emit = defineEmits(["verify"]);
 
 const bgBase64 = ref("");
+let trace = ref([]);
 const slider = ref(null);
 const bgImage = ref(null);
 const progress = ref(null);
 const sliderBlock = ref(null);
+const sliderBlockX = ref(0);
 const token = ref("");
 const loading = ref(false);
 const successTag = ref(false);
@@ -52,6 +54,12 @@ function startDrag(e) {
   document.addEventListener("mousemove", drag);
   document.addEventListener("mouseup", endDrag);
   sliderBlock.value.style.cursor = "grabbing";
+  trace.value = [
+    {
+      x: slider.value.getBoundingClientRect().left - sliderBlockX.value + 2,
+      t: Date.now(),
+    },
+  ];
 }
 
 function handleTouchStart(e) {
@@ -61,18 +69,32 @@ function handleTouchStart(e) {
   startLeft = parseInt(sliderBlock.value.style.left) || 0;
   document.addEventListener("touchmove", handleTouchMove, { passive: false });
   document.addEventListener("touchend", endDrag);
+  trace.value = [
+    {
+      x: slider.value.getBoundingClientRect().left - sliderBlockX.value + 2,
+      t: Date.now(),
+    },
+  ];
 }
 
 function drag(e) {
   if (!isDragging) return;
   e.preventDefault();
   updateSliderPosition(e.clientX);
+  trace.value.push({
+    x: slider.value.getBoundingClientRect().left - sliderBlockX.value,
+    t: Date.now(),
+  });
 }
 
 function handleTouchMove(e) {
   if (!isDragging) return;
   e.preventDefault();
   updateSliderPosition(e.touches[0].clientX);
+  trace.value.push({
+    x: slider.value.getBoundingClientRect().left - sliderBlockX.value,
+    t: Date.now(),
+  });
 }
 
 function updateSliderPosition(currentX) {
@@ -106,6 +128,7 @@ async function verifyPosition() {
     const response = await verify({
       token: token.value,
       x: parseInt(slider.value.style.left) - 60 || 0,
+      trace: trace.value,
     });
 
     if (response.data.refresh) {
@@ -150,6 +173,10 @@ async function init() {
   }
   loading.value = false;
   pContainer.value = true;
+  trace.value = [];
+  nextTick(function () {
+    sliderBlockX.value = sliderBlock.value.getBoundingClientRect().left || 0;
+  });
 }
 
 nextTick(function () {

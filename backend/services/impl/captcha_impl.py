@@ -7,11 +7,16 @@ snowflake = Snowflake(data_center_id=1, worker_id=9)
 from utils.RedisUtils import RedisHandler
 
 
-def verify(token, user_x):
+def verify(token, user_x, trace):
     res = RedisHandler().get_key(token)
     if res is None:
         return ReturnTool.ErrorReturn("验证已过期")
     data = json.loads(res)
+
+    features = Captcha.analyze_trace(trace)
+    human_like = Captcha.is_human_like(features)
+    if human_like is False:
+        return ReturnTool.ErrorReturn("轨道图灵测试未通过")
 
     data["attempts"] += 1
     gap_x = data["gap_x"]
