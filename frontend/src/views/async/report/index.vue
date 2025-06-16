@@ -362,8 +362,10 @@ onMounted(() => {
 
   // 这里可以是异步数据加载
   const end = new Date(); // 当前时间
+  const endAddOne = new Date(); // 当前时间
   const start = new Date();
   start.setMonth(start.getMonth() - 1); // 一个月的数据
+  endAddOne.setDate(endAddOne.getDate() + 1);
 
   barDate.value = [start, end];
   lineDate.value = [start, end];
@@ -372,7 +374,7 @@ onMounted(() => {
   const stm = formatDateTime(start);
   const etm = formatDateTime(end);
 
-  modelTalks({ stm, etm })
+  modelTalks({ stm, etm: formatDateTime(endAddOne) })
     .then((obj) => {
       setPieOptione(obj.data);
     })
