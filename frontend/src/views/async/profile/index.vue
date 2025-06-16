@@ -627,7 +627,7 @@ onMounted(function () {
 .opt p::after {
   position: absolute;
   content: "";
-  background: var(--me-report-text-color);
+  background: var(--w-e-textarea-border-color);
   height: 1px;
   width: 35%;
   top: 50%;

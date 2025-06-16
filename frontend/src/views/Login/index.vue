@@ -62,6 +62,31 @@
             <a @click="register">注 册</a>
           </div>
         </div>
+        <div class="other-login">
+          <p class="text">第三方登录</p>
+          <div class="logo-container">
+            <el-tooltip
+              class="box-item"
+              effect="light"
+              content="QQ登录"
+              placement="bottom"
+            >
+              <div class="item" @click="qqLogin">
+                <i class="fa-brands fa-qq"></i>
+              </div>
+            </el-tooltip>
+            <el-tooltip
+              class="box-item"
+              effect="light"
+              content="GitHub登录"
+              placement="bottom"
+            >
+              <div class="item" @click="githubLogin">
+                <i class="fa-brands fa-github"></i>
+              </div>
+            </el-tooltip>
+          </div>
+        </div>
       </el-card>
     </div>
   </div>
@@ -184,6 +209,14 @@ function forgetpas() {
 function register() {
   router.push("/register");
 }
+
+function githubLogin() {
+  ElMessage.warning("待开发");
+}
+
+function qqLogin() {
+  ElMessage.warning("待开发");
+}
 </script>
 
 <style scoped>
@@ -261,5 +294,42 @@ function register() {
 
 :deep(.el-form-item.is-error .el-input__wrapper) {
   box-shadow: 0 0 0 3px var(--el-color-danger) inset !important;
+}
+
+.other-login .text {
+  text-align: center;
+  color: var(--el-text-color-primary);
+  padding: 6px 0;
+  margin: 0;
+  position: relative;
+}
+
+.other-login .text::before,
+.other-login .text::after {
+  position: absolute;
+  content: "";
+  background: var(--w-e-textarea-border-color);
+  height: 1px;
+  width: 35%;
+  top: 50%;
+}
+
+.other-login .text::before {
+  left: 1px;
+}
+.other-login .text::after {
+  right: 1px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-container .item {
+  margin: 0 10px;
+  font-size: 28px;
+  color: var(--el-color-primary);
 }
 </style>
