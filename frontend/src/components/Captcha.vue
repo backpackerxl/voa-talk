@@ -82,7 +82,7 @@ function drag(e) {
   e.preventDefault();
   updateSliderPosition(e.clientX);
   trace.value.push({
-    x: slider.value.getBoundingClientRect().left - sliderBlockX.value,
+    x: parseInt(slider.value.getBoundingClientRect().left - sliderBlockX.value),
     t: Date.now(),
   });
 }
@@ -92,7 +92,7 @@ function handleTouchMove(e) {
   e.preventDefault();
   updateSliderPosition(e.touches[0].clientX);
   trace.value.push({
-    x: slider.value.getBoundingClientRect().left - sliderBlockX.value,
+    x: parseInt(slider.value.getBoundingClientRect().left - sliderBlockX.value),
     t: Date.now(),
   });
 }
