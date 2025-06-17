@@ -34,6 +34,11 @@ npm run build
 
 ## 3.Backend Project setup
 
+更新依赖
+```python
+pip freeze > requirements.txt
+```
+
 ```commandline
 cd backend
 ```
