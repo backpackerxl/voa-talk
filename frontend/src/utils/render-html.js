@@ -127,8 +127,7 @@ export function markdwonToHTML(content, showPlayIcon) {
             oDivC.appendChild(oDivHC);
             let preBefore = block.parentNode.previousElementSibling;
             oDivC.appendChild(block.parentNode);
-            preBefore.after(oDivC);
-
+            preBefore && preBefore.after(oDivC);
         }
     });
 
@@ -184,11 +183,11 @@ export function addCopy(chatPage) {
             ifr.srcdoc = code;
             oDivC.appendChild(oDivH);
             oDivC.appendChild(ifr);
-            oAside.classList.add("code-play");
+            oAside && oAside.classList.add("code-play");
             oMain.appendChild(oDivC);
 
             oI.addEventListener('click', function () {
-                oAside.classList.remove("code-play");
+                oAside && oAside.classList.remove("code-play");
                 oDivC.remove();
             });
         }

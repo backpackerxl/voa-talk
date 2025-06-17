@@ -364,7 +364,7 @@ import {
 } from "@/api/aiChat";
 import { ApiModelList } from "@/api/modelConfig";
 import { Position, ArrowDown } from "@element-plus/icons-vue";
-import { getGreeting } from "@/utils/tools";
+import { getGreeting, smoothScroll } from "@/utils/tools";
 import { markdwonToHTML, addCopy, renderMermaid } from "@/utils/render-html";
 import { useRoute } from "vue-router";
 import store from "@/store";
@@ -568,6 +568,7 @@ watch(
       await getOneChatData();
       const obj = await queryRecommend({ talk_id: chatId.value });
       recordList.value = obj.data.reco_list;
+      modelTokens.value = 0;
       nextTick(function () {
         // 自动滚动到最新消息位置
         renderMermaid();
@@ -907,10 +908,7 @@ onMounted(async () => {
 function scrollTopBottom() {
   if (chatPage.value) {
     const chatView = chatPage.value;
-    chatView.scrollTo({
-      top: chatView.scrollHeight,
-      behavior: "smooth",
-    });
+    smoothScroll(chatView, chatView.scrollHeight);
   }
 }
 </script>
@@ -972,6 +970,7 @@ function scrollTopBottom() {
   border-radius: 8px;
   display: inline-flex;
   white-space: pre-wrap;
+  overflow-x: auto;
   max-width: 26vw;
   text-align: left;
   margin-bottom: 10px;
@@ -1261,7 +1260,7 @@ function scrollTopBottom() {
   }
 
   .user-message span {
-    max-width: 60vw;
+    max-width: 70vw;
   }
 
   .message .tools {

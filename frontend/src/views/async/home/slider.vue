@@ -432,6 +432,7 @@ onMounted(() => {
           e.target.closest("pre") ||
           e.target.closest("code") ||
           e.target.closest(".el-dialog") ||
+          e.target.closest(".user-message span") ||
           e.target.closest("div.mermaid");
         if (!isCodeBlock && e.center.x < 50) {
           handleMenu();

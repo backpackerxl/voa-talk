@@ -82,3 +82,38 @@ export function handleThem(item) {
         match.removeEventListener("change", followOS);
     }
 }
+
+/**
+ * 让滚动条以"前慢中快后慢"的效果移动（自动计算时间）
+ * @param el 操作节点
+ * @param targetY 目标点的高度
+ */
+export function smoothScroll(el, targetY) {
+    const start = el.scrollTop;
+    const distance = targetY - start;
+    
+    // 根据滚动距离自动计算持续时间（距离越大，时间越长）
+    // 这里的系数可以根据需要调整，控制整体速度
+    const duration = Math.min(Math.max(Math.abs(distance) * 0.5, 300), 2000); // 最小300ms，最大2000ms
+    
+    const startTime = performance.now();
+
+    // 自定义缓动函数 - 前慢中快后慢
+    function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    function animateScroll(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
+        const easedProgress = easeInOutQuad(progress);
+        
+        el.scrollTo(0, start + distance * easedProgress);
+
+        if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+        }
+    }
+
+    requestAnimationFrame(animateScroll);
+}
