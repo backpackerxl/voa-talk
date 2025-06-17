@@ -114,6 +114,14 @@ import Beian from "@/components/Beian";
 import { ElMessage } from "element-plus";
 import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
+import device from "current-device";
+
+let pcOrMobile = device.mobile() ? "mobile" : "pc";
+
+const qqLoginUrl = ref(
+  `https://graph.qq.com/oauth2.0/show?which=Login&display=${pcOrMobile}&client_id=102796804&response_type=code&redirect_uri=` +
+    encodeURIComponent(window.location.origin + "/others/handle")
+);
 
 const form = ref({
   username: null,
@@ -220,11 +228,27 @@ function register() {
 }
 
 function githubLogin() {
-  ElMessage.warning("待开发");
+  if (device.mobile()) {
+    window.open("https://github.com");
+  } else {
+    window.open(
+      "https://github.com",
+      "GitHub登录",
+      "width=800,height=500,top=100,left=100,menubar=no,toolbar=no"
+    );
+  }
 }
 
 function qqLogin() {
-  ElMessage.warning("待开发");
+  if (device.mobile()) {
+    window.open(qqLoginUrl.value);
+  } else {
+    window.open(
+      qqLoginUrl.value,
+      "QQ登录",
+      "width=800,height=500,top=100,left=100,menubar=no,toolbar=no"
+    );
+  }
 }
 </script>
 
@@ -340,5 +364,6 @@ function qqLogin() {
   margin: 0 10px;
   font-size: 28px;
   color: var(--el-color-primary);
+  cursor: pointer;
 }
 </style>

@@ -3,6 +3,7 @@ import store from '@/store';  // 导入 Vuex store
 
 const Login = () => import('@/views/Login/index.vue');
 const Register = () => import('@/views/Login/Register.vue');
+const OtherLogin = () => import('@/views/Login/OtherLogin.vue');
 const Forget = () => import('@/views/Login/Forget.vue');
 const ResetPwd = () => import('@/views/Login/ResetPwd.vue');
 const Thread = () => import('@/views/Share/index.vue');
@@ -64,6 +65,12 @@ const routes = [
         path: '/register',
         name: 'Register',
         component: Register,
+        meta: { requiresAuth: false },
+    },
+    {
+        path: '/others/handle',
+        name: 'OtherLogin',
+        component: OtherLogin,
         meta: { requiresAuth: false },
     },
     {
