@@ -189,7 +189,7 @@ import {
 const welcomStr = ref(store.state.app.nickName);
 const userEmail = ref("");
 const emailValue = store.state.app.userEmail;
-if (emailValue !== "null" && emailValue === "") {
+if (emailValue !== "null" && emailValue !== "") {
   userEmail.value = emailValue;
 }
 
