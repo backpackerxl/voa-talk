@@ -420,12 +420,11 @@ onMounted(function () {
 }
 
 .context-menu-item.delete {
-  color: rgb(255, 59, 48);
+  color: rgb(255, 59, 48) !important;
 }
 
 .context-menu-item.delete:hover {
-  background-color: rgb(255, 59, 48, 0.1);
-  border-radius: 6px;
-  color: rgb(255, 59, 48);
+  background-color: rgb(255, 59, 48, 0.1) !important;
+  color: rgb(255, 59, 48) !important;
 }
 </style>

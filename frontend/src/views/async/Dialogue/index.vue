@@ -1107,6 +1107,15 @@ function scrollTopBottom() {
   background: rgb(255, 59, 48, 0.1);
 }
 
+.context-menu-item.delete {
+  color: rgb(255, 59, 48) !important;
+}
+
+.context-menu-item.delete:hover {
+  background-color: rgb(255, 59, 48, 0.1) !important;
+  color: rgb(255, 59, 48) !important;
+}
+
 .message:hover .tools,
 .message.active .tools {
   opacity: 1;
