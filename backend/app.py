@@ -15,6 +15,7 @@ from utils.JwtUtils import token_on
 
 app = Flask(__name__)
 snowflake = Snowflake(data_center_id=1, worker_id=1)
+static_folder = app.static_folder
 
 CORS(app, supports_credentials=True)
 

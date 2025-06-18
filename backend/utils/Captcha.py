@@ -1,15 +1,19 @@
 import base64
 import io
+import os
 import json
 import random
 
 import requests
 from PIL import Image, ImageDraw
+from pathlib import Path
+import app
 
 # 配置参数
 BG_W = 260
 BG_H = 150
-BACKGROUND_URL = f"https://picsum.photos/{BG_W}/{BG_H}"  # 使用固定尺寸图片
+# BACKGROUND_URL = f"https://picsum.photos/{BG_W}/{BG_H}"  # 使用固定尺寸图片
+BACKGROUND_URL = os.path.join(app.static_folder, 'captcha_bg')  # 获取路径
 SLIDER_WIDTH = 40  # 滑块宽度
 SLIDER_HEIGHT = 40  # 滑块高度
 GAP_Y_RANGE = (0, 180)  # 缺口垂直位置范围
@@ -41,14 +45,32 @@ def generate_notch_mask(width, height):
 
 
 def generate_captcha_image():
-    # 获取背景图片（固定400x300尺寸）
+    # 获取背景图片（固定400x300尺寸）获取网络图片
+    # try:
+    #     response = requests.get(BACKGROUND_URL, timeout=5)
+    #     background = Image.open(io.BytesIO(response.content)).convert("RGB")
+    #     background = background.resize((BG_W, BG_H))  # 强制统一尺寸
+    # except Exception as e:
+    #     background = Image.new('RGB', (BG_W, BG_H), (240, 240, 240))
+    #     print(e)
+    # 获取本地图片
     try:
-        response = requests.get(BACKGROUND_URL, timeout=5)
-        background = Image.open(io.BytesIO(response.content)).convert("RGB")
+        # 获取所有 .jpg/.png/.jpeg 文件（不区分大小写）
+        image_ext = [".jpg"]
+        image_files = [f for f in Path(BACKGROUND_URL).iterdir() if f.suffix in image_ext]
+
+        if not image_files:
+            raise FileNotFoundError(f"No images found in {LOCAL_IMAGES_DIR}")
+
+        # 随机选择一张图片
+        random_image_path = random.choice(image_files)
+        background = Image.open(random_image_path).convert("RGB")
         background = background.resize((BG_W, BG_H))  # 强制统一尺寸
+
     except Exception as e:
-        background = Image.new('RGB', (BG_W, BG_H), (240, 240, 240))
-        print(e)
+        print(f"Error loading local image: {e}")
+        # 如果出错，返回默认灰色背景
+        return Image.new('RGB', (BG_W, BG_H), (240, 240, 240))
 
     bg_width, bg_height = background.size
 
@@ -163,3 +185,26 @@ def is_human_like(trace_features):
     if abs(trace_features["mean_speed"]) < 0.05 or abs(trace_features["mean_speed"]) > 1:
         return False
     return True
+
+
+def get_random_image():
+    # 获取文件夹内所有文件
+    all_files = os.listdir(BACKGROUND_URL)
+
+    # 过滤出 .jpg 文件（不区分大小写）
+    jpg_files = [f for f in all_files if f.lower().endswith('.jpg')]
+
+    if not jpg_files:
+        raise ValueError("文件夹中没有找到 .jpg 图片")
+
+    # 随机选择一张图片
+    random_image = random.choice(jpg_files)
+
+    # 返回完整路径
+    return os.path.join(BACKGROUND_URL, random_image)
+
+
+if __name__ == '__main__':
+    # 示例用法
+    random_image_path = get_random_image()
+    print("随机选择的图片:", random_image_path)
