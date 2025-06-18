@@ -1,8 +1,6 @@
 import datetime
 import json
 import time
-import random
-import string
 
 from flask import Response
 from openai import OpenAI
@@ -10,8 +8,8 @@ from openai import OpenAI
 from dbinfo import DatabaseSession
 from entity import ModelConfig, TalkUserRelation, TalkLogs, RequestLogs, TalkRecommendation
 from utils import ReturnTool, DbTools, Tools
-from utils.RedisUtils import RedisHandler
 from utils.GetChatId import Snowflake
+from utils.RedisUtils import RedisHandler
 
 clientDict = {}
 
@@ -326,7 +324,7 @@ def share_chat_impl(params):
             return ReturnTool.ErrorReturn("未找到此对话,链接生成失败！")
 
         talk_user = session.query(TalkUserRelation).filter(TalkUserRelation.talk_id == talk_log.talk_id).first()
-        s_id = Tools.insert_lowercase_letters(str(snowflake_share.next_id()))
+        s_id = Tools.generate_custom_id(18)
         params['share_time'] = datetime.datetime.now().strftime("%Y 年 %m 月 %d 日")
         params['title'] = talk_user.talk_name
         RedisHandler().save_key(s_id, json.dumps(params), 60 * 60 * 24)  # 链接24H保活

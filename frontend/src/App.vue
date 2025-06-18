@@ -91,7 +91,7 @@ body {
 
 .pre-header-container {
   position: sticky;
-  top: 0;
+  top: -1px;
   background-color: var(--me-body-bg-color);
 }
 

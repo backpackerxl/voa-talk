@@ -107,7 +107,6 @@ import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
 import { User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
-import { config } from "@/utils/config";
 import Logo from "@/components/Logo";
 import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
@@ -118,11 +117,14 @@ import device from "current-device";
 
 let pcOrMobile = device.mobile() ? "mobile" : "pc";
 
-const qqLoginUrl = ref(
-  `https://graph.qq.com/oauth2.0/show?which=Login&display=${pcOrMobile}&client_id=102796804&response_type=code&redirect_uri=` +
-    encodeURIComponent(window.location.origin + "/others/handle")
-);
+const appId = "102796804";
+const redirectUri = encodeURIComponent("https://voatalk.online/others/handle");
+const stateF = "qqLogin"; // 用于防止攻击
+const scope = "get_user_info"; // 所需权限
 
+const qqLoginUrl = ref(
+  `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${appId}&redirect_uri=${redirectUri}&state=${stateF}&scope=${scope}&display=${pcOrMobile}`
+);
 const form = ref({
   username: null,
   password: null,
@@ -189,10 +191,7 @@ async function sendPostRequest() {
       store.dispatch("app/setNickName", response.data.nickName);
       store.dispatch("app/setUserName", response.data.userName);
       store.dispatch("app/setUserEmail", response.data.email);
-      const avater = response.data.avatar;
-      if (avater) {
-        store.dispatch("app/setAvatar", config.BASE_URL + avater);
-      }
+      store.dispatch("app/setAvatar", response.data.avatar);
 
       router.replace("/home/chat");
     } else {

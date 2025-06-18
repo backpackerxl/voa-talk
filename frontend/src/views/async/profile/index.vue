@@ -214,7 +214,7 @@ const codeDisabled = ref(false);
 const emailCodeContent = ref("获取验证码");
 const reqCId = ref("-1");
 const captchaCode = ref("-1");
-const saveUrl = ref(avatarUrl.replace(config.BASE_URL, ""));
+const saveUrl = ref(config.BASE_URL);
 const checkThemId = ref(1);
 const isMob = ref(!device.mobile());
 const colorList = ref([
@@ -407,8 +407,8 @@ const rules = {
 };
 
 function handleSuccess(response, file, fileList) {
-  saveUrl.value = response.image_url;
-  imageUrl.value = config.BASE_URL + response.image_url;
+  saveUrl.value = saveUrl.value + response.image_url;
+  imageUrl.value = saveUrl.value;
 }
 
 function uploadImg() {

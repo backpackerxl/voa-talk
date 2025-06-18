@@ -24,3 +24,6 @@ class SysUser(Base):
     user_name = Column('user_name', String, primary_key=False, nullable=False, comment="用户名")
     email = Column('email', String, primary_key=False, nullable=True, comment="邮箱")
     user_state = Column('user_state', Integer, primary_key=False, nullable=True, comment="账户状态(0：停用，1：正常)")
+    qq_open_id = Column('qq_open_id', String, primary_key=False, nullable=True, comment="第三方开放平台id用于QQ登录")
+    github_open_id = Column('github_open_id', String, primary_key=False, nullable=True,
+                            comment="第三方开放平台id用于github登录")

@@ -2,6 +2,7 @@ import hashlib
 import random
 import string
 
+import shortuuid
 import tiktoken
 
 
@@ -133,6 +134,7 @@ def count_tokens_messages(messages, model="gpt-3.5-turbo-0613"):
     count += 3
     return count
 
+
 #
 # # 示例消息列表
 # messages = [
@@ -161,3 +163,9 @@ def count_tokens_messages(messages, model="gpt-3.5-turbo-0613"):
 #         # session.update(talk_log)
 #         # print(talk_log)
 #         # DbTools.saveOrUpdate(session, json.dumps(talk_log), TalkLogs)
+
+def generate_custom_id(length=10):
+    # 使用自定义字母表生成固定长度的 ID
+    alphabet = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+    su = shortuuid.ShortUUID(alphabet=alphabet)
+    return su.random(length=length)
