@@ -24,11 +24,11 @@ snowflake = Snowflake(data_center_id=1, worker_id=2)
 sql_pool = {
     'header_data': text("""
             SELECT COUNT(su.id) AS num_count FROM sys_user su
-            UNION
+            UNION ALL
             SELECT COUNT(mc.id) AS num_count FROM model_config mc
-            UNION
+            UNION ALL
             SELECT COUNT(tl.id) AS num_count FROM talk_logs tl WHERE tl.create_date >= :start_time
-            UNION
+            UNION ALL
             SELECT COUNT(el.id) AS num_count FROM email_logs el WHERE el.create_date >= :start_time
     """),
     'top_talk': text("""

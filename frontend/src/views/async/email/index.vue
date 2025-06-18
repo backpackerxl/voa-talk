@@ -197,7 +197,7 @@
                   <div class="flex items-center">
                     <el-avatar
                       v-if="item.avatar"
-                      :src="config.BASE_URL + item.avatar"
+                      :src="item.avatar"
                       size="small"
                     />
                     <el-avatar
@@ -215,7 +215,7 @@
               label="邮件内容："
               class="custom-form-item"
             >
-              <div v-html="infoHtml"></div>
+              <div v-html="infoHtml" class="info-html"></div>
             </el-form-item>
           </el-form>
           <template #footer>
@@ -268,7 +268,7 @@
                   <div class="flex items-center">
                     <el-avatar
                       v-if="item.avatar"
-                      :src="config.BASE_URL + item.avatar"
+                      :src="item.avatar"
                       size="small"
                     />
                     <el-avatar
@@ -323,7 +323,6 @@ import { ref, reactive, onMounted, shallowRef, onBeforeUnmount } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus"; // 引入 ElMessage 组件
 import { findListPage, emailDel, findUsers, sendEmail } from "@/api/emailLogs";
-import { config } from "@/utils/config";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 
 const tableData = ref([]);
@@ -644,5 +643,11 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.info-html {
+  height: 300px;
+  width: 100%;
+  overflow: auto;
 }
 </style>

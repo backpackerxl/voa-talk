@@ -31,6 +31,7 @@ def api_find_users(key):
         query = DbTools.apply_filters(query, EmailUserDTO, search_query)
         # 根据需要应用过滤器
         paginated_data = DbTools.queryAll(query)
+        paginated_data = [item for item in paginated_data if item['email'] is not None]
         return ReturnTool.SuccessReturn(paginated_data)
 
 
