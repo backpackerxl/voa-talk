@@ -239,15 +239,16 @@ function githubLogin() {
 }
 
 function qqLogin() {
-  if (device.mobile()) {
-    window.open(qqLoginUrl.value);
-  } else {
-    window.open(
-      qqLoginUrl.value,
-      "QQ登录",
-      "width=800,height=500,top=100,left=100,menubar=no,toolbar=no"
-    );
-  }
+  window.location.replace(qqLoginUrl.value);
+  // if (device.mobile()) {
+  //   window.open(qqLoginUrl.value);
+  // } else {
+  //   window.open(
+  //     qqLoginUrl.value,
+  //     "QQ登录",
+  //     "width=800,height=500,top=100,left=100,menubar=no,toolbar=no"
+  //   );
+  // }
 }
 </script>
 

@@ -60,7 +60,7 @@
         <div class="email-setting">
           <div>
             <el-tag size="large">{{
-              userEmail !== "" ? userEmail : "绑定邮箱可获取平台资讯"
+              userEmail !== "" ? userEmail : "绑定邮箱才能重置密码哦"
             }}</el-tag>
           </div>
           <div>
@@ -187,7 +187,11 @@ import {
   ArrowDown,
 } from "@element-plus/icons-vue";
 const welcomStr = ref(store.state.app.nickName);
-const userEmail = ref(store.state.app.userEmail);
+const userEmail = ref("");
+const emailValue = store.state.app.userEmail;
+if (emailValue !== "null" && emailValue === "") {
+  userEmail.value = emailValue;
+}
 
 const registerForm = ref({
   email: userEmail.value,

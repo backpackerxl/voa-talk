@@ -7,6 +7,7 @@ import { qqUserLogin } from "@/api/login";
 import { ElMessage } from "element-plus";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import store from "@/store"; // 导入Vuex store
 const router = useRouter();
 
 onMounted(function () {
