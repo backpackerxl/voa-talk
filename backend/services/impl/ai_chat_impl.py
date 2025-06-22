@@ -116,7 +116,16 @@ def ai_save_chat_serve(user_id, request_data):
 
         if result:
             model_cfg = session.query(ModelConfig).filter(ModelConfig.id == request_data['model_id']).first()
-            return ReturnTool.SuccessReturn(gen_record_list(result.id, request_data, model_cfg, tokens_count))
+            if request_data['pause_ask_stats'] == '0':
+                return ReturnTool.SuccessReturn(gen_record_list(result.id, request_data, model_cfg, tokens_count))
+            else:
+                session.query(TalkRecommendation).filter(TalkRecommendation.talk_id == request_data['talk_id']).delete()
+                session.commit()
+                return ReturnTool.SuccessReturn({
+                    "chat_id": result.id,
+                    "tokens": tokens_count,
+                    "reco_list": []
+                })
         else:
             return ReturnTool.ErrorReturn('数据没有找到')
 
@@ -131,14 +140,15 @@ def gen_record_list(chat_id, request_data, model_cfg, tokenizer=0):
                 {"role": "user", "content": '''
                                                             1.要求根据这段上下文生成3个推荐问题
                                                             2.要求只提炼出三个推荐问题
-                                                            3.要求推荐问题不超过20个字
+                                                            3.要求推荐问题不能超过20个Tokens
                                                             4.要求只返回问题本身的纯文本不要带任何markdown语法格式的字符
                                                             5.要求站在你的角度考虑，推荐一些你比较擅长的相似问题
                                                             6.要求内容不要返回序号
-                                                            7.要求请记住最终结果只需要三个，并且每个问题的字数不超过20个字
+                                                            7.要求请记住最终结果只需要三个，并且每个问题的字数不超过20个Tokens
                                                             8.要求每个问题之间用英文的;分割
                                                             9.要求认真思考，不要生成一些奇怪的问题
                                                             10.要求每个问题最后一个字符不能是特殊的中文或英文符号
+                                                            11.要求总结的每个问题的语义必须要完整，且不能超过20个Tokens
                                                             '''},
             ], model_cfg)
             arr = []
@@ -152,7 +162,7 @@ def gen_record_list(chat_id, request_data, model_cfg, tokenizer=0):
                 talk_id = int(request_data['talk_id'])
                 session.query(TalkRecommendation).filter(TalkRecommendation.talk_id == talk_id).delete()
                 session.commit()
-                reco_list = [{"talk_id": talk_id, "content": content[:20]} for content in
+                reco_list = [{"talk_id": talk_id, "content": content} for content in
                              arr]
             DbTools.bulk_insert(session, reco_list, TalkRecommendation)
     return {
@@ -178,8 +188,18 @@ def save_chat_title(user_id, nick_name, user_input, model_id, request_data):
         request_data['user_id'] = user_id
         request_data['nick_name'] = nick_name
         request_data['talk_name'] = generateContent([
+            {
+                "role": "system",
+                "content": "根据用户的问题想一个恰当的标题"
+                           "要求："
+                           "1.只返回最好的一个标题"
+                           "2.不要特殊符号只要纯文字"
+                           "3.标题不能超过15个Tokens"
+                           "4.如果用户输入的内容过少，就把用户的问题作为标题返回",
+            },
             {"role": "user",
-             "content": user_input + "\n" + "给这段内容取一个恰当的标题1.只返回最好的一个标题2.不要特殊符号只要纯文字3.不要超过20个字"},
+             "content": user_input,
+             },
         ], model_cfg)
         result = DbTools.saveOrUpdate(session, request_data, TalkUserRelation)
         if result:
@@ -212,8 +232,10 @@ def one_chat(search_criteria):
         data = DbTools.queryAll(query)
         arr = []
         for mc in data:
-            arr.append({"id": mc['id'], "type": 'user', "content": mc['req_content']})
-            arr.append({"id": mc['id'], "type": 'bot', "content": mc['resp_content']})
+            arr.append({"id": mc['id'], "type": 'user', "content": mc['req_content'],
+                        "pause_ask_stats": mc["pause_ask_stats"]})
+            arr.append({"id": mc['id'], "type": 'bot', "content": mc['resp_content'],
+                        "pause_ask_stats": mc["pause_ask_stats"]})
 
         return ReturnTool.SuccessReturn(arr)
 
@@ -283,11 +305,17 @@ def api_find_talk_recommend(talk_id):
                     "reco_list": []
                 })
             model_cfg = session.query(ModelConfig).order_by(getattr(ModelConfig, 'sort').desc()).first()
-            resp_dict = gen_record_list(log.id, {
-                "req_content": log.req_content,
-                "resp_content": log.resp_content,
-                "talk_id": log.talk_id
-            }, model_cfg)
+            resp_dict = {
+                "chat_id": log.id,
+                "tokens": log.tokens,
+                "reco_list": []
+            }
+            if log.pause_ask_stats == '0':
+                resp_dict = gen_record_list(log.id, {
+                    "req_content": log.req_content,
+                    "resp_content": log.resp_content,
+                    "talk_id": log.talk_id
+                }, model_cfg)
             return ReturnTool.SuccessReturn(resp_dict)
         return ReturnTool.SuccessReturn({
             "chat_id": -1,

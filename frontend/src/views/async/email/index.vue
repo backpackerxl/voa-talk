@@ -59,12 +59,12 @@
             <template #default="{ row }">
               <el-popover
                 placement="bottom"
-                title="发送结果："
+                title=""
                 content=""
                 trigger="hover"
-                width="300"
+                width="250"
               >
-                <div v-html="row.body"></div>
+                <div>请点击详情查看邮件原件内容...</div>
                 <template #reference>
                   <div class="text-truncate">{{ row.body }}</div>
                 </template>
@@ -215,7 +215,7 @@
               label="邮件内容："
               class="custom-form-item"
             >
-              <div v-html="infoHtml" class="info-html"></div>
+              <iframe :srcdoc="infoHtml" class="info-html"></iframe>
             </el-form-item>
           </el-form>
           <template #footer>
@@ -649,5 +649,7 @@ onMounted(() => {
   height: 300px;
   width: 100%;
   overflow: auto;
+  border: none;
+  outline: none;
 }
 </style>

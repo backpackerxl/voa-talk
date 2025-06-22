@@ -1,6 +1,8 @@
 <template>
   <div class="context-menu-container">
-    <slot></slot>
+    <div ref="slotContainer">
+      <slot></slot>
+    </div>
 
     <div v-if="visible" class="context-menu" :style="menuStyle" @click.stop>
       <div
@@ -20,103 +22,148 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "RightClickMenu",
+<script setup>
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 
-  props: {
-    menuItems: {
-      type: Array,
-      required: true,
-      validator: (value) => {
-        return value.every(
-          (item) =>
-            typeof item.label === "string" &&
-            typeof item.icon === "string" &&
-            typeof item.classList === "object" &&
-            typeof item.action === "function"
-        );
-      },
-    },
-    menuWidth: {
-      type: Number,
-      default: 150,
-    },
-    itemHeight: {
-      type: Number,
-      default: 32,
+const props = defineProps({
+  menuItems: {
+    type: Array,
+    required: true,
+    validator: (value) => {
+      return value.every(
+        (item) =>
+          typeof item.label === "string" &&
+          typeof item.icon === "string" &&
+          typeof item.classList === "object" &&
+          typeof item.action === "function"
+      );
     },
   },
-
-  data() {
-    return {
-      visible: false,
-      x: 0,
-      y: 0,
-      adjustedX: 0,
-      adjustedY: 0,
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      currentData: null, // 存储当前右键点击的数据
-    };
+  menuWidth: {
+    type: Number,
+    default: 150,
   },
-
-  computed: {
-    menuStyle() {
-      return {
-        top: `${this.adjustedY}px`,
-        left: `${this.adjustedX}px`,
-        minWidth: `${this.menuWidth}px`,
-      };
-    },
-
-    menuHeight() {
-      return this.menuItems.length * this.itemHeight;
-    },
+  itemHeight: {
+    type: Number,
+    default: 32,
   },
+});
 
-  methods: {
-    openMenu(e, data = null) {
-      this.x = e.clientX;
-      this.y = e.clientY;
-      this.adjustMenuPosition(this.x, this.y);
-      this.visible = true;
-      this.currentData = data; // 存储传递的数据
+// 引用插槽容器元素
+const slotContainer = ref(null);
 
-      // 点击其他地方关闭菜单
-      const closeMenu = () => {
-        this.visible = false;
-        document.removeEventListener("click", closeMenu);
-      };
+// 响应式状态
+const visible = ref(false);
+const x = ref(0);
+const y = ref(0);
+const adjustedX = ref(0);
+const adjustedY = ref(0);
+const containerRect = ref({});
+const windowHeight = ref(window.innerHeight);
+const currentData = ref(null);
 
-      document.addEventListener("click", closeMenu);
-    },
-    adjustMenuPosition(x, y) {
-      // 检查右侧边界
-      if (x + this.menuWidth > this.windowWidth) {
-        this.adjustedX = x - this.menuWidth;
-      } else {
-        this.adjustedX = x;
-      }
+// 计算属性
+const menuStyle = computed(() => ({
+  top: `${adjustedY.value}px`,
+  left: `${adjustedX.value}px`,
+  minWidth: `${props.menuWidth}px`,
+}));
 
-      // 检查底部边界
-      if (y + this.menuHeight > this.windowHeight) {
-        this.adjustedY = y - this.menuHeight;
-      } else {
-        this.adjustedY = y;
-      }
+const menuHeight = computed(() => props.menuItems.length * props.itemHeight);
 
-      // 确保不会超出左边界和上边界
-      this.adjustedX = Math.max(0, this.adjustedX);
-      this.adjustedY = Math.max(0, this.adjustedY);
-    },
-
-    handleClick(item) {
-      this.visible = false;
-      item.action(this.currentData);
-    },
-  },
+// 更新容器尺寸信息
+const updateContainerRect = () => {
+  if (slotContainer.value) {
+    containerRect.value = slotContainer.value.getBoundingClientRect();
+  }
 };
+
+// 方法
+const handleContextMenu = (e, data = null) => {
+  updateContainerRect();
+  openMenu(e, data);
+};
+
+let currrData = null;
+
+const openMenu = (e, data = null) => {
+  x.value = e.clientX;
+  y.value = e.clientY;
+  adjustMenuPosition(x.value, y.value);
+  visible.value = true;
+  currentData.value = data;
+
+  // 点击其他地方关闭菜单
+  const closeMenu = () => {
+    visible.value = false;
+    document.removeEventListener("click", closeMenu);
+  };
+
+  document.addEventListener("click", closeMenu);
+};
+
+const adjustMenuPosition = (x, y) => {
+  // 基于插槽容器的位置进行边界检测
+  const container = containerRect.value;
+
+  // 检查右侧边界（相对于容器）
+  if (x + props.menuWidth > container.right) {
+    // 尝试将菜单显示在左侧
+    const leftSpace = x - container.left;
+    if (leftSpace >= props.menuWidth) {
+      adjustedX.value = x - props.menuWidth;
+    } else {
+      // 左右空间都不足，优先显示在右侧，可能会超出容器
+      adjustedX.value = x;
+    }
+  } else {
+    adjustedX.value = x;
+  }
+
+  // 检查底部边界
+  if (y + menuHeight.value > windowHeight.value) {
+    adjustedY.value = y - menuHeight.value;
+  } else {
+    adjustedY.value = y;
+  }
+
+  // 确保不会超出容器边界
+  adjustedX.value = Math.max(
+    container.left,
+    Math.min(adjustedX.value, container.right - props.menuWidth)
+  );
+  adjustedY.value = Math.max(
+    container.top,
+    Math.min(adjustedY.value, container.bottom - menuHeight.value)
+  );
+};
+
+const handleClick = (item) => {
+  visible.value = false;
+  item.action(currentData.value);
+};
+
+// 生命周期钩子
+onMounted(() => {
+  updateContainerRect();
+
+  // 监听窗口大小变化
+  const handleResize = () => {
+    updateContainerRect();
+  };
+
+  window.addEventListener("resize", handleResize);
+
+  // 组件卸载时移除监听器
+  onUnmounted(() => {
+    window.removeEventListener("resize", handleResize);
+  });
+});
+
+// 暴露方法供外部使用
+defineExpose({
+  handleContextMenu,
+});
 </script>
 
 <style scoped>

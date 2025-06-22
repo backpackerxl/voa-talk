@@ -191,6 +191,7 @@ const handleCommand = (command) => {
 .menu svg.menu-icon {
   fill: var(--el-text-color-primary);
   cursor: pointer;
+  transition: all .2s;
 }
 
 @media (max-width: 768px) {

@@ -21,6 +21,13 @@ onMounted(function () {
 });
 </script>
 <style>
+@font-face {
+  font-family: "KaushanScript-Regular";
+  src: url("@assets/fonts/KaushanScript-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -45,8 +52,14 @@ body {
   background-color: transparent;
 }
 
-/* 滚动条滑块 */
 ::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+/* 滚动条滑块 */
+:hover::-webkit-scrollbar-thumb,
+:active::-webkit-scrollbar-thumb,
+:focus::-webkit-scrollbar-thumb {
   background-color: var(--el-color-info-light-7);
   border-radius: 3px;
 }
@@ -62,6 +75,15 @@ body {
     width: 4px; /* 垂直滚动条宽度 */
     height: 4px; /* 水平滚动条高度 */
   }
+  .katex-display,
+  .katex-html > .base {
+    transform: scale(0.84);
+  }
+}
+
+.katex-display > .katex > .katex-html {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .pre-container {

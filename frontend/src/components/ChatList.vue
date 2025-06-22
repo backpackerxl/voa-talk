@@ -14,72 +14,104 @@
       </el-tooltip>
     </div>
   </div>
-  <div class="infinite-list-wrapper" style="overflow: auto">
-    <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
-      <ul
-        v-infinite-scroll="load"
-        class="list"
-        :infinite-scroll-disabled="disabled"
-      >
-        <li
-          v-for="(chat, index) in tableData"
-          :key="index"
-          :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'"
-          @click="openChatHis($event, chat)"
-          :data-index="index"
-          @contextmenu.prevent="openMenu($event, chat)"
-        >
-          <el-tooltip
-            class="box-item"
-            effect="light"
-            :content="chat.talk_name"
-            placement="right"
-            :disabled="!shouldShowTooltip(index) || !showHis"
+
+  <el-skeleton :loading="openLoading" animated>
+    <template #template>
+      <el-skeleton-item
+        variant="text"
+        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
+      />
+      <el-skeleton-item
+        variant="text"
+        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
+      />
+      <el-skeleton-item
+        variant="text"
+        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
+      />
+      <el-skeleton-item
+        variant="text"
+        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
+      />
+      <el-skeleton-item
+        variant="text"
+        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
+      />
+    </template>
+    <template #default>
+      <div class="infinite-list-wrapper" style="overflow: auto">
+        <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
+          <ul
+            v-infinite-scroll="load"
+            class="list"
+            :infinite-scroll-disabled="disabled"
           >
-            <template #content>
-              {{ chat.talk_name }}
-            </template>
-            <div class="content">
-              <span :ref="(el) => handleRef(el, index)" class="text-truncate"
-                ><i class="fa-regular fa-comments"></i
-                >{{ chat.talk_name }}</span
+            <li
+              v-for="(chat, index) in tableData"
+              :key="index"
+              :class="
+                chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
+              "
+              @click="openChatHis($event, chat)"
+              :data-index="index"
+              @contextmenu.prevent="openMenu($event, chat)"
+            >
+              <el-tooltip
+                class="box-item"
+                effect="light"
+                :content="chat.talk_name"
+                placement="right"
+                :disabled="!shouldShowTooltip(index) || !showHis"
               >
-              <el-dropdown
-                v-if="showHis"
-                trigger="click"
-                @visible-change="handleVisibleChange"
-                placement="bottom-end"
-              >
-                <span class="el-dropdown-link">
-                  <i
-                    ref="trigger"
-                    :data-index="index"
-                    class="fa-solid fa-ellipsis"
-                  ></i>
-                </span>
-                <template #dropdown>
-                  <el-dropdown-menu
-                    :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
-                  >
-                    <el-dropdown-item @click="handleEditMsg(chat)"
-                      ><i class="fa-regular fa-pen-to-square"></i
-                      >重命名</el-dropdown-item
-                    >
-                    <el-dropdown-item
-                      class="delete"
-                      @click="handleDeleteMsg(chat)"
-                      ><i class="fa-solid fa-trash"></i>删除</el-dropdown-item
-                    >
-                  </el-dropdown-menu>
+                <template #content>
+                  {{ chat.talk_name }}
                 </template>
-              </el-dropdown>
-            </div>
-          </el-tooltip>
-        </li>
-      </ul>
-    </RightClickMenu>
-    <div class="last-msg" v-loading="loading"></div>
-  </div>
+                <div class="content">
+                  <span
+                    :ref="(el) => handleRef(el, index)"
+                    class="text-truncate"
+                    ><i class="fa-regular fa-comments"></i
+                    >{{ chat.talk_name }}</span
+                  >
+                  <el-dropdown
+                    v-if="showHis"
+                    trigger="click"
+                    @visible-change="handleVisibleChange"
+                    placement="bottom-end"
+                  >
+                    <span class="el-dropdown-link">
+                      <i
+                        ref="trigger"
+                        :data-index="index"
+                        class="fa-solid fa-ellipsis"
+                      ></i>
+                    </span>
+                    <template #dropdown>
+                      <el-dropdown-menu
+                        :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
+                      >
+                        <el-dropdown-item @click="handleEditMsg(chat)"
+                          ><i class="fa-regular fa-pen-to-square"></i
+                          >重命名</el-dropdown-item
+                        >
+                        <el-dropdown-item
+                          class="delete"
+                          @click="handleDeleteMsg(chat)"
+                          ><i class="fa-solid fa-trash"></i
+                          >删除</el-dropdown-item
+                        >
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </div>
+              </el-tooltip>
+            </li>
+          </ul>
+        </RightClickMenu>
+        <div class="last-msg" v-loading="loading"></div>
+      </div>
+    </template>
+  </el-skeleton>
 </template>
 
 <script setup>
@@ -116,6 +148,7 @@ const contentRefs = ref([]);
 const isVisible = ref(false);
 const moreIcon = ref(null);
 const talkIdOn = ref(-1);
+const openLoading = ref(false);
 const showHis = ref(!device.mobile());
 
 const rightClickMenu = ref(null);
@@ -140,7 +173,7 @@ const menuItems = ref([
 ]);
 
 function openMenu(event, chat) {
-  rightClickMenu.value && rightClickMenu.value.openMenu(event, chat);
+  rightClickMenu.value && rightClickMenu.value.handleContextMenu(event, chat);
 }
 
 function handleVisibleChange(visible) {
@@ -190,27 +223,23 @@ function openChatHisList() {
   router.replace("/home/chat/history");
 }
 
-const getAiChatList = () => {
-  aiChatList({
+const getAiChatList = async (animated) => {
+  openLoading.value = animated;
+  let obj = await aiChatList({
     pageSize: pageSize.value,
     pageIndex: currentPage.value,
-  })
-    .then((obj) => {
-      tableData.value = tableData.value.concat(obj.data.records);
-      totalCount.value = obj.data.total_count;
-      loading.value = false;
-    })
-    .catch((err) => {
-      console.log(err);
-      loading.value = false;
-    });
+  });
+  tableData.value = tableData.value.concat(obj.data.records);
+  totalCount.value = obj.data.total_count;
+  loading.value = false;
+  openLoading.value = false;
 };
 
 const load = () => {
   loading.value = true;
   count.value += pageSize.value;
   currentPage.value++;
-  getAiChatList();
+  getAiChatList(false);
 };
 
 watch(
@@ -282,7 +311,7 @@ function handleEditMsg(row) {
 
 onMounted(function () {
   talkIdOn.value = +routePath.params.id;
-  getAiChatList();
+  getAiChatList(true);
 });
 </script>
 

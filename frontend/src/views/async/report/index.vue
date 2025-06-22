@@ -85,7 +85,20 @@
         <div class="grid-content bottom">
           <h2 class="title">Tokens 调用量周榜</h2>
           <div class="box" v-for="(item, index) in topTalkList" :key="index">
-            <p><i class="fa-regular fa-comments"></i>{{ item.talk_name }}</p>
+            <el-tooltip
+              class="box-item"
+              effect="light"
+              :content="item.talk_name"
+              placement="right"
+              :disabled="!shouldShowTooltip(index)"
+            >
+              <template #content>
+                {{ item.talk_name }}
+              </template>
+              <p class="txt" :ref="(el) => handleRef(el, index)">
+                <i class="fa-regular fa-comments"></i>{{ item.talk_name }}
+              </p>
+            </el-tooltip>
             <span>{{
               item.tokens > 1000
                 ? `${(item.tokens / 1000).toFixed(1)} k`
@@ -176,6 +189,7 @@ const shortcuts = [
 const barDate = ref([]);
 const lineDate = ref([]);
 const pieDate = ref([]);
+const contentRefs = ref([]);
 
 // 折线图配置
 const lineChartOption = ref({});
@@ -185,6 +199,20 @@ const barChartOption = ref({});
 
 // 饼图配置
 const pieChartOption = ref({});
+
+function shouldShowTooltip(index) {
+  const contentRef = contentRefs.value[index];
+  if (contentRef) {
+    return contentRef.scrollWidth > contentRef.clientWidth;
+  }
+  return false;
+}
+
+const handleRef = (el, index) => {
+  if (el) {
+    contentRefs.value[index] = el;
+  }
+};
 
 function handleBarData() {
   const stm = formatDateTime(barDate.value[0]);
@@ -513,6 +541,14 @@ onMounted(() => {
   align-items: center;
   border-bottom: 1px solid var(--el-color-info-light-5);
   color: var(--me-report-text-color);
+  height: 48px;
+}
+
+.bottom .box .txt {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bottom .box i.fa-comments {

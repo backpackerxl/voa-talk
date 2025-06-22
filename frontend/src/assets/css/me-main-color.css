@@ -170,3 +170,14 @@ html.dark {
 .w-e-modal input[type=text]:focus {
     border: 1px solid var(--el-color-primary);
 }
+
+.el-popper.is-customized {
+    padding: 6px 12px;
+    color: #fff;
+    background: #f59e0b;
+}
+
+.el-popper.is-customized .el-popper__arrow::before {
+    background: #f59e0b;
+    right: 0;
+}

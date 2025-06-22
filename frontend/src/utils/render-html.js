@@ -1,4 +1,5 @@
-import renderMathInElement from "katex/dist/contrib/auto-render";
+// import renderMathInElement from "katex/dist/contrib/auto-render";
+import katex from 'katex';
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import hljs from "highlight.js";
@@ -50,20 +51,137 @@ marked.setOptions({
         const validLanguage = hljs.getLanguage(language) ? language : "plaintext";
         return hljs.highlight(code, { language: validLanguage }).value;
     },
+    breaks: true,
+    gfm: true,
 });
+
+function preprocessMarkdown(text) {
+    // 处理所有嵌套在 **...** 中的星号
+    return text.replace(/\*\*(.*?)\*\*/g, (match, content) => {
+        // 转义内容中的星号
+        const escapedContent = content.replace(/\*/g, '\\*');
+        return `**${escapedContent}**`;
+    });
+}
+
+// 扩展 marked 支持多种数学公式格式
+const mathExtensions = [
+    // 标准 $...$ 行内公式
+    {
+        name: 'inlineMathDollar',
+        level: 'inline',
+        start(src) { return src.indexOf('$'); },
+        tokenizer(src) {
+            const match = src.match(/^\$([^$\n]+?)\$/);
+            if (match && !/[a-zA-Z]\*/.test(match[1])) {
+                return {
+                    type: 'inlineMathDollar',
+                    raw: match[0],
+                    text: match[1].trim()
+                };
+            }
+        },
+        renderer(token) {
+            try {
+                return katex.renderToString(token.text, { throwOnError: false });
+            } catch (error) {
+                return `<span class="katex-error">${error.message}</span>`;
+            }
+        }
+    },
+    // 标准 $$...$$ 块级公式
+    {
+        name: 'blockMathDollar',
+        level: 'block',
+        start(src) { return src.indexOf('$$'); },
+        tokenizer(src) {
+            const match = src.match(/^\$\$+\n([^$]+?)\n\$\$+\n?/);
+            if (match) {
+                return {
+                    type: 'blockMathDollar',
+                    raw: match[0],
+                    text: match[1].trim()
+                };
+            }
+        },
+        renderer(token) {
+            try {
+                return `<div class="katex-block">${katex.renderToString(token.text, {
+                    displayMode: true,
+                    throwOnError: false
+                })}</div>`;
+            } catch (error) {
+                return `<div class="katex-error">${error.message}</div>`;
+            }
+        }
+    },
+    // [...] 块级公式
+    {
+        name: 'blockMathBracket',
+        level: 'block',
+        start(src) { return src.indexOf('\\['); },
+        tokenizer(src) {
+            const match = src.match(/^\\\[([\s\S]+?)\\\]\n?/);
+            if (match) {
+                return {
+                    type: 'blockMathBracket',
+                    raw: match[0],
+                    text: match[1].trim()
+                };
+            }
+        },
+        renderer(token) {
+            try {
+                return `<div class="katex-block">${katex.renderToString(token.text, {
+                    displayMode: true,
+                    throwOnError: false
+                })}</div>`;
+            } catch (error) {
+                return `<div class="katex-error">${error.message}</div>`;
+            }
+        }
+    },
+    // (...) 行内公式
+    {
+        name: 'inlineMathParenthesis',
+        level: 'inline',
+        start(src) { return src.indexOf('\\('); },
+        tokenizer(src) {
+            const match = src.match(/^\\\(([^\\]+?)\\\)/);
+            if (match) {
+                return {
+                    type: 'inlineMathParenthesis',
+                    raw: match[0],
+                    text: match[1].trim()
+                };
+            }
+        },
+        renderer(token) {
+            try {
+                return katex.renderToString(token.text, { throwOnError: false });
+            } catch (error) {
+                return `<span class="katex-error">${error.message}</span>`;
+            }
+        }
+    }
+];
+
+marked.use({
+    extensions: mathExtensions
+});
+
+function parseMarkdown(markdown) {
+    // 预处理：保护算法名称中的星号
+    const protectedText = preprocessMarkdown(markdown);
+    return DOMPurify.sanitize(marked.parse(protectedText));
+}
+
 
 // 添加复制图标的方法
 export function markdwonToHTML(content, showPlayIcon) {
     const oDiv = document.createElement("div");
-    oDiv.innerHTML = DOMPurify.sanitize(marked.parse(content));
-    renderMathInElement(oDiv, {
-        delimiters: [
-            { left: "$$", right: "$$", display: true },
-            { left: "$", right: "$", display: false },
-            { left: "\\(", right: "\\)", display: false },
-            { left: "\\[", right: "\\]", display: true },
-        ],
-    });
+    oDiv.innerHTML = parseMarkdown(content);
+
     oDiv.querySelectorAll("pre code").forEach((block) => {
         // 处理流程图
         const ismermaid = block.classList.contains('language-mermaid');
