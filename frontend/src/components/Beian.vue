@@ -2,13 +2,14 @@
   <footer class="footer">
     <p class="beian">
       <a target="_blank" href="https://beian.miit.gov.cn"
-        >蜀ICP备2025143448号-1</a
+        >{{ config.BEI_AN_HAO }}</a
       >
     </p>
   </footer>
 </template>
 
 <script setup>
+import { config } from "@/utils/config";
 </script>
 
 <style scoped>

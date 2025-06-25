@@ -1,4 +1,4 @@
 export const config = {
-    BASE_URL: 'http://192.168.1.198:10011'
-    // BASE_URL: 'https://voatalk.online/voatalk_api'
-};
+    BASE_URL: process.env.VUE_APP_BASE_API,
+    BEI_AN_HAO: "蜀ICP备2025143448号-1",
+}

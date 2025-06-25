@@ -108,7 +108,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const isAuthenticated = store.state.app.authorization !== ''; // 检查是否已认证
     const userRole = store.state.app.userRole;
-    if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
+    // 已登录用户访问登录页，重定向到主页
+    if (to.path === '/login' && isAuthenticated) {
+        console.log("Already authenticated, redirecting to /home");
+        next({ path: '/home' });
+    } else if (to.matched.some((record) => record.meta.requiresAuth) && !isAuthenticated) {
         console.log("Not authenticated, redirecting to /login");
         next({ path: '/login' });
     } else if (to.path === '/home/user' && Number(userRole) !== 1) {

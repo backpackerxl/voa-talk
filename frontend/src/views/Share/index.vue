@@ -93,9 +93,9 @@
             </RightClickMenu>
             <footer class="footer">
               <p class="beian">
-                <a target="_blank" href="https://beian.miit.gov.cn"
-                  >蜀ICP备2025143448号-1</a
-                >
+                <a target="_blank" href="https://beian.miit.gov.cn">{{
+                  config.BEI_AN_HAO
+                }}</a>
               </p>
             </footer>
           </div>
@@ -130,6 +130,7 @@ import "katex/dist/katex.min.css";
 import { markdwonToHTML, addCopy, renderMermaid } from "@/utils/render-html";
 import { ChatDotSquare } from "@element-plus/icons-vue";
 import router from "@/router";
+import { config } from "@/utils/config";
 
 import { getRedisChat } from "@/api/aiChat";
 import * as clipboard from "clipboard-polyfill";
@@ -183,7 +184,7 @@ if (!isMob.value) {
 }
 
 function openMenu(event, message) {
-  rightClickMenu.value && rightClickMenu.value.openMenu(event, message);
+  rightClickMenu.value && rightClickMenu.value.handleContextMenu(event, message);
 }
 
 function copyContent(event, content) {
