@@ -1,1 +1,1 @@
-nohup python ./app.py &
+nohup python backend/app.py &
