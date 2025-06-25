@@ -1,0 +1,1 @@
+"use strict";(self["webpackChunkvoa_talk"]=self["webpackChunkvoa_talk"]||[]).push([[1126],{41126:function(e,a,t){t.d(a,{createPacketServices:function(){return c.$}});var c=t(17142);t(21259)}}]);
