@@ -72,7 +72,7 @@ const mathExtensions = [
         level: 'inline',
         start(src) { return src.indexOf('$'); },
         tokenizer(src) {
-            const match = src.match(/^\$([^$\n]+?)\$/);
+            const match = src.match(/^\$([\s\S]+?)\$/);
             if (match && !/[a-zA-Z]\*/.test(match[1])) {
                 return {
                     type: 'inlineMathDollar',
@@ -95,7 +95,7 @@ const mathExtensions = [
         level: 'block',
         start(src) { return src.indexOf('$$'); },
         tokenizer(src) {
-            const match = src.match(/^\$\$+\n([^$]+?)\n\$\$+\n?/);
+            const match = src.match(/^\$\$+\n([\s\S]+?)\n\$\$+\n?/);
             if (match) {
                 return {
                     type: 'blockMathDollar',
