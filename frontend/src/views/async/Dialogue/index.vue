@@ -974,6 +974,7 @@ function scrollTopBottom(animation = false) {
   display: flex;
   justify-content: center;
   overflow: auto;
+  overflow-x: hidden;
   height: calc(100vh - 190px);
   margin: 0 2px;
 }
