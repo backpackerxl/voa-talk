@@ -147,7 +147,8 @@ const mathExtensions = [
         level: 'inline',
         start(src) { return src.indexOf('\\('); },
         tokenizer(src) {
-            const match = src.match(/^\\\(([^\\]+?)\\\)/);
+            // 修改后的正则表达式，使用非贪婪模式匹配任意字符
+            const match = src.match(/^\\\(([\s\S]+?)\\\)/);
             if (match) {
                 return {
                     type: 'inlineMathParenthesis',
