@@ -27,37 +27,42 @@ service.interceptors.request.use(
 
 // 响应拦截器
 service.interceptors.response.use(
-    response => {
-      // 响应成功处理
-      if (+response.data.code === 200) {
-        // console.log("拦截器==》",response)
-        return response.data;  // 直接返回整个 data，而不是只返回其中的 data 字段
-      } else {
-        ElMessage.error(response.data.msg || '服务器错误');
-        return Promise.reject(response.data.msg || '服务器错误');
-      }
-    },
-    async error => {
-      // console.log("error==>", error);
-      // 响应失败处理
-      if (error.response && (error.response.status === 401 || error.response.status === 408)) {
-        const redirect = encodeURIComponent(window.location.href);
-        router.push(`/login?redirect=${redirect}`);
-        store.dispatch('app/clearToken');
-        return Promise.reject(error);
-      }
-      if (error.response.data.code !== 200) {
-        ElMessage.error(error.response.data?.msg || '服务器错误');
-        return Promise.reject(error);
-      }
-      ElMessage.closeAll();
-      try {
-        ElMessage.error(error.response.data.msg);
-      } catch (err) {
-        ElMessage.error(error.message);
-      }
+  response => {
+    // 响应成功处理
+    if (+response.data.code === 200) {
+      // console.log("拦截器==》",response)
+      return response.data;  // 直接返回整个 data，而不是只返回其中的 data 字段
+    } else {
+      ElMessage.error(response.data.msg || '服务器错误');
+      return Promise.reject(response.data.msg || '服务器错误');
+    }
+  },
+  async error => {
+    // console.log("error==>", error);
+    // 响应失败处理
+    if (error.response && (error.response.status === 401 || error.response.status === 408)) {
+      const redirect = encodeURIComponent(window.location.href);
+      router.push(`/login?redirect=${redirect}`);
+      store.dispatch("app/clearAvatar");
+      store.dispatch("app/clearAuthorization");
+      store.dispatch("app/clearUserRole");
+      store.dispatch("app/clearNickName");
+      store.dispatch("app/clearUserName");
+      store.dispatch("app/clearUserEmail");
       return Promise.reject(error);
     }
+    if (error.response.data.code !== 200) {
+      ElMessage.error(error.response.data?.msg || '服务器错误');
+      return Promise.reject(error);
+    }
+    ElMessage.closeAll();
+    try {
+      ElMessage.error(error.response.data.msg);
+    } catch (err) {
+      ElMessage.error(error.message);
+    }
+    return Promise.reject(error);
+  }
 );
 /**
  * 发送请求的 async 函数
@@ -115,9 +120,9 @@ async function instance(options) {
     if (result) {
       return result;
 
-    // 检查返回的数据结构
-    // if (result && result.data) {
-    //   return result;
+      // 检查返回的数据结构
+      // if (result && result.data) {
+      //   return result;
     } else {
       throw new Error('Invalid response structure');
     }
