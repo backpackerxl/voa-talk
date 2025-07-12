@@ -1,4 +1,3 @@
-// import renderMathInElement from "katex/dist/contrib/auto-render";
 import katex from 'katex';
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -65,110 +64,234 @@ function preprocessMarkdown(text) {
 }
 
 // 扩展 marked 支持多种数学公式格式
+
 const mathExtensions = [
-    // 标准 $...$ 行内公式
+    // 1. 行内公式：$...$（基础格式）
     {
         name: 'inlineMathDollar',
         level: 'inline',
-        start(src) { return src.indexOf('$'); },
+        start(src) {
+            const index = src.indexOf('$');
+            if (index === -1) return null;
+            if (index > 0 && src[index - 1] === '\\') return null; // 跳过转义的$
+            return index;
+        },
         tokenizer(src) {
-            const match = src.match(/^\$([\s\S]+?)\$/);
-            if (match && !/[a-zA-Z]\*/.test(match[1])) {
-                return {
-                    type: 'inlineMathDollar',
-                    raw: match[0],
-                    text: match[1].trim()
-                };
-            }
+            // 匹配$...$，允许括号和转义字符
+            const match = src.match(/^\$((?:\\\$|\\\(|\\\)|\\.|[^$])+?)\$/);
+            if (!match) return null;
+            return {
+                type: 'inlineMathDollar',
+                raw: match[0],
+                text: match[1].trim()
+            };
         },
         renderer(token) {
             try {
-                return katex.renderToString(token.text, { throwOnError: false });
+                return katex.renderToString(token.text, {
+                    throwOnError: false,
+                    displayMode: false,
+                    extensions: ['mhchem', 'phy']
+                });
             } catch (error) {
-                return `<span class="katex-error">${error.message}</span>`;
+                return `<span class="katex-error">行内公式错误: ${formatErrorMsg(error.message)}</span>`;
             }
         }
     },
-    // 标准 $$...$$ 块级公式
+
+    // 2. 块级公式：$$...$$（基础格式）
     {
         name: 'blockMathDollar',
         level: 'block',
-        start(src) { return src.indexOf('$$'); },
+        start(src) {
+            const index = src.indexOf('$$');
+            if (index === -1) return null;
+            if (index > 0 && src[index - 1] !== '\n') return null; // 确保$$在行首或换行后
+            return index;
+        },
         tokenizer(src) {
-            const match = src.match(/^\$\$+\n([\s\S]+?)\n\$\$+\n?/);
-            if (match) {
-                return {
-                    type: 'blockMathDollar',
-                    raw: match[0],
-                    text: match[1].trim()
-                };
-            }
+            // 匹配$$...$$，支持多行和LaTeX环境
+            const match = src.match(/^\$\$((?:\\\$|\\\(|\\\)|\\.|[\s\S])+?)\$\$/);
+            if (!match) return null;
+            return {
+                type: 'blockMathDollar',
+                raw: match[0],
+                text: match[1].trim()
+            };
         },
         renderer(token) {
             try {
                 return `<div class="katex-block">${katex.renderToString(token.text, {
                     displayMode: true,
-                    throwOnError: false
+                    throwOnError: false,
+                    extensions: ['mhchem', 'phy']
                 })}</div>`;
             } catch (error) {
-                return `<div class="katex-error">${error.message}</div>`;
+                return `<div class="katex-error">块级公式错误: ${formatErrorMsg(error.message)}</div>`;
             }
         }
     },
-    // [...] 块级公式
-    {
-        name: 'blockMathBracket',
-        level: 'block',
-        start(src) { return src.indexOf('\\['); },
-        tokenizer(src) {
-            const match = src.match(/^\\\[([\s\S]+?)\\\]\n?/);
-            if (match) {
-                return {
-                    type: 'blockMathBracket',
-                    raw: match[0],
-                    text: match[1].trim()
-                };
-            }
-        },
-        renderer(token) {
-            try {
-                return `<div class="katex-block">${katex.renderToString(token.text, {
-                    displayMode: true,
-                    throwOnError: false
-                })}</div>`;
-            } catch (error) {
-                return `<div class="katex-error">${error.message}</div>`;
-            }
-        }
-    },
-    // (...) 行内公式
+
+    // 3. 行内公式：\(...\)（LaTeX标准格式）
     {
         name: 'inlineMathParenthesis',
         level: 'inline',
-        start(src) { return src.indexOf('\\('); },
+        start(src) {
+            const index = src.indexOf('\\(');
+            if (index === -1) return null;
+            // 确保\(前不是字母或数字（避免误匹配函数名如f\(x\)）
+            if (index > 0 && /[a-zA-Z0-9]/.test(src[index - 1])) return null;
+            return index;
+        },
         tokenizer(src) {
-            // 修改后的正则表达式，使用非贪婪模式匹配任意字符
-            const match = src.match(/^\\\(([\s\S]+?)\\\)/);
-            if (match) {
-                return {
-                    type: 'inlineMathParenthesis',
-                    raw: match[0],
-                    text: match[1].trim()
-                };
-            }
+            // 匹配\(...\)，允许嵌套括号和转义字符
+            const match = src.match(/^\\\(((?:\\\)|\\\(|\\.|[\s\S])+?)\\\)/);
+            if (!match) return null;
+            return {
+                type: 'inlineMathParenthesis',
+                raw: match[0],
+                text: match[1].trim()
+            };
         },
         renderer(token) {
             try {
-                return katex.renderToString(token.text, { throwOnError: false });
+                return katex.renderToString(token.text, {
+                    throwOnError: false,
+                    displayMode: false
+                });
             } catch (error) {
-                return `<span class="katex-error">${error.message}</span>`;
+                return `<span class="katex-error">行内公式错误: ${formatErrorMsg(error.message)}</span>`;
+            }
+        }
+    },
+
+    // 4. 块级公式：\[...\]（LaTeX标准格式）
+    {
+        name: 'blockMathBracket',
+        level: 'block',
+        start(src) {
+            const index = src.indexOf('\\[');
+            if (index === -1) return null;
+            if (index > 0 && src[index - 1] !== '\n') return null; // 确保\[在行首或换行后
+            return index;
+        },
+        tokenizer(src) {
+            // 匹配\[...\]，支持多行和复杂环境
+            const match = src.match(/^\\\[((?:\\\]|\\.|[\s\S])+?)\\\]/);
+            if (!match) return null;
+            return {
+                type: 'blockMathBracket',
+                raw: match[0],
+                text: match[1].trim()
+            };
+        },
+        renderer(token) {
+            try {
+                return `<div class="katex-block">${katex.renderToString(token.text, {
+                    displayMode: true,
+                    throwOnError: false
+                })}</div>`;
+            } catch (error) {
+                return `<div class="katex-error">块级公式错误: ${formatErrorMsg(error.message)}</div>`;
+            }
+        }
+    },
+
+    // 5. 增强版：LaTeX 环境公式处理器
+    {
+        name: 'multilineMath',
+        level: 'block',
+        start(src) {
+            return Math.min(
+                src.indexOf('\\begin{align'),
+                src.indexOf('\\begin{gather'),
+                src.indexOf('\\begin{aligned'),
+                src.indexOf('\\begin{split')
+            );
+        },
+        tokenizer(src) {
+            // 匹配多行数学环境，包括带星号的版本
+            const envMatch = src.match(/^\\begin\{(\*?[a-zA-Z]+)\*?\}([\s\S]*?)\\end\{\1\*?\}/);
+            if (envMatch) {
+                return {
+                    type: 'multilineMath',
+                    raw: envMatch[0],
+                    env: envMatch[1],
+                    content: envMatch[2].trim()
+                };
+            }
+            return null;
+        },
+        renderer(token) {
+            try {
+                let content = token.content;
+
+                // 优化反斜杠处理：只在必要的地方添加额外的反斜杠
+                // 这里使用更精确的正则表达式，只处理行末的 \\
+                content = content.replace(/\\\s*$/gm, '\\\\');
+
+                // 特殊处理 align 环境，保留星号信息
+                let renderEnv = token.env;
+                if (renderEnv.startsWith('align')) {
+                    renderEnv = renderEnv === 'align' ? 'aligned' : 'aligned*';
+                }
+
+                // 创建 KaTeX 渲染元素
+                const container = document.createElement('div');
+                container.className = 'katex-multiline-container';
+
+                // 使用 KaTeX 渲染
+                katex.render(
+                    `\\begin{${renderEnv}}${content}\\end{${renderEnv}}`,
+                    container,
+                    {
+                        displayMode: true,
+                        throwOnError: false,
+                        fleqn: false,
+                        maxSize: Infinity,
+                        maxExpand: Infinity,
+                        macros: {
+                            "\\RR": "\\mathbb{R}",
+                            "\\C": "\\mathbb{C}",
+                            "\\N": "\\mathbb{N}",
+                            "\\Z": "\\mathbb{Z}"
+                        }
+                    }
+                );
+
+                // 修复 KaTeX 自动添加的换行样式
+                const katexElements = container.querySelectorAll('.katex > .katex-html');
+                if (katexElements.length > 0) {
+                    katexElements[0].style.display = 'inline-block';
+                    katexElements[0].style.width = 'auto';
+                }
+
+                return container.innerHTML;
+            } catch (error) {
+                return `<div class="katex-error">多行公式错误: ${error.message.replace(/^KaTeX parse error: /, '').slice(0, 100)
+                    }</div>`;
             }
         }
     }
 ];
 
+// 辅助函数：格式化错误信息
+function formatErrorMsg(msg) {
+    if (msg.includes('Undefined control sequence')) {
+        return '未知命令（检查拼写，如\\abc）';
+    } else if (msg.includes('Missing delimiter')) {
+        return '缺失闭合符号（如)、]、}）';
+    } else if (msg.includes('Expected')) {
+        return '语法错误（可能缺少符号）';
+    } else {
+        return msg.replace(/KaTeX parse error: /, '');
+    }
+}
+
 marked.use({
-    extensions: mathExtensions
+    extensions: mathExtensions,
+    breaks: true,  // 允许换行符
+    gfm: true      // GitHub风格Markdown
 });
 
 function parseMarkdown(markdown) {

@@ -69,6 +69,12 @@ body {
   background-color: var(--el-color-info-light-5);
 }
 
+.katex {
+  font-size: 1.4em !important;
+  transform: scale(0.9);
+  transform-origin: center;
+}
+
 @media (max-width: 768px) {
   /* 滚动条整体样式 */
   ::-webkit-scrollbar {
