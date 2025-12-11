@@ -1,17 +1,20 @@
 import base64
 import json
+import os
 
 import redis
 
 from utils import Config
+
+env = os.getenv('VOA_TALK_ENV')
 
 
 class RedisHandler:
     def __init__(self):
         # 构建参数字典
         pool_kwargs = {
-            'host': Config.ridesAddress,
-            'port': Config.ridesPort,
+            'host': Config.ridesAddress.get(env),
+            'port': Config.ridesPort.get(env),
             'decode_responses': True
         }
 
@@ -82,7 +85,7 @@ def encrypt(plaintext):
 
 class RedisKeyValueStore:
     def __init__(self):
-        self.client = redis.Redis(host=Config.ridesAddress, port=Config.ridesPort, db=Config.ridesDb)
+        self.client = redis.Redis(host=Config.ridesAddress.get(env), port=Config.ridesPort.get(env), db=Config.ridesDb)
 
     def add_or_update(self, key, value):
         """

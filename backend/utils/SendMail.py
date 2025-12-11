@@ -1,6 +1,4 @@
 # 读取ini文件
-import configparser
-import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -28,7 +26,7 @@ def send_email(to_email, subject, body, is_html=False):
     # 连接到你的企业SMTP服务器
     try:
         server = smtplib.SMTP_SSL(Config.SMTP_SERVER, int(Config.SMTP_PORT))  # 使用 SMTP_SSL 而不是 SMTP
-        server.login(Config.EMAIL_USER, os.getenv('EMAIL_PASSWORD'))
+        server.login(Config.EMAIL_USER, Config.EMAIL_CODE)
 
         # 发送电子邮件
         server.sendmail(Config.EMAIL_USER, [to_email], msg.as_string())
