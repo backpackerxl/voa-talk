@@ -16,7 +16,7 @@ TheExpirationTimeOfTheToken = 5
 # mysql 数据库
 # 数据库地址，分本地环境(DEV)/生产环境(PRO)
 mysqlAddress = {
-    "DEV": "10.1.1.60",
+    "DEV": "127.0.0.1",
     "PRO": "127.0.0.1"
 }
 # 数据库端口，分本地环境(DEV)/生产环境(PRO)
@@ -32,7 +32,7 @@ mysqlPWD = os.getenv('MYSQL_PASSWORD')
 # Rides数据库
 # 链接地址，分本地环境(DEV)/生产环境(PRO)
 ridesAddress = {
-    "DEV": "10.1.1.60",
+    "DEV": "127.0.0.1",
     "PRO": "127.0.0.1"
 }
 # Rides，端口，分本地环境(DEV)/生产环境(PRO)
@@ -41,7 +41,7 @@ ridesPort = {
     "PRO": 6379
 }
 # Rides，密码
-ridesPassword = os.getenv('RIDES_PASSWORD')
+ridesPassword = None
 # Rides，数据库
 ridesDb = 0
 

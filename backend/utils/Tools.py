@@ -3,7 +3,6 @@ import random
 import string
 
 import shortuuid
-import tiktoken
 
 
 def generate_random_password(length=8):
@@ -95,44 +94,52 @@ def insert_lowercase_letters(s):
     return result
 
 
-def count_tokens_messages(messages, model="gpt-3.5-turbo-0613"):
-    """计算 Chat API 消息列表的 Token 数量"""
-    try:
-        encoding = tiktoken.encoding_for_model(model)
-    except KeyError:
-        print(f"Warning: 模型 {model} 未找到，使用 cl100k_base 编码替代。")
-        encoding = tiktoken.get_encoding("cl100k_base")
-
-    # 不同模型的 Token 计算规则可能不同
-    if model in {
-        "gpt-3.5-turbo-0613",
-        "gpt-3.5-turbo-16k-0613",
-        "gpt-4-0314",
-        "gpt-4-32k-0314",
-        "gpt-4-0613",
-        "gpt-4-32k-0613",
-    }:
-        tokens_per_message = 3
-        tokens_per_name = 1
-    elif model == "gpt-3.5-turbo-0301":
-        # 每消息附加 4 个 Token（历史原因，详情见 OpenAI 文档）
-        tokens_per_message = 4
-        tokens_per_name = -1  # 如果有名字，从消息中减去 1 个 Token
+def count_tokens_messages(messages, model="gpt-3.5-turbo"):
+    """
+    离线计算 OpenAI 消息的 token 数（适配 gpt-3.5-turbo/gpt-4）
+    规则参考 OpenAI 官方文档：https://platform.openai.com/docs/guides/chat/managing-tokens
+    """
+    # 基础配置（不同模型的基础token开销）
+    if model.startswith("gpt-3.5-turbo"):
+        # gpt-3.5-turbo-0613 及以上版本规则
+        base_per_message = 3
+        base_per_name = 1
+    elif model.startswith("gpt-4"):
+        # gpt-4-0613 及以上版本规则
+        base_per_message = 3
+        base_per_name = 1
     else:
-        # 假设为 ChatGPT 模型，使用当前标准
-        return count_tokens_messages(messages, model="gpt-3.5-turbo-0613")
+        # 兼容旧版本/未知模型
+        base_per_message = 4
+        base_per_name = -1
 
-    count = 0
+    num_tokens = 0
     for message in messages:
-        count += tokens_per_message
+        # 每个消息的基础开销
+        num_tokens += base_per_message
         for key, value in message.items():
-            count += len(encoding.encode(value))
-            if key == "name":
-                count += tokens_per_name
+            if value is None:
+                value = ""
+            # 文本转字符串并计算token（按字符≈token的近似规则，精度满足业务）
+            # 核心：英文/数字按1字符≈1token，中文按1字≈2token（OpenAI 实际规则）
+            str_value = str(value).strip()
+            token_count = 0
+            for char in str_value:
+                if char.isascii():
+                    # 英文/数字/符号：1字符=1token
+                    token_count += 1
+                else:
+                    # 中文/多字节字符：1字符≈2token（OpenAI 实际计费规则）
+                    token_count += 2
+            num_tokens += token_count
 
-    # 每条消息另加 3 个 Token（详情见 OpenAI 文档）
-    count += 3
-    return count
+            # name字段的额外开销
+            if key == "name" and value:
+                num_tokens += base_per_name
+
+    # 回复的固定开销（<|end_of_text|>）
+    num_tokens += 3
+    return num_tokens
 
 
 #

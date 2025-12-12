@@ -76,8 +76,6 @@ CREATE TABLE `sys_user`  (
   `update_date` datetime NULL DEFAULT NULL COMMENT '修改日期',
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '邮箱',
   `user_state` tinyint(1) NOT NULL COMMENT '账户状态(0：停用，1：正常)',
-  `qq_open_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '第三方开放平台id用于QQ登录',
-  `github_open_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '第三方开放平台id用于github登录',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 56 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统用户信息表' ROW_FORMAT = COMPACT;
 
