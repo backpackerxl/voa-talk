@@ -36,7 +36,7 @@ sql_pool = {
                 SELECT tl.talk_id, SUM(tl.tokens) AS tokens 
                     FROM talk_logs tl 
                     WHERE tl.create_date >= (NOW() - INTERVAL 7 DAY) 
-                    GROUP BY tl.talk_id ORDER BY SUM(tl.tokens) DESC LIMIT 6
+                    GROUP BY tl.talk_id ORDER BY SUM(tl.tokens) DESC LIMIT 5
                 )
         SELECT tur.talk_name, t1.tokens FROM t1 LEFT JOIN talk_user_relation tur ON tur.talk_id = t1.talk_id
     """),
