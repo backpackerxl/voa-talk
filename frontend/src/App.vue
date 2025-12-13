@@ -43,8 +43,10 @@ body {
 
 /* 滚动条整体样式 */
 ::-webkit-scrollbar {
-  width: 6px; /* 垂直滚动条宽度 */
-  height: 6px; /* 水平滚动条高度 */
+  width: 6px;
+  /* 垂直滚动条宽度 */
+  height: 6px;
+  /* 水平滚动条高度 */
 }
 
 /* 滚动条轨道 */
@@ -76,18 +78,22 @@ body {
 }
 
 @media (max-width: 768px) {
+
   /* 滚动条整体样式 */
   ::-webkit-scrollbar {
-    width: 4px; /* 垂直滚动条宽度 */
-    height: 4px; /* 水平滚动条高度 */
+    width: 4px;
+    /* 垂直滚动条宽度 */
+    height: 4px;
+    /* 水平滚动条高度 */
   }
+
   .katex-display,
-  .katex-html > .base {
+  .katex-html>.base {
     transform: scale(0.84);
   }
 }
 
-.katex-display > .katex > .katex-html {
+.katex-display>.katex>.katex-html {
   overflow-x: auto;
   overflow-y: hidden;
 }

@@ -261,14 +261,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.body {
-  display: flex;
-  justify-content: center;
-  margin: 0 2px;
-}
-
 .body .data-inner {
-  width: 65vw;
+  width: 1200px;
+  margin: 0 auto;
   padding: 15px 0;
 }
 
@@ -307,7 +302,7 @@ onMounted(() => {
   height: inherit;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 16px;
 }
 
 .el-form-item {
@@ -319,7 +314,7 @@ onMounted(() => {
 }
 
 .el-table {
-  height: 70vh !important;
+  height: 65vh !important;
 }
 
 .el-table thead {

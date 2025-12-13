@@ -46,18 +46,11 @@
           <div class="title">
             <span>日对话量</span>
             <div>
-              <el-date-picker
-                v-model="barDate"
-                type="datetimerange"
-                :shortcuts="shortcuts"
-                range-separator="To"
-                start-placeholder="Start date"
-                end-placeholder="End date"
-                @change="handleBarData"
-              />
+              <el-date-picker v-model="barDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
+                start-placeholder="Start date" end-placeholder="End date" @change="handleBarData" />
             </div>
           </div>
-          <ECharts ref="barChart" :option="barChartOption" height="260px" />
+          <ECharts ref="barChart" :option="barChartOption" height="240px" />
         </div>
       </el-col>
       <el-col :span="8">
@@ -65,18 +58,11 @@
           <div class="title">
             <span>模型调用量</span>
             <div>
-              <el-date-picker
-                v-model="pieDate"
-                type="datetimerange"
-                :shortcuts="shortcuts"
-                range-separator="To"
-                start-placeholder="Start date"
-                end-placeholder="End date"
-                @change="handlePieData"
-              />
+              <el-date-picker v-model="pieDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
+                start-placeholder="Start date" end-placeholder="End date" @change="handlePieData" />
             </div>
           </div>
-          <ECharts ref="pieChart" :option="pieChartOption" height="280px" />
+          <ECharts ref="pieChart" :option="pieChartOption" height="240px" />
         </div>
       </el-col>
     </el-row>
@@ -85,13 +71,8 @@
         <div class="grid-content bottom">
           <h2 class="title">Tokens 调用量周榜</h2>
           <div class="box" v-for="(item, index) in topTalkList" :key="index">
-            <el-tooltip
-              class="box-item"
-              effect="light"
-              :content="item.talk_name"
-              placement="right"
-              :disabled="!shouldShowTooltip(index)"
-            >
+            <el-tooltip class="box-item" effect="light" :content="item.talk_name" placement="right"
+              :disabled="!shouldShowTooltip(index)">
               <template #content>
                 {{ item.talk_name }}
               </template>
@@ -112,18 +93,11 @@
           <div class="title">
             <span>Tokens 日调用量</span>
             <div>
-              <el-date-picker
-                v-model="lineDate"
-                type="datetimerange"
-                :shortcuts="shortcuts"
-                range-separator="To"
-                start-placeholder="Start date"
-                end-placeholder="End date"
-                @change="handleLineData"
-              />
+              <el-date-picker v-model="lineDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
+                start-placeholder="Start date" end-placeholder="End date" @change="handleLineData" />
             </div>
           </div>
-          <ECharts ref="lineChart" :option="lineChartOption" height="340px" />
+          <ECharts ref="lineChart" :option="lineChartOption" height="280px" />
         </div>
       </el-col>
     </el-row>
@@ -434,15 +408,20 @@ onMounted(() => {
 
 <style scoped>
 .container {
-  padding: 20px 200px;
+  padding: 16px;
+  width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
 .el-row {
   margin-bottom: 10px;
 }
+
 .el-row:last-child {
   margin-bottom: 0;
 }
+
 .el-col {
   border-radius: 4px;
 }
@@ -479,21 +458,21 @@ onMounted(() => {
 }
 
 .header {
-  height: 100px;
+  height: 90px;
   position: relative;
 }
 
 .header i {
   position: absolute;
   font-size: 24px;
-  line-height: 100px;
+  line-height: 90px;
   color: var(--el-color-primary);
 }
 
 .header p {
   padding: 0;
   margin: 0;
-  line-height: 1.8em;
+  line-height: 1.6em;
   margin-left: 40px;
   padding-left: 10px;
   border-left: 1px solid var(--me-report-text-color);
@@ -517,11 +496,11 @@ onMounted(() => {
 }
 
 .midle {
-  height: 300px;
+  height: 280px;
 }
 
 .bottom {
-  height: 360px;
+  height: 280px;
 }
 
 @media (max-width: 1024px) {
