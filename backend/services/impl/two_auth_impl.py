@@ -469,3 +469,19 @@ def verify_otp(request):
             })
         else:
             return ReturnTool.ErrorReturn('OTP验证码错误', 400)
+
+
+def check_user_web_auth(username):
+    with DatabaseSession() as session:
+        queue = session.query(SysUser.otp_secrets, SysUser.credentials_data).filter(
+            SysUser.user_name == username).first()
+        if not queue.otp_secrets and not queue.credentials_data:
+            return ReturnTool.SuccessReturn({
+                'username': username,
+                'register_authenticated': False
+            })
+        else:
+            return ReturnTool.SuccessReturn({
+                'username': username,
+                'register_authenticated': True
+            })
