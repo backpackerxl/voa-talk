@@ -27,3 +27,5 @@ class SysUser(Base):
     qq_open_id = Column('qq_open_id', String, primary_key=False, nullable=True, comment="第三方开放平台id用于QQ登录")
     github_open_id = Column('github_open_id', String, primary_key=False, nullable=True,
                             comment="第三方开放平台id用于github登录")
+    otp_secrets = Column('otp_secrets', String, primary_key=False, nullable=True, comment="用户的OTP密钥")
+    credentials_data = Column('credentials_data', String, primary_key=False, nullable=True, comment="用户凭证数据")
