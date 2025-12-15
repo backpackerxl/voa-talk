@@ -3,7 +3,9 @@ import io
 import json
 import os
 import secrets
+import uuid
 from datetime import datetime
+from utils.Config import ALLOWED_ORIGINS
 
 import pyotp
 import qrcode
@@ -33,10 +35,7 @@ from dbinfo import DatabaseSession
 from entity import SysUser
 from utils import ReturnTool, DbTools
 from utils import logs, TimeToolClass
-from utils.GetChatId import Snowflake
 from utils.RedisUtils import RedisHandler
-
-snowflake = Snowflake(data_center_id=1, worker_id=3)
 
 
 def show_qr(username):
@@ -123,7 +122,7 @@ def register_begin(request):
         )
 
         # 保存挑战值和用户信息到 redis
-        req_id = str(snowflake.next_id())
+        req_id = str(uuid.uuid4())
         reg_user = {
             'registration_challenge': bytes_to_base64url(challenge),
             'registration_username': username
@@ -171,12 +170,16 @@ def register_complete(request):
 
     # 获取请求的主机名作为RP ID
     rp_id = request.host.split(':')[0]  # 去掉端口号
+    # 核心：从请求头获取真实的客户端 Origin，校验是否在白名单内
+    client_origin = request.headers.get("Origin")
+    if client_origin not in ALLOWED_ORIGINS:
+        raise ValueError(f"Unexpected client data origin \"{client_origin}\", expected one of {ALLOWED_ORIGINS}")
 
     # 验证注册响应
     verification = verify_registration_response(
         credential=credential,
         expected_challenge=expected_challenge,
-        expected_origin=request.host_url.rstrip('/'),
+        expected_origin=client_origin,
         expected_rp_id=rp_id,
         require_user_verification=False,
     )
@@ -204,7 +207,7 @@ def register_complete(request):
             'public_key': bytes_to_base64url(verification.credential_public_key),
             'sign_count': verification.sign_count,
             'transports': transport_enums,
-            'registered_at': datetime.utcnow().isoformat(),
+            'registered_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'authenticator_name': 'Security Key',  # 可以从验证器获取
         }
 
@@ -251,7 +254,8 @@ def generate_otp_qrcode(username):
         # 生成用于Google Authenticator等应用的URI
         provisioning_uri = totp.provisioning_uri(
             name=username,
-            issuer_name="2FA Voatalk App"
+            issuer_name="VoaTalk",
+            image="https://voatalk.online/voatalk_api/uploads/20251215/logo.png"
         )
 
         # 生成QR码
@@ -356,7 +360,7 @@ def login_begin(request):
         logs.setup_logger().info("generate_authentication_options completed successfully")
 
         # 保存挑战值和用户信息到 redis
-        req_id = str(snowflake.next_id())
+        req_id = str(uuid.uuid4())
         auth_user = {
             'authentication_challenge': bytes_to_base64url(challenge),
             'authentication_username': username
@@ -462,26 +466,20 @@ def verify_otp(request):
         # 创建TOTP对象并验证OTP代码
         totp = pyotp.TOTP(otp_secret)
         if totp.verify(otp_code):
+            userinfo = RedisHandler().get_key("user:info:" + username)
+            user_login_info = None
+            if userinfo:
+                user_login_info = json.loads(userinfo)
+
             return ReturnTool.SuccessReturn({
                 'status': 'ok',
-                'message': 'OTP校验通过',
+                'message': '验证成功!',
+                'username': username,
+                'userinfo': user_login_info
+            })
+        else:
+            return ReturnTool.SuccessReturn({
+                'status': 'error',
+                'message': '验证码错误!',
                 'username': username
-            })
-        else:
-            return ReturnTool.ErrorReturn('OTP验证码错误', 400)
-
-
-def check_user_web_auth(username):
-    with DatabaseSession() as session:
-        queue = session.query(SysUser.otp_secrets, SysUser.credentials_data).filter(
-            SysUser.user_name == username).first()
-        if not queue.otp_secrets and not queue.credentials_data:
-            return ReturnTool.SuccessReturn({
-                'username': username,
-                'register_authenticated': False
-            })
-        else:
-            return ReturnTool.SuccessReturn({
-                'username': username,
-                'register_authenticated': True
             })

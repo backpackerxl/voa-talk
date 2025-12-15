@@ -1,6 +1,8 @@
 import base64
 import datetime
 import hashlib
+import json
+import uuid
 
 from Crypto.Cipher import AES
 
@@ -10,6 +12,7 @@ from utils import ReturnTool
 from utils.BusinessException import ResultCode, BusinessException
 from utils.JwtUtils import JWTHandler
 from utils.encryptUtils import aes_decrypt
+from utils.RedisUtils import RedisHandler
 
 
 # 加密（编码）函数
@@ -62,7 +65,8 @@ def verify_password(input_password, salt):
 def login_impl(request):
     with DatabaseSession() as session:
         ip = request.remote_addr
-        queue = session.query(SysUser).filter(SysUser.user_name == request.get_json().get("userName")).first()
+        username = request.get_json().get("userName")
+        queue = session.query(SysUser).filter(SysUser.user_name == username).first()
 
         # 如果用户不存在
         if not queue:
@@ -96,5 +100,17 @@ def login_impl(request):
         token = JWTHandler().encode_jwt(user_data)
         user_data["jwtToken"] = token
         user_data["refreshToken"] = token
-        returnData = ReturnTool.SuccessReturn(user_data)
-        return returnData
+        user_data['exp'] = user_data['exp'].strftime("%Y-%m-%d %H:%M:%S")
+        ## 缓存登录信息
+        RedisHandler().save_key("user:info:" + queue.user_name, json.dumps(user_data), 300)  # 登录成功信息5分钟内有效
+
+        if not queue.otp_secrets and not queue.credentials_data:
+            return ReturnTool.SuccessReturn({
+                'username': queue.user_name,
+                'register_authenticated': False
+            })
+        else:
+            return ReturnTool.SuccessReturn({
+                'username': queue.user_name,
+                'register_authenticated': True
+            })

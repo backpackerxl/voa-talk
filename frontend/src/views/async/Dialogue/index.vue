@@ -3,210 +3,93 @@
     <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
       <div class="chat-window">
         <div class="last-msg load-msg" v-loading="openLoading"></div>
-        <div
-          v-for="(message, index) in messages"
-          :key="index"
-          :class="index === messages.length - 1 ? 'message active' : 'message'"
-        >
+        <div v-for="(message, index) in messages" :key="index"
+          :class="index === messages.length - 1 ? 'message active' : 'message'">
           <!-- 自定义复选框 -->
           <div class="custom-checkbox" v-if="isShare">
-            <input
-              type="checkbox"
-              :id="'msg-' + message.id"
-              :value="message.id"
-              v-model="checkList"
-              class="checkbox-input"
-            />
+            <input type="checkbox" :id="'msg-' + message.id" :value="message.id" v-model="checkList"
+              class="checkbox-input" />
             <label :for="'msg-' + message.id" class="checkbox-label"></label>
           </div>
-          <div
-            v-if="message.type === 'user'"
-            :class="{
-              'user-message': true,
-              selected: checkList.includes(message.id),
-            }"
-            @click="toggleCheckbox(message.id, $event)"
-            @contextmenu.prevent="openMenu($event, message)"
-          >
+          <div v-if="message.type === 'user'" :class="{
+            'user-message': true,
+            selected: checkList.includes(message.id),
+          }" @click="toggleCheckbox(message.id, $event)" @contextmenu.prevent="openMenu($event, message)">
             <div v-if="index === messages.length - 2">
               <div v-if="showEditInput" class="edit-warrap">
                 <i @click="closeSend" class="fa-solid fa-xmark"></i>
-                <el-input
-                  v-model="mContent"
-                  style="width: 100%"
-                  :autosize="{ minRows: 1, maxRows: 15 }"
-                  class="re-input"
-                  type="textarea"
-                />
-                <el-button
-                  type="primary"
-                  @click="reSendMessage(message.id)"
-                  circle
-                  class="send-message active"
-                >
-                  <i
-                    :class="{
-                      'fa-solid fa-arrow-up': !changeIcon,
-                      'fa-solid fa-square': changeIcon,
-                    }"
-                  ></i>
+                <el-input v-model="mContent" style="width: 100%" :autosize="{ minRows: 1, maxRows: 15 }"
+                  class="re-input" type="textarea" />
+                <el-button type="primary" @click="reSendMessage(message.id)" circle class="send-message active">
+                  <i :class="{
+                    'fa-solid fa-arrow-up': !changeIcon,
+                    'fa-solid fa-square': changeIcon,
+                  }"></i>
                 </el-button>
               </div>
             </div>
             <span>{{ message.content }}</span>
             <div class="tools" v-if="!isShare">
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="复制"
-                placement="top"
-                v-if="isMob"
-              >
-                <i
-                  @click="copyContent($event, message.content)"
-                  class="fa-solid fa-copy"
-                ></i>
+              <el-tooltip class="box-item" effect="light" content="复制" placement="top" v-if="isMob">
+                <i @click="copyContent($event, message.content)" class="fa-solid fa-copy"></i>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="编辑"
-                placement="top"
-                v-if="index === messages.length - 2"
-              >
-                <i
-                  @click="editQue($event, message.content)"
-                  class="fa-solid fa-pen-to-square"
-                ></i>
+              <el-tooltip class="box-item" effect="light" content="编辑" placement="top"
+                v-if="index === messages.length - 2">
+                <i @click="editQue($event, message.content)" class="fa-solid fa-pen-to-square"></i>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="分享"
-                placement="top"
-                v-if="isMob"
-              >
+              <el-tooltip class="box-item" effect="light" content="分享" placement="top" v-if="isMob">
                 <i @click="share(message.id)" class="fa-solid fa-share"></i>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="删除"
-                placement="top"
-                v-if="isMob"
-              >
-                <i
-                  @click="deleteChat(message.id)"
-                  class="fa-solid fa-trash"
-                ></i>
+              <el-tooltip class="box-item" effect="light" content="删除" placement="top" v-if="isMob">
+                <i @click="deleteChat(message.id)" class="fa-solid fa-trash"></i>
               </el-tooltip>
             </div>
           </div>
-          <div
-            :class="{
-              'markdown-body': true,
-              selected: checkList.includes(message.id),
-            }"
-            v-else
-            @click="toggleCheckbox(message.id, $event)"
-            @contextmenu.prevent="openMenu($event, message)"
-          >
-            <el-tooltip
-              class="box-item"
-              effect="customized"
-              content="对话不是一个完整对话，不能生成推荐问题"
-              placement="top"
-              v-if="message.pause_ask_stats === '1'"
-            >
-              <div
-                class="inner"
-                v-html="markdwonToHTML(message.content, true)"
-              ></div>
+          <div :class="{
+            'markdown-body': true,
+            selected: checkList.includes(message.id),
+          }" v-else @click="toggleCheckbox(message.id, $event)" @contextmenu.prevent="openMenu($event, message)">
+            <el-tooltip class="box-item" effect="customized" content="对话不是一个完整对话，不能生成推荐问题" placement="top"
+              v-if="message.pause_ask_stats === '1'">
+              <div class="inner" v-html="markdwonToHTML(message.content, true)"></div>
             </el-tooltip>
-            <div
-              class="inner"
-              v-html="markdwonToHTML(message.content, true)"
-              v-else
-            ></div>
+            <div class="inner" v-html="markdwonToHTML(message.content, true)" v-else></div>
             <div class="tools" v-if="!isShare">
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="复制"
-                placement="top"
-                v-if="isMob"
-              >
-                <i
-                  @click="copyContent($event, message.content)"
-                  class="fa-solid fa-copy"
-                ></i>
+              <el-tooltip class="box-item" effect="light" content="复制" placement="top" v-if="isMob">
+                <i @click="copyContent($event, message.content)" class="fa-solid fa-copy"></i>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="重新生成"
-                placement="top"
-                v-if="index === messages.length - 1"
-              >
-                <el-dropdown
-                  @visible-change="handleVisibleChange"
-                  trigger="click"
-                >
+              <el-tooltip class="box-item" effect="light" content="重新生成" placement="top"
+                v-if="index === messages.length - 1">
+                <el-dropdown @visible-change="handleVisibleChange" trigger="click">
                   <button class="drp-btn">
                     <i class="fa-solid fa-rotate-right"></i>
                   </button>
                   <template #dropdown>
-                    <el-dropdown-menu
-                      :style="{
-                        pointerEvents: isVisible ? 'auto' : 'none',
-                      }"
-                    >
-                      <el-dropdown-item
-                        v-for="item in options"
-                        :key="item.value"
-                        @click="
-                          rotateChat(
-                            message.id,
-                            messages[messages.length - 2].content,
-                            item.value
-                          )
-                        "
-                        >{{ item.label }}</el-dropdown-item
-                      >
+                    <el-dropdown-menu :style="{
+                      pointerEvents: isVisible ? 'auto' : 'none',
+                    }">
+                      <el-dropdown-item v-for="item in options" :key="item.value" @click="
+                        rotateChat(
+                          message.id,
+                          messages[messages.length - 2].content,
+                          item.value
+                        )
+                        ">{{ item.label }}</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="分享"
-                placement="top"
-                v-if="isMob"
-              >
+              <el-tooltip class="box-item" effect="light" content="分享" placement="top" v-if="isMob">
                 <i @click="share(message.id)" class="fa-solid fa-share"></i>
               </el-tooltip>
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                content="删除"
-                placement="top"
-                v-if="isMob"
-              >
-                <i
-                  @click="deleteChat(message.id)"
-                  class="fa-solid fa-trash"
-                ></i>
+              <el-tooltip class="box-item" effect="light" content="删除" placement="top" v-if="isMob">
+                <i @click="deleteChat(message.id)" class="fa-solid fa-trash"></i>
               </el-tooltip>
             </div>
           </div>
         </div>
         <div class="container">
-          <div
-            ref="oOutPut"
-            class="markdown-body now"
-            v-html="markdwonToHTML(respStr, true)"
-          ></div>
+          <div ref="oOutPut" class="markdown-body now" v-html="markdwonToHTML(respStr, true)"></div>
           <div class="thinking" v-if="modelTokens !== 0">
             <p>
               回答用时: {{ thinkTime }}s, 消耗模型token数: {{ modelTokens }}
@@ -214,39 +97,22 @@
           </div>
           <div ref="cursorElement" class="cursor"></div>
           <div class="last-msg" v-loading="loading"></div>
-          <div
-            :class="{
-              'record-list active': changeIcon,
-              'record-list': !changeIcon,
-            }"
-            v-if="!isShare"
-          >
-            <div
-              class="item"
-              v-for="(record, index) in recordList"
-              :key="index"
-            >
-              <span @click="recordQue(record.content)"
-                >{{ record.content }}? <i class="fa-solid fa-arrow-right"></i
-              ></span>
+          <div :class="{
+            'record-list active': changeIcon,
+            'record-list': !changeIcon,
+          }" v-if="!isShare">
+            <div class="item" v-for="(record, index) in recordList" :key="index">
+              <span @click="recordQue(record.content)">{{ record.content }}? <i
+                  class="fa-solid fa-arrow-right"></i></span>
             </div>
           </div>
         </div>
         <div class="box-share" v-if="isShare">
-          <MyBackTag
-            v-if="ishowAd"
-            :change-icon="changeIcon"
-            @click="scrollTopBottom(true)"
-          />
+          <MyBackTag v-if="ishowAd" :change-icon="changeIcon" @click="scrollTopBottom(true)" />
           <!-- 全选控制区域 -->
           <div class="select-controls">
             <div class="custom-checkbox">
-              <input
-                type="checkbox"
-                id="select-all"
-                v-model="isAllSelected"
-                class="checkbox-input"
-              />
+              <input type="checkbox" id="select-all" v-model="isAllSelected" class="checkbox-input" />
               <label for="select-all" class="checkbox-label">全选</label>
             </div>
             <div>
@@ -258,78 +124,35 @@
       </div>
     </RightClickMenu>
 
-    <div
-      class="input-container"
-      :style="welcomeWord ? 'bottom:40%' : 'bottom: 20px'"
-      v-if="!isShare"
-    >
+    <div class="input-container" :style="welcomeWord ? 'bottom:40%' : 'bottom: 20px'" v-if="!isShare">
       <div class="welcome" v-if="welcomeWord">
         <Logo />
         <h2>{{ welcomStr }}</h2>
       </div>
       <div class="input__inner_container">
-        <MyBackTag
-          v-if="ishowAd"
-          :change-icon="changeIcon"
-          @click="scrollTopBottom(true)"
-        />
-        <el-input
-          v-model="newMessage"
-          :autosize="{ minRows: 2, maxRows: 10 }"
-          @keyup.enter.exact="sendMessage"
-          @keydown.shift.enter="handleShiftEnter"
-          placeholder="输入您的问题..."
-          type="textarea"
-          @input="chengQValue"
-        />
+        <MyBackTag v-if="ishowAd" :change-icon="changeIcon" @click="scrollTopBottom(true)" />
+        <el-input v-model="newMessage" :autosize="{ minRows: 2, maxRows: 10 }" @keyup.enter.exact="sendMessage"
+          @keydown.shift.enter="handleShiftEnter" placeholder="输入您的问题..." type="textarea" @input="chengQValue" />
         <div class="opt">
-          <el-select
-            v-model="modelId"
-            placeholder="请选择模型"
-            style="width: 150px"
-            clearable
-          >
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+          <el-select v-model="modelId" placeholder="请选择模型" style="width: 150px" clearable>
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-tooltip
-            class="box-item"
-            effect="light"
-            :content="!changeIcon ? '请输入您的问题' : '停止生成'"
-            placement="top"
-          >
-            <el-button
-              type="primary"
-              @click="sendMessage"
-              circle
-              :disabled="disabledBtn"
-              :class="{
-                'send-message active': !disabledBtn,
-                'send-message': disabledBtn,
-              }"
-            >
-              <i
-                :class="{
-                  'fa-solid fa-arrow-up': !changeIcon,
-                  'fa-solid fa-square': changeIcon,
-                }"
-              ></i>
+          <el-tooltip class="box-item" effect="light" :content="!changeIcon ? '请输入您的问题' : '停止生成'" placement="top">
+            <el-button type="primary" @click="sendMessage" circle :disabled="disabledBtn" :class="{
+              'send-message active': !disabledBtn,
+              'send-message': disabledBtn,
+            }">
+              <i :class="{
+                'fa-solid fa-arrow-up': !changeIcon,
+                'fa-solid fa-square': changeIcon,
+              }"></i>
             </el-button>
           </el-tooltip>
         </div>
       </div>
     </div>
   </div>
-  <el-dialog
-    v-model="centerDialogVisible"
-    title="删除对话"
-    width="380"
-    align-center
-  >
+  <el-dialog v-model="centerDialogVisible" title="删除对话" width="380" align-center>
     <span>确定删除，对话内容将不可恢复</span>
     <template #footer>
       <div class="dialog-footer">
@@ -338,12 +161,7 @@
       </div>
     </template>
   </el-dialog>
-  <el-drawer
-    v-model="drawer"
-    title="选取文本复制"
-    :with-header="true"
-    size="100%"
-  >
+  <el-drawer v-model="drawer" title="选取文本复制" :with-header="true" size="100%">
     <span class="select-content">{{ selectContent }}</span>
   </el-drawer>
 </template>
@@ -773,6 +591,11 @@ const sendMessage = async () => {
 
     const resp = await AiChat(params);
 
+    if (resp.code === 500) {
+      ElMessage.error("当前模型不可用，请切换其他模型或稍后重试！");
+      return;
+    }
+
     loading.value = false;
 
     // 记录回答时间
@@ -1123,10 +946,12 @@ function scrollTopBottom(animation = false) {
 }
 
 @keyframes blink {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }

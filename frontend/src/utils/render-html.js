@@ -383,6 +383,22 @@ export async function renderMermaid() {
     setupZoomAndDrag();
 }
 
+export function copySecret(el, secret) {
+    clipboard.writeText(secret).then(
+        () => {
+            el.className = "copy-icon fas fa-check"; // 切换为成功图标
+            el.style.color = "#28a745"; // 成功颜色
+            ElMessage.success("复制成功");
+
+            setTimeout(() => {
+                el.className = "copy-icon fa-solid fa-copy";
+                el.style.color = "rgb(121, 122, 123)"; // 恢复原样
+            }, 2000); // 2 秒后恢复原样
+        },
+        () => { ElMessage.error("复制失败"); console.error("无法复制密钥:", err); }
+    );
+}
+
 export function addCopy(chatPage) {
     chatPage.addEventListener("click", function (e) {
         const el = e.target;

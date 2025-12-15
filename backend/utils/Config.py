@@ -60,3 +60,9 @@ SMTP_PORT = 465
 EMAIL_USER = "voatalk@voatalk.online"
 # email授权码
 EMAIL_CODE = os.getenv('EMAIL_PASSWORD')
+
+# 核心：配置允许的 Origin 白名单（包含报错中提到的两个 Origin）
+ALLOWED_ORIGINS = [
+    "http://localhost:10011",
+    "https://localhost:8080"
+]

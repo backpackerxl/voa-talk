@@ -51,16 +51,6 @@ def generate_otp_qrcode(username):
         logs.setup_logger().error(f"Generate OTP QR Code error: {str(e)}")
         return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
 
-# 检查用户有没有进行第二次身份认证
-@two_auth_blueprint.route('/check/user/auth/<username>', methods=['GET'])
-def check_user_web_auth(username):
-    try:
-        response = two_auth_service.check_user_web_auth(username)
-        return jsonify(response)
-    except Exception as e:
-        logs.setup_logger().error(f"Generate OTP QR Code error: {str(e)}")
-        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
-
 
 # 3. 登录 - 生成认证选项
 @two_auth_blueprint.route('/login/begin', methods=['POST'])

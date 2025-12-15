@@ -1,10 +1,10 @@
 import request from '@/utils/request';
 
-export function loginUser(userName, passWord, captchaCode) {
+export function loginUser(userName, passWord) {
     return request({
         url: '/login/pt_login',
         method: 'post',
-        params: { userName, passWord, captcha_code: captchaCode },
+        params: { userName, passWord },
     });
 }
 

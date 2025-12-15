@@ -1,6 +1,6 @@
 import store from '@/store';
 import request from '@/utils/request';
-import { config } from '@/utils/config'
+import { config } from '@/utils/config';
 
 export function AiChat(params) {
     const { authorization } = store.state.app
@@ -13,6 +13,17 @@ export function AiChat(params) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(params)
+    }).then(async (response) => {
+        // 核心：判断状态码是否为 500
+        if (response.status === 500) {
+            // 抛出错误，让后续 catch 捕获（也可直接 return）
+            return { body: { getReader: () => ({ read: () => Promise.resolve({ done: true }) }) }, code: 500 };
+        }
+        return response;
+    }).catch((error) => {
+        console.log(error);
+        // 关键：返回一个空的响应对象，避免调用方读取 body 时报 undefined
+        return { body: { getReader: () => ({ read: () => Promise.resolve({ done: true }) }) }, code: 500 };
     });
 }
 

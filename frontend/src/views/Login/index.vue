@@ -1,44 +1,29 @@
 <template>
   <div class="loginbody">
     <div class="logindata">
-      <el-card>
+      <el-card v-if="loginPage">
         <p class="logintext">
           <Logo />
         </p>
         <div class="formdata">
-          <el-form
-            ref="loginForm"
-            :model="form"
-            :rules="rules"
-            label-position="top"
-            label-width="100px"
-          >
+          <el-form ref="loginForm" :model="form" :rules="rules" label-position="top" label-width="100px">
             <el-form-item label="账号" prop="username">
-              <el-input
-                class="in-box"
-                v-model="form.username"
-                size="large"
-                clearable
-                placeholder="请输入账号"
-              >
+              <el-input class="in-box" v-model="form.username" size="large" clearable placeholder="请输入账号">
                 <!-- 使用 prefix-icon 插槽添加图标 -->
                 <template #prefix>
-                  <el-icon><User /></el-icon>
+                  <el-icon>
+                    <User />
+                  </el-icon>
                 </template>
               </el-input>
             </el-form-item>
             <el-form-item label="密码" prop="password">
-              <el-input
-                class="in-box"
-                v-model="form.password"
-                size="large"
-                clearable
-                placeholder="请输入密码"
-                show-password
-              >
+              <el-input class="in-box" v-model="form.password" size="large" clearable placeholder="请输入密码" show-password>
                 <!-- 使用 prefix-icon 插槽添加图标 -->
                 <template #prefix>
-                  <el-icon><Lock /></el-icon>
+                  <el-icon>
+                    <Lock />
+                  </el-icon>
                 </template>
               </el-input>
             </el-form-item>
@@ -46,8 +31,7 @@
         </div>
         <div class="tool">
           <div>
-            <el-checkbox v-model="checked" @change="remenber"
-              >记住密码
+            <el-checkbox v-model="checked" @change="remenber">记住密码
             </el-checkbox>
           </div>
           <div>
@@ -55,9 +39,7 @@
           </div>
         </div>
         <div class="butt">
-          <el-button size="large" type="primary" @click="submitLogin"
-            >登 录</el-button
-          >
+          <el-button size="large" type="primary" @click="submitLogin">登 录</el-button>
           <div class="register">
             <a @click="register">注 册</a>
           </div>
@@ -65,22 +47,12 @@
         <div class="other-login">
           <p class="text">第三方登录</p>
           <div class="logo-container">
-            <el-tooltip
-              class="box-item"
-              effect="light"
-              content="QQ登录"
-              placement="bottom"
-            >
+            <el-tooltip class="box-item" effect="light" content="QQ登录" placement="bottom">
               <div class="item" @click="qqLogin">
                 <i class="fa-brands fa-qq"></i>
               </div>
             </el-tooltip>
-            <el-tooltip
-              class="box-item"
-              effect="light"
-              content="GitHub登录"
-              placement="bottom"
-            >
+            <el-tooltip class="box-item" effect="light" content="GitHub登录" placement="bottom">
               <div class="item" @click="githubLogin">
                 <i class="fa-brands fa-github"></i>
               </div>
@@ -88,29 +60,123 @@
           </div>
         </div>
       </el-card>
+      <el-card v-if="!loginPage">
+        <p class="logintext">
+          <Logo />
+        </p>
+        <div class="link-user" v-if="state.open">
+          <p class="text">开启WebAuthn登录</p>
+          <div v-if="!linkOTPShow">
+            <el-form-item label="账号:" prop="username">
+              <el-input class="in-box" v-model="form.username" size="large" disabled>
+                <!-- 使用 prefix-icon 插槽添加图标 -->
+                <template #prefix>
+                  <el-icon>
+                    <User />
+                  </el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+          </div>
+          <div v-else>
+            <el-result icon="success" title="关联成功！" sub-title="请点击完成按钮完成后续操作"></el-result>
+          </div>
+          <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">关联此账号</el-button>
+          <el-button size="large" type="primary" @click="dialogOTPVisible = true" v-else>
+            完 成
+          </el-button>
+        </div>
+        <div class="verify-webAuthn" v-else>
+          <div class="formdata">
+            <el-form ref="loginForm" :model="formOtp" :rules="otpRules" label-position="top" label-width="100px">
+              <el-form-item label="请输入一次性密码" prop="optcode" v-if="otpShow">
+                <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable
+                  placeholder="XXX XXX"></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <div class="butt">
+            <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn">{{ authnTxt
+            }}</el-button>
+            <div class="register">
+              <a @click="otpShow = !otpShow">一次性密码验证</a>
+            </div>
+          </div>
+        </div>
+        <el-collapse v-model="activeNames" accordion v-if="state.open">
+          <el-collapse-item name="1" v-if="qrcode">
+            <template #title="{ isActive }">
+              <div :class="['title-wrapper', { 'is-active': isActive }]">
+                关联OTP
+                <el-icon class="header-icon">
+                  <info-filled />
+                </el-icon>
+              </div>
+            </template>
+            <div>
+              扫描二维码或通过密钥添加应用, 成功后可通过验证码验明身份, 完成后点击按钮继续完成登录。
+            </div>
+            <div class="otp-container">
+              <img :src="qrcode" alt="OTP QR Code" class="qr-img" />
+              <p class="qr-secret">密钥：<span>{{ qrSecret }}</span><i class="copy-icon fa-solid fa-copy"
+                  @click="copySecret($event.currentTarget, qrSecret)"></i>
+              </p>
+            </div>
+          </el-collapse-item>
+          <el-collapse-item name="2" title="什么是 WebAuthn?">
+            <div>
+              WebAuthn 是一种 Web 标准，允许用户使用生物识别、安全密钥或手机进行身份验证，提高账户的安全性。
+            </div>
+            <div>
+              <p>支持的认证方式:</p>
+              <ul>
+                <li>Windows Hello / Face ID / Touch ID</li>
+                <li>YubiKey 等安全密钥</li>
+                <li>手机认证器应用</li>
+              </ul>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+      </el-card>
     </div>
   </div>
   <Beian />
-  <el-dialog
+  <!-- <el-dialog
     v-model="state.open"
     title="请拖动滑块完成验证"
     width="380"
     align-center
   >
     <Captcha ref="myCaptcha" @verify="verifyImg" />
+  </el-dialog> -->
+
+  <el-dialog v-model="dialogOTPVisible" title="OTP关联" width="380" align-center>
+    <span>是否需要关联OTP认证?</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="goLogin">继续登录</el-button>
+        <el-button type="primary" @click="linkOTP">
+          关联OTP
+        </el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
 <script setup>
 import { loginUser } from "@/api/login";
+import { registerBegin, registerComplete, generateOtpQrcode, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
 import { User, Lock } from "@element-plus/icons-vue";
 import { encryptAes } from "@/utils/tools";
+import { copySecret } from "@/utils/render-html";
+import { arrayBufferToBase64Url, base64UrlToArrayBuffer, isValidBase64Url, getServerUrl } from "@/utils/webAuthnHelper";
 import Logo from "@/components/Logo";
-import Captcha from "@/components/Captcha";
+// import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
 import { ElMessage } from "element-plus";
+import { InfoFilled } from '@element-plus/icons-vue'
 import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
 import device from "current-device";
@@ -130,13 +196,31 @@ const form = ref({
   password: null,
 });
 
+const formOtp = ref({
+  optcode: null,
+});
+
+const loginPage = ref(true);
+
 const loginForm = ref(null);
+
+const qrcode = ref(null);
+const qrSecret = ref(null);
 
 const checked = ref(false);
 
-const myCaptcha = ref(null);
+const dialogOTPVisible = ref(false);
 
-const captchaCode = ref("-1");
+const activeNames = ref(['1']);
+
+const linkOTPShow = ref(false);
+const otpShow = ref(false);
+const authnBtn = ref(false);
+const authnTxt = ref('验 证');
+
+// const myCaptcha = ref(null);
+
+// const captchaCode = ref("-1");
 
 let state = reactive({
   open: false,
@@ -153,22 +237,67 @@ const rules = {
   ],
 };
 
-function verifyImg(obj) {
-  if (obj.tag === true) {
-    captchaCode.value = obj.token;
-    sendPostRequest();
-    state.open = false;
+const otpRules = {
+  optcode: [
+    { required: true, message: "请输入一次性密码", trigger: "blur" },
+    { min: 6, max: 6, message: "一次性密码必须为6位", trigger: "blur" },
+    // 自定义校验规则：长度为6时触发函数
+    {
+      validator: (rule, value, callback) => {
+        // 1. 空值不处理（交给必填校验）
+        if (!value) {
+          callback();
+          return;
+        }
+        // 2. 长度为6时触发目标函数
+        if (value.length === 6) {
+          authnBtn.value = true;
+          authnTxt.value = '验证中...';
+          setTimeout(() => {
+            handleOptcodeComplete(value); // 触发自定义逻辑
+            authnBtn.value = false;
+            authnTxt.value = '验 证';
+          }, 600);
+        }
+        // 3. 校验通过（不阻断原有校验）
+        callback();
+      },
+      trigger: ["change"] // 输入/失去焦点时触发, 改变时触发
+    }
+  ],
+}
+
+async function handleOptcodeComplete(optcode) {
+  // 验证一次性密码
+  const verifyResponse = await verifyOtp({
+    username: form.value.username,
+    otp_code: optcode,
+  });
+  if (verifyResponse.data.status === 'ok') {
+    ElMessage.success(verifyResponse.data.message);
+    cacheUserInfoAndRedirect(verifyResponse.data.userinfo);
   } else {
-    ElMessage.error("验证不通过");
+    ElMessage.error(verifyResponse.data.message);
   }
 }
+
+// function verifyImg(obj) {
+//   if (obj.tag === true) {
+//     captchaCode.value = obj.token;
+//     sendPostRequest();
+//     state.open = false;
+//   } else {
+//     ElMessage.error("验证不通过");
+//   }
+// }
 
 function submitLogin() {
   loginForm.value.validate((valid) => {
     if (valid) {
       // 校验通过，发送请求
-      state.open = true;
-      myCaptcha.value && myCaptcha.value.init();
+      sendPostRequest();
+      // state.open = true;
+      // myCaptcha.value && myCaptcha.value.init();
     }
   });
 }
@@ -180,20 +309,12 @@ async function sendPostRequest() {
     // 使用加密后的密码进行登录
     const response = await loginUser(
       form.value.username,
-      encryptedPassword,
-      captchaCode.value
+      encryptedPassword
     );
     if (response.code === 200) {
-      ElMessage.success("登录成功");
-
-      store.dispatch("app/setAuthorization", response.data.jwtToken);
-      store.dispatch("app/setUserRole", response.data.superAdmin);
-      store.dispatch("app/setNickName", response.data.nickName);
-      store.dispatch("app/setUserName", response.data.userName);
-      store.dispatch("app/setUserEmail", response.data.email);
-      store.dispatch("app/setAvatar", response.data.avatar);
-
-      router.replace("/home/chat");
+      loginPage.value = false;
+      // 检查用户是否注册了WebAuthn
+      state.open = !response.data.register_authenticated;
     } else {
       ElMessage.error(response.msg);
     }
@@ -201,6 +322,126 @@ async function sendPostRequest() {
     console.error(error);
   }
 }
+
+function cacheUserInfoAndRedirect(userinfo) {
+  store.dispatch("app/setAuthorization", userinfo.jwtToken);
+  store.dispatch("app/setUserRole", userinfo.superAdmin);
+  store.dispatch("app/setNickName", userinfo.nickName);
+  store.dispatch("app/setUserName", userinfo.userName);
+  store.dispatch("app/setUserEmail", userinfo.email);
+  store.dispatch("app/setAvatar", userinfo.avatar);
+  router.replace("/home/chat");
+}
+
+async function verifyOtpOrAuthn() {
+
+}
+
+function goLogin() {
+  dialogOTPVisible.value = false;
+  // 执行继续登录的逻辑
+  loginPage.value = true;
+}
+
+function linkOTP() {
+  dialogOTPVisible.value = false;
+  // 执行绑定OTP的逻辑
+  // 获取并显示OTP QR码
+  fetchOTPQRCode(form.value.username);
+}
+
+async function linkAccount() {
+  try {
+    // 注册WebAuthn
+    const obj = await registerBegin({ username: form.value.username });
+    if (obj.code !== 200) {
+      ElMessage.error(obj.msg);
+      return;
+    }
+    const options = obj.data;
+
+    // 2. 转换选项格式
+    const publicKey = {
+      ...options,
+      challenge: base64UrlToArrayBuffer(options.challenge),
+      user: {
+        ...options.user,
+        id: base64UrlToArrayBuffer(options.user.id)
+      }
+    };
+
+    // 3. 调用 WebAuthn API 创建凭证
+    ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
+
+    const credential = await navigator.credentials.create({
+      publicKey: publicKey
+    });
+
+    // 4. 准备发送到服务器的数据
+    const credentialJson = {
+      id: credential.id,
+      rawId: arrayBufferToBase64Url(credential.rawId),
+      type: credential.type,
+      response: {
+        attestationObject: arrayBufferToBase64Url(
+          credential.response.attestationObject
+        ),
+        clientDataJSON: arrayBufferToBase64Url(
+          credential.response.clientDataJSON
+        ),
+        transports: credential.response.getTransports ?
+          credential.response.getTransports() : ['internal']
+      },
+      req_id: options.req_id
+    };
+    // 5. 验证注册
+    ElMessage.info('正在验证关联信息...');
+
+    const result = await registerComplete(credentialJson);
+
+    if (result.code !== 200) {
+      ElMessage.error(result.error || '关联验证失败');
+      throw new Error(result.error || '关联验证失败');
+    }
+
+    ElMessage.success('关联成功！');
+
+    linkOTPShow.value = true;
+
+  } catch (error) {
+    console.error('关联失败:', error);
+    let errorMessage = error.message || '未知错误';
+    // Handle specific error types
+    if (error.name === 'NotAllowedError') {
+      errorMessage = '用户拒绝了认证请求或操作超时';
+    } else if (error.name === 'InvalidStateError') {
+      errorMessage = '认证器状态无效';
+    } else if (error.name === 'ConstraintError') {
+      errorMessage = '凭证已存在';
+    }
+    ElMessage.error(`关联失败: ${errorMessage}`);
+  }
+}
+
+async function fetchOTPQRCode(username) {
+  try {
+    const result = await generateOtpQrcode(username);
+
+    if (result.code !== 200) {
+      ElMessage.error(result.msg || '获取QR码失败');
+      throw new Error(result.error || '获取QR码失败');
+    }
+
+    // 显示QR码和密钥
+    qrcode.value = `data:image/png;base64,${result.data.qrcode}`;
+    qrSecret.value = result.data.secret;
+  } catch (error) {
+    console.error('获取OTP QR码失败:', error);
+    // 即使获取QR码失败，也不影响注册成功流程
+    ElMessage.warning(`获取OTP QR码失败: ${error.message}`);
+  }
+}
+
 // 记住密码
 function remenber(data) {
   checked.value = data;
@@ -350,6 +591,7 @@ function qqLogin() {
 .other-login .text::before {
   left: 1px;
 }
+
 .other-login .text::after {
   right: 1px;
 }
@@ -365,5 +607,40 @@ function qqLogin() {
   font-size: 28px;
   color: var(--el-color-primary);
   cursor: pointer;
+}
+
+.link-user .text {
+  text-align: center;
+}
+
+.link-user .el-button {
+  margin: 15px 0;
+  width: 100% !important;
+  border: none;
+  font-size: 16px;
+}
+
+.link-user .el-result {
+  padding: 0 !important;
+}
+
+.otp-container .qr-img {
+  width: 120px;
+  height: 120px;
+}
+
+.otp-container .qr-secret .copy-icon {
+  margin-left: 6px;
+}
+
+/* 控制el-input的输入框文本居中 */
+.otp-input :deep(.el-input__inner) {
+  text-align: center;
+  font-size: 16px;
+}
+
+/* 可选：让placeholder也居中（部分浏览器需兼容） */
+.otp-input :deep(.el-input__inner)::placeholder {
+  text-align: center;
 }
 </style>

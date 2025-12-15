@@ -3,13 +3,14 @@
 import importlib
 import os
 import pkgutil
-
-import waitress
 from datetime import date
 from pathlib import Path
+
+import waitress
 from flask import Flask, Blueprint, send_from_directory, request
 from flask_cors import CORS
 
+from utils.Config import ALLOWED_ORIGINS
 from utils.GetChatId import Snowflake
 from utils.JwtUtils import token_on
 
@@ -17,7 +18,16 @@ app = Flask(__name__)
 snowflake = Snowflake(data_center_id=1, worker_id=1)
 static_folder = app.static_folder
 
-CORS(app, supports_credentials=True)
+# 优化后的 CORS 配置
+CORS(
+    app,
+    resources={r"/*": {
+        "origins": ALLOWED_ORIGINS,  # 仅放行白名单内的 Origin
+        "supports_credentials": True,  # 允许携带 Cookie/Token（核心）
+        "allow_headers": "*",  # 允许所有请求头（生产可指定具体头，如 "Token,Content-Type"）
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]  # 允许常见请求方法
+    }}
+)
 
 
 @app.route('/')
