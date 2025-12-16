@@ -34,6 +34,7 @@ from entity import SysUser
 from utils import ReturnTool, DbTools
 from utils import logs, TimeToolClass
 from utils.Config import ALLOWED_ORIGINS
+from utils.JwtUtils import JWTHandler
 from utils.RedisUtils import RedisHandler
 from utils.Tools import generate_random_recovery_code, generate_hashed_password, verify_password
 from utils.encryptUtils import encrypt_aes, aes_decrypt
@@ -348,7 +349,7 @@ def login_complete(request):
 
     # 检查用户是否存在
     with DatabaseSession() as session:
-        queue = session.query(SysUser.id, SysUser.credentials_data).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser).filter(SysUser.user_name == username).first()
         if not queue.credentials_data:
             return ReturnTool.ErrorReturn('用户没有开通二次身份验证！', 404)
 
@@ -394,17 +395,28 @@ def login_complete(request):
 
         logs.setup_logger().info(f"User {username} logged in successfully")
 
-        userinfo = RedisHandler().get_key("user:info:" + username)
-        user_login_info = None
-        if userinfo:
-            user_login_info = json.loads(userinfo)
+        # 准备返回数据
+        user_data = {
+            "id": queue.id,
+            "userName": queue.user_name,
+            "nickName": queue.nick_name,
+            "avatar": queue.avatar,
+            "email": queue.email,
+            "IP": request.remote_addr,
+            "superAdmin": queue.super_admin
+        }
+        # 生成token
+        token = JWTHandler().encode_jwt(user_data)
+        user_data["jwtToken"] = token
+        user_data["refreshToken"] = token
+        user_data['exp'] = user_data['exp'].strftime("%Y-%m-%d %H:%M:%S")
 
         return ReturnTool.SuccessReturn({
             'status': 'ok',
             'message': '验证通过！',
             'username': username,
             'authenticated': True,
-            'userinfo': user_login_info
+            'userinfo': user_data
         })
 
 

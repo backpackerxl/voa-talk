@@ -45,8 +45,13 @@
           </div>
         </div>
         <div class="other-login">
-          <p class="text">第三方登录</p>
+          <p class="text">其他登录方式</p>
           <div class="logo-container">
+            <el-tooltip class="box-item" effect="light" content="免密登录" placement="bottom">
+              <div class="item" @click="verifyOtpOrAuthn">
+                <i class="fa-solid fa-key"></i>
+              </div>
+            </el-tooltip>
             <el-tooltip class="box-item" effect="light" content="QQ登录" placement="bottom">
               <div class="item" @click="qqLogin">
                 <i class="fa-brands fa-qq"></i>
@@ -104,7 +109,8 @@
             </el-form>
           </div>
           <div class="butt">
-            <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn">{{ authnTxt
+            <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn" :icon="Pointer">{{
+              authnTxt
             }}</el-button>
           </div>
           <div>
@@ -119,8 +125,8 @@
                   </div>
                 </template>
                 <div class="verify-other-butt">
-                  <el-button type="primary" @click="verifyOTPCode">安全密码验证</el-button>
-                  <el-button type="primary" @click="verifyRecoveryCode">一次性恢复码验证</el-button>
+                  <el-button type="primary" @click="verifyOTPCode" plain>安全密码验证</el-button>
+                  <el-button type="danger" @click="verifyRecoveryCode" plain>一次性恢复码验证</el-button>
                 </div>
               </el-collapse-item>
             </el-collapse>
@@ -199,7 +205,7 @@ import Logo from "@/components/Logo";
 // import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
 import { ElMessage } from "element-plus";
-import { InfoFilled } from '@element-plus/icons-vue'
+import { InfoFilled, Pointer } from '@element-plus/icons-vue'
 import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
 import device from "current-device";
@@ -386,6 +392,10 @@ function cacheUserInfoAndRedirect(userinfo) {
 async function verifyOtpOrAuthn() {
   otpShow.value = false;
   authnTxt.value = '设备验证';
+  if (!form.value.username) {
+    ElMessage.error('请输入用户名进行免密登录！');
+    return;
+  }
   // 开始设备验证
   try {
     // 注册WebAuthn
