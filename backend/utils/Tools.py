@@ -29,6 +29,16 @@ def generate_random_password(length=8):
     return ''.join(password)
 
 
+def generate_random_recovery_code():
+    """
+    生成二次验证码的6组恢复码
+    """
+    arr = []
+    for _ in range(6):
+        arr.append(generate_random_password(8))
+    return arr
+
+
 def generate_hashed_password(password):
     """
     生成哈希密码
@@ -140,7 +150,6 @@ def count_tokens_messages(messages, model="gpt-3.5-turbo"):
     # 回复的固定开销（<|end_of_text|>）
     num_tokens += 3
     return num_tokens
-
 
 #
 # # 示例消息列表

@@ -14,6 +14,35 @@ export function encryptAes(pwd) {
     return encrypted.toString(); // 获取 base64 编码的密文
 }
 
+/**
+ * AES-CBC 解密（匹配 encryptAes 的加密逻辑）
+ * @param {string} encryptedStr - 加密后的 base64 格式密文
+ * @returns {string} 解密后的原始明文（密码）
+ */
+export function decryptAes(encryptedStr) {
+    // 1. 加密密钥（与加密端完全一致）
+    const key = CryptoJS.enc.Utf8.parse("hnciquewhngfo1qc");
+    // 2. 初始向量 IV（与加密端完全一致：16个 \x00）
+    const iv = CryptoJS.enc.Utf8.parse("\x00".repeat(16));
+
+    try {
+        // 3. 解密核心逻辑（模式、填充、IV 必须与加密端一致）
+        const decryptResult = CryptoJS.AES.decrypt(encryptedStr, key, {
+            iv: iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.ZeroPadding, // 零填充（与加密端匹配）
+        });
+
+        // 4. 将解密后的 WordArray 转为 UTF8 字符串（去除零填充残留的空字符）
+        const plaintext = decryptResult.toString(CryptoJS.enc.Utf8);
+        // 移除 ZeroPadding 可能残留的末尾空字符（\x00）
+        return plaintext.replace(/\0+$/, "");
+    } catch (error) {
+        console.error("AES解密失败：", error);
+        throw new Error("解密失败，请检查密文或密钥是否正确");
+    }
+}
+
 export function getGreeting() {
     const now = new Date();
     const hour = now.getHours();

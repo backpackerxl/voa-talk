@@ -29,3 +29,4 @@ class SysUser(Base):
                             comment="第三方开放平台id用于github登录")
     otp_secrets = Column('otp_secrets', String, primary_key=False, nullable=True, comment="用户的OTP密钥")
     credentials_data = Column('credentials_data', String, primary_key=False, nullable=True, comment="用户凭证数据")
+    recovery_code_md5 = Column('recovery_code_md5', String, primary_key=False, nullable=True, comment="用户2FA恢复码")

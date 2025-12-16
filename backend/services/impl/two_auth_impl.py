@@ -5,7 +5,6 @@ import os
 import secrets
 import uuid
 from datetime import datetime
-from utils.Config import ALLOWED_ORIGINS
 
 import pyotp
 import qrcode
@@ -35,7 +34,10 @@ from dbinfo import DatabaseSession
 from entity import SysUser
 from utils import ReturnTool, DbTools
 from utils import logs, TimeToolClass
+from utils.Config import ALLOWED_ORIGINS
 from utils.RedisUtils import RedisHandler
+from utils.Tools import generate_random_recovery_code, generate_hashed_password
+from utils.encryptUtils import encrypt_aes
 
 
 def show_qr(username):
@@ -184,7 +186,7 @@ def register_complete(request):
         require_user_verification=False,
     )
 
-    # 保存凭证信息
+    # 保存凭证信息 transport: ["usb", "nfc", "ble", "internal"] // 支持CTAP的传输类型
     transports = credential.response.transports if hasattr(credential.response,
                                                            'transports') and credential.response.transports else [
         'internal']
@@ -208,8 +210,11 @@ def register_complete(request):
             'sign_count': verification.sign_count,
             'transports': transport_enums,
             'registered_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'authenticator_name': 'Security Key',  # 可以从验证器获取
+            'authenticator_name': 'Security App',  # 可以从验证器获取
         }
+
+        recovery_code = generate_random_recovery_code()
+        recovery_code_md5 = [generate_hashed_password(code) for code in recovery_code]
 
         # 为用户生成OTP密钥
         otp_secret = pyotp.random_base32()
@@ -218,6 +223,7 @@ def register_complete(request):
             'id': queue.id,
             'otp_secrets': otp_secret,
             'credentials_data': json.dumps(credentials_data),
+            'recovery_code_md5': json.dumps(recovery_code_md5),
             "update_date": TimeToolClass.get_time()
         }
         # 使用 saveOrUpdate 函数
@@ -229,12 +235,14 @@ def register_complete(request):
             return ReturnTool.SuccessReturn({
                 'status': 'ok',
                 'message': '绑定成功！',
+                'fa_recovery_code': [encrypt_aes(code) for code in recovery_code],
                 'username': username
             })
         else:
             return ReturnTool.ErrorReturn({
                 'status': 'error',
                 'message': '绑定失败！请联系管理员。',
+                'fa_recovery_code': [],
                 'username': username
             }, 500)
 

@@ -78,8 +78,16 @@
               </el-input>
             </el-form-item>
           </div>
-          <div v-else>
-            <el-result icon="success" title="关联成功！" sub-title="请点击完成按钮完成后续操作"></el-result>
+          <div v-else class="link-success">
+            <p><el-text class="mx-1">关联成功！</el-text></p>
+            <p><el-text class="mx-1" size="small">请点击完成按钮完成后续操作, 并妥善保存恢复码, 以防授权设备丢失可用于找回账号！</el-text></p>
+            <p>
+              <el-text class="mx-1" size="small" v-for="item in recoveryCode" :key="item">
+                {{ item }}&nbsp;&nbsp;
+              </el-text>
+              <i class="copy-icon fa-solid fa-copy"
+                @click="copySecret($event.currentTarget, recoveryCode.join(' '))"></i>
+            </p>
           </div>
           <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">关联此账号</el-button>
           <el-button size="large" type="primary" @click="dialogOTPVisible = true" v-else>
@@ -103,7 +111,7 @@
             </div>
           </div>
         </div>
-        <el-collapse v-model="activeNames" accordion v-if="state.open">
+        <el-collapse class="collapse-container" v-model="activeNames" accordion v-if="state.open">
           <el-collapse-item name="1" v-if="qrcode">
             <template #title="{ isActive }">
               <div :class="['title-wrapper', { 'is-active': isActive }]">
@@ -169,7 +177,7 @@ import { registerBegin, registerComplete, generateOtpQrcode, loginBegin, loginCo
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
 import { User, Lock } from "@element-plus/icons-vue";
-import { encryptAes } from "@/utils/tools";
+import { encryptAes, decryptAes } from "@/utils/tools";
 import { copySecret } from "@/utils/render-html";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer, isValidBase64Url, getServerUrl } from "@/utils/webAuthnHelper";
 import Logo from "@/components/Logo";
@@ -216,7 +224,8 @@ const activeNames = ref(['1']);
 const linkOTPShow = ref(false);
 const otpShow = ref(false);
 const authnBtn = ref(false);
-const authnTxt = ref('验 证');
+const authnTxt = ref('设备验证');
+const recoveryCode = ref([]);
 
 // const myCaptcha = ref(null);
 
@@ -363,10 +372,17 @@ async function linkAccount() {
     // 2. 转换选项格式
     const publicKey = {
       ...options,
-      challenge: base64UrlToArrayBuffer(options.challenge),
+      challenge: base64UrlToArrayBuffer(options.challenge || ''),
       user: {
         ...options.user,
-        id: base64UrlToArrayBuffer(options.user.id)
+        id: base64UrlToArrayBuffer(options.user.id || '')
+      },
+      // 兼容老浏览器：修正residentKey值
+      authenticatorSelection: {
+        ...options.authenticatorSelection,
+        residentKey: options.authenticatorSelection.residentKey === 'preferred'
+          ? 'discouraged'
+          : options.authenticatorSelection.residentKey
       }
     };
 
@@ -377,22 +393,37 @@ async function linkAccount() {
       publicKey: publicKey
     });
 
-    // 4. 准备发送到服务器的数据
+    // 3. 准备发送到服务器的数据（核心修复：transports字段）
+    let transports = [];
+    // 安全获取transports：兼容不同浏览器实现
+    if (credential.response?.getTransports) {
+      try {
+        const rawTransports = credential.response.getTransports();
+        // 确保transports是数组（防止返回Set/undefined）
+        transports = Array.isArray(rawTransports)
+          ? rawTransports
+          : (rawTransports ? [rawTransports] : []);
+      } catch (e) {
+        transports = ['internal']; // 异常兜底
+      }
+    } else {
+      transports = ['internal']; // 无getTransports方法时兜底
+    }
+
     const credentialJson = {
-      id: credential.id,
+      id: credential.id || '', // 空值兜底
       rawId: arrayBufferToBase64Url(credential.rawId),
-      type: credential.type,
+      type: credential.type || 'public-key', // 兜底默认值
       response: {
         attestationObject: arrayBufferToBase64Url(
-          credential.response.attestationObject
+          credential.response?.attestationObject || new ArrayBuffer(0)
         ),
         clientDataJSON: arrayBufferToBase64Url(
-          credential.response.clientDataJSON
+          credential.response?.clientDataJSON || new ArrayBuffer(0)
         ),
-        transports: credential.response.getTransports ?
-          credential.response.getTransports() : ['internal']
+        transports: transports // 确保是纯数组，无Set/undefined
       },
-      req_id: options.req_id
+      req_id: options.req_id || '' // 空值兜底
     };
     // 5. 验证注册
     ElMessage.info('正在验证关联信息...');
@@ -405,6 +436,7 @@ async function linkAccount() {
     }
 
     ElMessage.success('关联成功！');
+    recoveryCode.value = result.data.fa_recovery_code.map(item => decryptAes(item));
 
     linkOTPShow.value = true;
 
@@ -611,6 +643,16 @@ function qqLogin() {
 
 .link-user .text {
   text-align: center;
+  line-height: 1.4;
+  padding: 10px;
+  margin: 0;
+  font-size: 18px;
+}
+
+.link-user .link-success p {
+  line-height: 1.6;
+  padding: 0;
+  margin: 0;
 }
 
 .link-user .el-button {
@@ -642,5 +684,10 @@ function qqLogin() {
 /* 可选：让placeholder也居中（部分浏览器需兼容） */
 .otp-input :deep(.el-input__inner)::placeholder {
   text-align: center;
+}
+
+.collapse-container {
+  overflow: auto;
+  max-height: 280px;
 }
 </style>
