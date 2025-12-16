@@ -1,10 +1,6 @@
 from services.impl import two_auth_impl
 
 
-def show_qr(username):
-    return two_auth_impl.show_qr(username)
-
-
 def register_begin(request):
     return two_auth_impl.register_begin(request)
 

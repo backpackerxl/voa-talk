@@ -39,44 +39,6 @@ from utils.Tools import generate_random_recovery_code, generate_hashed_password,
 from utils.encryptUtils import encrypt_aes, aes_decrypt
 
 
-def show_qr(username):
-    # 检查用户是否存在
-    with DatabaseSession() as session:
-        queue = session.query(SysUser.otp_secrets).filter(SysUser.user_name == username).first()
-        if not queue:
-            return ReturnTool.ErrorReturn('用户不存在！', 404)
-
-        # 获取用户的OTP密钥
-        otp_secret = queue.otp_secrets
-
-        # 创建TOTP对象
-        totp = pyotp.totp.TOTP(otp_secret)
-
-        # 生成用于Google Authenticator等应用的URI
-        provisioning_uri = totp.provisioning_uri(
-            name=username,
-            issuer_name="2FA Voatalk App"
-        )
-
-        # 生成QR码
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(provisioning_uri)
-        qr.make(fit=True)
-
-        # 创建图像
-        img = qr.make_image(fill_color="black", back_color="white")
-
-        # 将图像转换为base64编码
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        img_str = base64.b64encode(buffer.getvalue()).decode()
-
-        return ReturnTool.SuccessReturn({
-            'username': username,
-            'qr_code': f"data:image/png;base64,{img_str}"
-        })
-
-
 # 生成安全的挑战值
 def generate_challenge():
     return secrets.token_bytes(32)

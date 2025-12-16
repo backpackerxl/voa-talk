@@ -6,17 +6,6 @@ from utils.ReturnTool import ErrorReturn
 
 two_auth_blueprint = Blueprint('two_auth', __name__, url_prefix='/two_auth')
 
-
-@two_auth_blueprint.route('/qr/<username>')
-def show_qr(username):
-    try:
-        response = two_auth_service.show_qr(username)
-        return jsonify(response)
-    except Exception as e:
-        logs.setup_logger().error(f"Show QR Code error: {str(e)}")
-        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
-
-
 # 1. 注册 - 生成注册选项
 @two_auth_blueprint.route('/register/begin', methods=['POST'])
 def register_begin():
