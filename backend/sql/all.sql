@@ -37,8 +37,6 @@ CREATE TABLE `model_config`  (
 -- ----------------------------
 -- Records of model_config
 -- ----------------------------
-INSERT INTO `model_config` VALUES (2, 'Doubao1.5-pro', 'Doubao-1.5-pro 全新一代主力模型，性能全面升级，在知识、代码、推理、等方面表现卓越。支持 32k 上下文窗口，输出长度支持最大 12k tokens。', 'https://ark.cn-beijing.volces.com/api/v3', 'a3795bbd-4c73-4f54-997a-bc758af5c1fe', 'doubao-1-5-pro-32k-250115', '2025-04-06 23:58:10', '2025-04-12 13:04:32', 3);
-INSERT INTO `model_config` VALUES (7, 'DeepSeek-R1', 'Deepseek大模型', 'https://ark.cn-beijing.volces.com/api/v3', 'a40dab55-4b35-4b37-aebd-300d07cd5c70', 'deepseek-r1-250120', '2025-04-11 21:15:46', '2025-04-11 21:17:05', 2);
 
 -- ----------------------------
 -- Table structure for request_logs
