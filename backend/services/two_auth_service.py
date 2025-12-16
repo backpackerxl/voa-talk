@@ -27,3 +27,7 @@ def login_complete(request):
 
 def verify_otp(request):
     return two_auth_impl.verify_otp(request)
+
+
+def verify_recovery(request):
+    return two_auth_impl.verify_recovery(request)

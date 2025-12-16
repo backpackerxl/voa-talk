@@ -85,3 +85,14 @@ def verify_otp():
     except Exception as e:
         logs.setup_logger().error(f"OTP verification error: {str(e)}")
         return jsonify({'error': str(e)}), 400
+
+
+# 5. 恢复码验证接口
+@two_auth_blueprint.route('/recovery/verify', methods=['POST'])
+def verify_recovery():
+    try:
+        response = two_auth_service.verify_recovery(request)
+        return jsonify(response)
+    except Exception as e:
+        logs.setup_logger().error(f"OTP verification error: {str(e)}")
+        return jsonify({'error': str(e)}), 400

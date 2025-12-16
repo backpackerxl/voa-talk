@@ -47,3 +47,11 @@ export function verifyOtp(params) {
         params: params,
     });
 }
+
+export function verifyRecovery(params) {
+    return request({
+        url: 'two_auth/recovery/verify',
+        method: 'post',
+        params: params,
+    });
+}

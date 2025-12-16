@@ -1,65 +1,12 @@
-import base64
 import datetime
-import hashlib
 import json
-import uuid
-
-from Crypto.Cipher import AES
 
 from dbinfo import DatabaseSession
 from entity import SysUser
-from utils import ReturnTool
-from utils.BusinessException import ResultCode, BusinessException
+from utils import ReturnTool, Tools
 from utils.JwtUtils import JWTHandler
-from utils.encryptUtils import aes_decrypt
 from utils.RedisUtils import RedisHandler
-
-
-# 加密（编码）函数
-def encrypt(plaintext):
-    """
-    加密（编码）函数
-    :param plaintext:
-    :return:
-    """
-    encoded_bytes = base64.b64encode(plaintext.encode("utf-8"))
-    encoded_str = encoded_bytes.decode("utf-8")
-    return encoded_str
-
-
-def decrypt_aes(ciphertext):
-    """
-    对称解密
-    :param ciphertext:
-    :return:
-    """
-    try:
-        key = b"hnciquewhngfo1qc"
-        cipher = AES.new(key, AES.MODE_CBC, iv=b'\x00' * 16)
-        plaintext_bytes = cipher.decrypt(base64.b64decode(ciphertext))
-        plaintext = plaintext_bytes.decode('utf-8').rstrip('\x00').rstrip('\x10')
-    except:
-        # 密码解密失败
-        error_code, message = ResultCode.get_code('PASSWORD_DECRYPTION_FAILED'), ResultCode.get_msg(
-            'PASSWORD_DECRYPTION_FAILED')
-        raise BusinessException(error_code, message)
-    return plaintext
-
-
-def verify_password(input_password, salt):
-    """
-    验证用户输入的密码是否与存储的哈希密码匹配。
-    :param input_password: 用户输入的密码（明文）
-    :param salt: 用于哈希过程的盐值
-    :return: 布尔值，表示密码是否匹配
-    """
-
-    # 将用户输入的密码和盐值结合起来
-    salted_input = input_password + salt
-    # 对结合后的字符串进行 SHA-256 哈希处理
-    hashed_input = hashlib.sha256(salted_input.encode()).hexdigest()
-    # 比较处理后的哈希值密码
-    return hashed_input
+from utils.encryptUtils import aes_decrypt
 
 
 def login_impl(request):
@@ -75,7 +22,7 @@ def login_impl(request):
             return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！")
         pwd = request.get_json().get('passWord')
         decrypt = aes_decrypt(pwd)
-        password = verify_password(decrypt, queue.salt)
+        password = Tools.verify_password(decrypt, queue.salt)
 
         # 检查密码是否正确，用于开发检查
         # print(f"解密后的密码: {decrypt}")

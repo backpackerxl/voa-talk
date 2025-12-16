@@ -97,18 +97,33 @@
         <div class="verify-webAuthn" v-else>
           <div class="formdata">
             <el-form ref="loginForm" :model="formOtp" :rules="otpRules" label-position="top" label-width="100px">
-              <el-form-item label="请输入一次性密码" prop="optcode" v-if="otpShow">
+              <el-form-item label="请输入一次性密码/恢复码" prop="optcode" v-if="otpShow">
                 <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable
-                  placeholder="XXX XXX"></el-input>
+                  :placeholder="placeholderTxt"></el-input>
               </el-form-item>
             </el-form>
           </div>
           <div class="butt">
             <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn">{{ authnTxt
             }}</el-button>
-            <div class="register">
-              <a @click="otpShow = !otpShow">一次性密码验证</a>
-            </div>
+          </div>
+          <div>
+            <el-collapse>
+              <el-collapse-item name="3">
+                <template #title="{ isActive }">
+                  <div :class="['title-wrapper', { 'is-active': isActive }]">
+                    其他验证方式
+                    <el-icon class="header-icon">
+                      <info-filled />
+                    </el-icon>
+                  </div>
+                </template>
+                <div class="verify-other-butt">
+                  <el-button type="primary" @click="verifyOTPCode">安全密码验证</el-button>
+                  <el-button type="primary" @click="verifyRecoveryCode">一次性恢复码验证</el-button>
+                </div>
+              </el-collapse-item>
+            </el-collapse>
           </div>
         </div>
         <el-collapse class="collapse-container" v-model="activeNames" accordion v-if="state.open">
@@ -173,13 +188,13 @@
 
 <script setup>
 import { loginUser } from "@/api/login";
-import { registerBegin, registerComplete, generateOtpQrcode, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
+import { registerBegin, registerComplete, generateOtpQrcode, verifyRecovery, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
 import { User, Lock } from "@element-plus/icons-vue";
 import { encryptAes, decryptAes } from "@/utils/tools";
 import { copySecret } from "@/utils/render-html";
-import { arrayBufferToBase64Url, base64UrlToArrayBuffer, isValidBase64Url, getServerUrl } from "@/utils/webAuthnHelper";
+import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
 import Logo from "@/components/Logo";
 // import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
@@ -226,6 +241,7 @@ const otpShow = ref(false);
 const authnBtn = ref(false);
 const authnTxt = ref('设备验证');
 const recoveryCode = ref([]);
+const placeholderTxt = ref('');
 
 // const myCaptcha = ref(null);
 
@@ -248,8 +264,7 @@ const rules = {
 
 const otpRules = {
   optcode: [
-    { required: true, message: "请输入一次性密码", trigger: "blur" },
-    { min: 6, max: 6, message: "一次性密码必须为6位", trigger: "blur" },
+    { required: true, message: "请输入一次性密码/恢复码", trigger: "blur" },
     // 自定义校验规则：长度为6时触发函数
     {
       validator: (rule, value, callback) => {
@@ -259,11 +274,21 @@ const otpRules = {
           return;
         }
         // 2. 长度为6时触发目标函数
-        if (value.length === 6) {
+        if (value.length === 6 && placeholderTxt.value === 'XXX XXX') {
           authnBtn.value = true;
           authnTxt.value = '验证中...';
           setTimeout(() => {
             handleOptcodeComplete(value); // 触发自定义逻辑
+            authnBtn.value = false;
+            authnTxt.value = '验 证';
+          }, 600);
+        }
+        // 4. 长度为8时触发目标函数
+        if (value.length === 8 && placeholderTxt.value === 'XXXX XXXX') {
+          authnBtn.value = true;
+          authnTxt.value = '验证中...';
+          setTimeout(() => {
+            handleRecoveryCodeComplete(value); // 触发自定义逻辑
             authnBtn.value = false;
             authnTxt.value = '验 证';
           }, 600);
@@ -277,16 +302,32 @@ const otpRules = {
 }
 
 async function handleOptcodeComplete(optcode) {
-  // 验证一次性密码
-  const verifyResponse = await verifyOtp({
-    username: form.value.username,
-    otp_code: optcode,
-  });
-  if (verifyResponse.data.status === 'ok') {
+  try {
+    // 验证一次性密码
+    const verifyResponse = await verifyOtp({
+      username: form.value.username,
+      otp_code: optcode,
+    });
     ElMessage.success(verifyResponse.data.message);
     cacheUserInfoAndRedirect(verifyResponse.data.userinfo);
-  } else {
-    ElMessage.error(verifyResponse.data.message);
+  } catch (error) {
+    formOtp.value.optcode = '';
+    console.error(error);
+  }
+}
+
+async function handleRecoveryCodeComplete(recoveryCode) {
+  // 验证恢复密码
+  try {
+    const verifyResponse = await verifyRecovery({
+      username: form.value.username,
+      recovery_code: encryptAes(recoveryCode),
+    });
+    ElMessage.success(verifyResponse.data.message);
+    cacheUserInfoAndRedirect(verifyResponse.data.userinfo);
+  } catch (error) {
+    formOtp.value.optcode = '';
+    console.error(error);
   }
 }
 
@@ -343,7 +384,92 @@ function cacheUserInfoAndRedirect(userinfo) {
 }
 
 async function verifyOtpOrAuthn() {
+  otpShow.value = false;
+  authnTxt.value = '设备验证';
+  // 开始设备验证
+  try {
+    // 注册WebAuthn
+    const obj = await loginBegin({ username: form.value.username });
+    if (obj.code !== 200) {
+      ElMessage.error(obj.msg);
+      return;
+    }
+    const options = obj.data;
 
+    // 验证场景：仅处理必要参数，删除 rp/user（验证场景不需要）
+    const publicKey = {
+      ...options,
+      challenge: base64UrlToArrayBuffer(options.challenge || ''),
+      allowCredentials: options.allowCredentials?.map(cred => ({
+        ...cred,
+        id: base64UrlToArrayBuffer(cred.id || '')
+      })) || [],
+      // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
+      timeout: options.timeout || 60000
+    };
+
+    // 前置校验：确保 allowCredentials 非空
+    if (!publicKey.allowCredentials.length) {
+      throw new Error('未找到匹配的验证凭证');
+    }
+
+    // 3. 调用 WebAuthn API 创建凭证
+    ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
+
+    // 关键：验证场景用 get，不是 create！！！
+    const credential = await navigator.credentials.get({
+      publicKey: publicKey
+    });
+
+    // 后续处理凭证逻辑不变（注意：验证场景的 response 字段和注册场景不同）
+    const credentialJson = {
+      id: credential.id,
+      rawId: arrayBufferToBase64Url(credential.rawId),
+      type: credential.type,
+      response: {
+        authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
+        clientDataJSON: arrayBufferToBase64Url(credential.response.clientDataJSON),
+        signature: arrayBufferToBase64Url(credential.response.signature),
+        userHandle: credential.response.userHandle ? arrayBufferToBase64Url(credential.response.userHandle) : null
+      },
+      req_id: options.req_id // 传递后端的 req_id 用于验证
+    };
+    // 5. 验证身份信息
+    const result = await loginComplete(credentialJson);
+
+    if (result.code !== 200) {
+      ElMessage.error(result.error || '关联验证失败');
+      throw new Error(result.error || '关联验证失败');
+    }
+
+    ElMessage.success('身份验证成功！');
+    cacheUserInfoAndRedirect(result.data.userinfo);
+
+  } catch (error) {
+    console.error('身份验证失败:', error);
+    let errorMessage = error.message || '未知错误';
+    // Handle specific error types
+    if (error.name === 'NotAllowedError') {
+      errorMessage = '用户拒绝了认证请求或操作超时';
+    } else if (error.name === 'InvalidStateError') {
+      errorMessage = '认证器状态无效';
+    } else if (error.name === 'NotFoundError') {
+      errorMessage = '未找到匹配的凭证';
+    }
+    ElMessage.error(`身份验证失败: ${errorMessage}`);
+  }
+}
+
+function verifyOTPCode() {
+  otpShow.value = true;
+  formOtp.value.optcode = '';
+  placeholderTxt.value = 'XXX XXX';
+}
+
+function verifyRecoveryCode() {
+  otpShow.value = true;
+  formOtp.value.optcode = '';
+  placeholderTxt.value = 'XXXX XXXX';
 }
 
 function goLogin() {
@@ -387,7 +513,7 @@ async function linkAccount() {
     };
 
     // 3. 调用 WebAuthn API 创建凭证
-    ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
+    ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证关联...');
 
     const credential = await navigator.credentials.create({
       publicKey: publicKey
@@ -426,8 +552,6 @@ async function linkAccount() {
       req_id: options.req_id || '' // 空值兜底
     };
     // 5. 验证注册
-    ElMessage.info('正在验证关联信息...');
-
     const result = await registerComplete(credentialJson);
 
     if (result.code !== 200) {
@@ -469,8 +593,6 @@ async function fetchOTPQRCode(username) {
     qrSecret.value = result.data.secret;
   } catch (error) {
     console.error('获取OTP QR码失败:', error);
-    // 即使获取QR码失败，也不影响注册成功流程
-    ElMessage.warning(`获取OTP QR码失败: ${error.message}`);
   }
 }
 
@@ -689,5 +811,11 @@ function qqLogin() {
 .collapse-container {
   overflow: auto;
   max-height: 280px;
+}
+
+.verify-other-butt .el-button {
+  border: none;
+  width: 100%;
+  margin: 5px 0;
 }
 </style>

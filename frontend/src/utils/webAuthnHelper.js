@@ -21,23 +21,3 @@ export function arrayBufferToBase64Url(buffer) {
     return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-
-// 验证字符串是否为有效的 Base64URL
-export function isValidBase64Url(str) {
-    try {
-        // 尝试转换来验证
-        this.base64UrlToArrayBuffer(str);
-        return /^[A-Za-z0-9\-_]+$/.test(str);
-    } catch (e) {
-        return false;
-    }
-}
-
-// 获取服务器基础 URL
-export function getServerUrl() {
-    // 自动检测协议和端口
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const port = window.location.port ? `:${window.location.port}` : '';
-    return `${protocol}//${hostname}${port}`;
-}

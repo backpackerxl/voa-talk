@@ -104,6 +104,22 @@ def insert_lowercase_letters(s):
     return result
 
 
+def verify_password(input_password, salt):
+    """
+    验证用户输入的密码是否与存储的哈希密码匹配。
+    :param input_password: 用户输入的密码（明文）
+    :param salt: 用于哈希过程的盐值
+    :return: 布尔值，表示密码是否匹配
+    """
+
+    # 将用户输入的密码和盐值结合起来
+    salted_input = input_password + salt
+    # 对结合后的字符串进行 SHA-256 哈希处理
+    hashed_input = hashlib.sha256(salted_input.encode()).hexdigest()
+    # 比较处理后的哈希值密码
+    return hashed_input
+
+
 def count_tokens_messages(messages, model="gpt-3.5-turbo"):
     """
     离线计算 OpenAI 消息的 token 数（适配 gpt-3.5-turbo/gpt-4）

@@ -28,40 +28,37 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
-    // 响应成功处理
+    // 只处理 200 业务码的成功情况
     if (+response.data.code === 200) {
-      // console.log("拦截器==》",response)
-      return response.data;  // 直接返回整个 data，而不是只返回其中的 data 字段
+      return response.data;
     } else {
-      ElMessage.error(response.data.msg || '服务器错误');
-      return Promise.reject(response.data.msg || '服务器错误');
+      // 非200业务码：提示错误后，统一用 reject 抛出
+      const errMsg = response.data.msg || '服务器错误';
+      ElMessage.error(errMsg);
+      return Promise.reject(new Error(errMsg)); // 包装成 Error 对象，方便后续捕获
     }
   },
   async error => {
-    // console.log("error==>", error);
-    // 响应失败处理
-    if (error.response && (error.response.status === 401 || error.response.status === 408)) {
-      const redirect = encodeURIComponent(window.location.href);
-      router.push(`/login?redirect=${redirect}`);
-      store.dispatch("app/clearAvatar");
-      store.dispatch("app/clearAuthorization");
-      store.dispatch("app/clearUserRole");
-      store.dispatch("app/clearNickName");
-      store.dispatch("app/clearUserName");
-      store.dispatch("app/clearUserEmail");
-      return Promise.reject(error);
+    // 网络错误/HTTP状态码错误（如401、500）
+    if (error.response) {
+      const { status, data } = error.response;
+      // 401/408 处理：跳转到登录页
+      if (status === 401 || status === 408) {
+        const redirect = encodeURIComponent(window.location.href);
+        router.push(`/login?redirect=${redirect}`);
+        // 清空 store 数据
+        const clearActions = ["clearAvatar", "clearAuthorization", "clearUserRole", "clearNickName", "clearUserName", "clearUserEmail"];
+        clearActions.forEach(action => store.dispatch(`app/${action}`));
+      }
+      // 其他HTTP错误：提示后端返回的msg
+      const errMsg = data?.msg || `请求失败（${status}）`;
+      ElMessage.error(errMsg);
+      return Promise.reject(new Error(errMsg));
+    } else {
+      // 无响应（如网络断开）
+      ElMessage.error('网络异常，请检查连接');
+      return Promise.reject(new Error('网络异常'));
     }
-    if (error.response.data.code !== 200) {
-      ElMessage.error(error.response.data?.msg || '服务器错误');
-      return Promise.reject(error);
-    }
-    ElMessage.closeAll();
-    try {
-      ElMessage.error(error.response.data.msg);
-    } catch (err) {
-      ElMessage.error(error.message);
-    }
-    return Promise.reject(error);
   }
 );
 /**

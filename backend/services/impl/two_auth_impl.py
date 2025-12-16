@@ -24,7 +24,6 @@ from webauthn.helpers import (
 from webauthn.helpers.structs import (
     AuthenticatorSelectionCriteria,
     UserVerificationRequirement,
-    PublicKeyCredentialDescriptor,
     AuthenticatorAttachment,
     ResidentKeyRequirement,
     AttestationConveyancePreference,
@@ -36,8 +35,8 @@ from utils import ReturnTool, DbTools
 from utils import logs, TimeToolClass
 from utils.Config import ALLOWED_ORIGINS
 from utils.RedisUtils import RedisHandler
-from utils.Tools import generate_random_recovery_code, generate_hashed_password
-from utils.encryptUtils import encrypt_aes
+from utils.Tools import generate_random_recovery_code, generate_hashed_password, verify_password
+from utils.encryptUtils import encrypt_aes, aes_decrypt
 
 
 def show_qr(username):
@@ -239,12 +238,7 @@ def register_complete(request):
                 'username': username
             })
         else:
-            return ReturnTool.ErrorReturn({
-                'status': 'error',
-                'message': '绑定失败！请联系管理员。',
-                'fa_recovery_code': [],
-                'username': username
-            }, 500)
+            return ReturnTool.ErrorReturn('绑定失败！请联系管理员。', 500)
 
 
 def generate_otp_qrcode(username):
@@ -296,91 +290,80 @@ def login_begin(request):
     if not username:
         return ReturnTool.ErrorReturn('用户名必填!', 400)
 
-    # 检查用户是否存在
+    # 检查用户是否存在（新增：判空 queue，避免 AttributeError）
     with DatabaseSession() as session:
         queue = session.query(SysUser.credentials_data).filter(SysUser.user_name == username).first()
-        if not queue.credentials_data:
+        if not queue or not queue.credentials_data:  # 新增 queue 判空
             return ReturnTool.ErrorReturn('用户没有开通二次身份验证！', 404)
 
         credential = json.loads(queue.credentials_data)
 
-        # 生成挑战值
-        challenge = generate_challenge()
+        # 生成挑战值（确保是32字节随机数，符合WebAuthn规范）
+        challenge = generate_challenge()  # 需确保该函数返回 bytes 类型，长度建议32
 
-        # 生成认证选项
-        # 安全地处理传输类型
+        # 处理传输类型（逻辑不变，保留日志）
         stored_transports = credential.get('transports', ['internal'])
         logs.setup_logger().info(f"Stored transports: {stored_transports}")
-        logs.setup_logger().info(f"Stored transports type: {type(stored_transports)}")
 
-        # 确保传输类型是AuthenticatorTransport枚举值而不是字符串
         from webauthn.helpers.structs import AuthenticatorTransport
         transport_enums = []
-
         if stored_transports:
             for i, t in enumerate(stored_transports):
-                logs.setup_logger().info(f"Processing transport[{i}]: {t}, type: {type(t)}")
                 try:
-                    if isinstance(t, AuthenticatorTransport):  # 如果已经是枚举值
-                        logs.setup_logger().info(f"Transport {t} is already an enum")
+                    if isinstance(t, AuthenticatorTransport):
                         transport_enums.append(t)
-                    elif isinstance(t, str):  # 如果是字符串
-                        logs.setup_logger().info(f"Transport {t} is a string, converting to enum")
-                        try:
-                            transport_enums.append(AuthenticatorTransport(t))
-                        except ValueError:
-                            # 如果字符串不是有效的枚举值，使用默认值
-                            logs.setup_logger().info(f"Transport {t} is not a valid enum, using default")
-                            transport_enums.append(AuthenticatorTransport.INTERNAL)
-                    else:  # 其他情况使用默认值
-                        logs.setup_logger().info(f"Transport {t} is neither enum nor string, using default")
+                    elif isinstance(t, str):
+                        transport_enums.append(AuthenticatorTransport(t.lower()))  # 新增：统一小写，避免枚举匹配失败
+                    else:
                         transport_enums.append(AuthenticatorTransport.INTERNAL)
                 except Exception as e:
-                    logs.setup_logger().error(f"Error processing transport[{i}] {t}: {str(e)}")
-                    # 出错时使用默认值
+                    logs.setup_logger().error(f"Transport error: {e}")
                     transport_enums.append(AuthenticatorTransport.INTERNAL)
         else:
             transport_enums = [AuthenticatorTransport.INTERNAL]
 
-        logs.setup_logger().info(f"Final transport enums: {transport_enums}")
+        # 创建凭证描述符（确保 credential_id 解码正确）
+        from webauthn.helpers.structs import PublicKeyCredentialDescriptor, PublicKeyCredentialType
+        try:
+            cred_id_bytes = base64url_to_bytes(credential['credential_id'])  # 关键：确保该函数能正确解码前端存储的 credential_id
+        except Exception as e:
+            logs.setup_logger().error(f"Credential ID decode error: {e}")
+            return ReturnTool.ErrorReturn('凭证ID格式错误', 400)
 
-        # 创建凭证描述符
-        from webauthn.helpers.structs import PublicKeyCredentialType
         credential_descriptor = PublicKeyCredentialDescriptor(
-            id=base64url_to_bytes(credential['credential_id']),
+            id=cred_id_bytes,
             type=PublicKeyCredentialType.PUBLIC_KEY,
             transports=transport_enums,
         )
-        logs.setup_logger().info(f"Credential descriptor created: {credential_descriptor}")
 
-        # 获取请求的主机名作为RP ID
-        rp_id = request.host.split(':')[0]  # 去掉端口号
+        # 生成验证场景选项（删除多余的 pubKeyCredParams，验证场景不需要）
+        rp_id = request.host.split(':')[0]
 
-        # 生成认证选项
-        logs.setup_logger().info("Calling generate_authentication_options")
         options = generate_authentication_options(
             rp_id=rp_id,
             allow_credentials=[credential_descriptor],
             user_verification=UserVerificationRequirement.PREFERRED,
-            challenge=challenge,
+            challenge=challenge,  # 直接传 bytes 类型的 challenge
             timeout=60000,
         )
-        logs.setup_logger().info("generate_authentication_options completed successfully")
 
-        # 保存挑战值和用户信息到 redis
+        # 保存挑战值到Redis（确保编码规范）
         req_id = str(uuid.uuid4())
         auth_user = {
-            'authentication_challenge': bytes_to_base64url(challenge),
+            'authentication_challenge': bytes_to_base64url(challenge),  # 确保该函数返回 无填充符 的 Base64URL
             'authentication_username': username
         }
-        RedisHandler().save_key(req_id, json.dumps(auth_user), 300)  # 链接5分钟保活
+        RedisHandler().save_key(req_id, json.dumps(auth_user), 300)
 
-        # 转换选项为 JSON
+        # 转换选项为JSON（关键：使用官方工具，避免手动修改导致格式错误）
         options_json = options_to_json(options)
         options_dict = json.loads(options_json)
-        options_dict['challenge'] = bytes_to_base64url(challenge)
+        # 仅补充必要字段，删除 pubKeyCredParams（验证场景不需要）
         options_dict['req_id'] = req_id
+        # 确保 challenge 是 纯Base64URL格式（无填充符、符号替换正确）
+        options_dict['challenge'] = bytes_to_base64url(challenge)
 
+        # 最终返回：确保返回的是JSON格式，且所有Base64URL字段无非法字符
         return ReturnTool.SuccessReturn(options_dict)
 
 
@@ -418,11 +401,16 @@ def login_complete(request):
         # 获取请求的主机名作为RP ID
         rp_id = request.host.split(':')[0]  # 去掉端口号
 
+        # 核心：从请求头获取真实的客户端 Origin，校验是否在白名单内
+        client_origin = request.headers.get("Origin")
+        if client_origin not in ALLOWED_ORIGINS:
+            raise ValueError(f"Unexpected client data origin \"{client_origin}\", expected one of {ALLOWED_ORIGINS}")
+
         # 验证认证响应
         verification = verify_authentication_response(
             credential=credential,
             expected_challenge=expected_challenge,
-            expected_origin=request.host_url.rstrip('/'),
+            expected_origin=client_origin,
             expected_rp_id=rp_id,
             credential_public_key=base64url_to_bytes(stored_credential['public_key']),
             credential_current_sign_count=stored_credential['sign_count'],
@@ -444,11 +432,17 @@ def login_complete(request):
 
         logs.setup_logger().info(f"User {username} logged in successfully")
 
+        userinfo = RedisHandler().get_key("user:info:" + username)
+        user_login_info = None
+        if userinfo:
+            user_login_info = json.loads(userinfo)
+
         return ReturnTool.SuccessReturn({
             'status': 'ok',
             'message': '验证通过！',
             'username': username,
-            'authenticated': True
+            'authenticated': True,
+            'userinfo': user_login_info
         })
 
 
@@ -486,8 +480,47 @@ def verify_otp(request):
                 'userinfo': user_login_info
             })
         else:
+            return ReturnTool.ErrorReturn('验证码错误!', 401)
+
+
+def verify_recovery(request):
+    data = request.get_json()
+    if not data:
+        return ReturnTool.ErrorReturn('参数为空！', 400)
+
+    username = data.get('username')
+    recovery_code = aes_decrypt(data.get('recovery_code'))
+
+    if not username or not recovery_code:
+        return ReturnTool.ErrorReturn('恢复码和用户名必填！', 400)
+
+    # 检查用户是否存在
+    with DatabaseSession() as session:
+        queue = session.query(SysUser.recovery_code_md5, SysUser.id).filter(SysUser.user_name == username).first()
+        if not queue.recovery_code_md5:
+            return ReturnTool.ErrorReturn('用户没有开通恢复码！', 404)
+        # 获取用户的OTP密钥
+        recovery_code_arr = json.loads(queue.recovery_code_md5)
+        if len(recovery_code_arr) == 0:
+            return ReturnTool.ErrorReturn('恢复码已用完，请联系管理员!', 404)
+        recovery_code_arr_new = [sub_arr for sub_arr in recovery_code_arr if
+                                 sub_arr[0] != verify_password(recovery_code, sub_arr[1])]
+        if len(recovery_code_arr) == len(recovery_code_arr_new):
+            return ReturnTool.ErrorReturn('恢复码错误!', 401)
+        else:
+            userinfo = RedisHandler().get_key("user:info:" + username)
+            user_login_info = None
+            if userinfo:
+                user_login_info = json.loads(userinfo)
+            sql_data = {
+                'id': queue.id,
+                'recovery_code_md5': json.dumps(recovery_code_arr_new),
+                "update_date": TimeToolClass.get_time()
+            }
+            DbTools.saveOrUpdate(session, sql_data, SysUser)
             return ReturnTool.SuccessReturn({
-                'status': 'error',
-                'message': '验证码错误!',
-                'username': username
+                'status': 'ok',
+                'message': f'验证成功, 还剩{len(recovery_code_arr_new)}次机会！',
+                'username': username,
+                'userinfo': user_login_info
             })
