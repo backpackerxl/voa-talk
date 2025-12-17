@@ -1,5 +1,8 @@
 import datetime
 import json
+import uuid
+
+from sqlalchemy import or_
 
 from dbinfo import DatabaseSession
 from entity import SysUser
@@ -13,7 +16,12 @@ def login_impl(request):
     with DatabaseSession() as session:
         ip = request.remote_addr
         username = request.get_json().get("userName")
-        queue = session.query(SysUser).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser).filter(
+            or_(
+                SysUser.user_name == username,
+                SysUser.email == username,
+            )
+        ).first()
 
         # 如果用户不存在
         if not queue:
@@ -48,16 +56,19 @@ def login_impl(request):
         user_data["jwtToken"] = token
         user_data["refreshToken"] = token
         user_data['exp'] = user_data['exp'].strftime("%Y-%m-%d %H:%M:%S")
+        next_id = str(uuid.uuid4())
         ## 缓存登录信息
-        RedisHandler().save_key("user:info:" + queue.user_name, json.dumps(user_data), 300)  # 登录成功信息5分钟内有效
+        RedisHandler().save_key("user:info:" + next_id, json.dumps(user_data), 300)  # 登录成功信息5分钟内有效
 
         if not queue.otp_secrets and not queue.credentials_data:
             return ReturnTool.SuccessReturn({
+                'next_id': next_id,
                 'username': queue.user_name,
                 'register_authenticated': False
             })
         else:
             return ReturnTool.SuccessReturn({
+                'next_id': next_id,
                 'username': queue.user_name,
                 'register_authenticated': True
             })

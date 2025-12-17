@@ -7,8 +7,8 @@
         </p>
         <div class="formdata">
           <el-form ref="loginForm" :model="form" :rules="rules" label-position="top" label-width="100px">
-            <el-form-item label="账号" prop="username">
-              <el-input class="in-box" v-model="form.username" size="large" clearable placeholder="请输入账号">
+            <el-form-item label="用户名/邮箱号" prop="username">
+              <el-input class="in-box" v-model="form.username" size="large" clearable placeholder="用户名/邮箱号登录">
                 <!-- 使用 prefix-icon 插槽添加图标 -->
                 <template #prefix>
                   <el-icon>
@@ -248,6 +248,7 @@ const authnBtn = ref(false);
 const authnTxt = ref('设备验证');
 const recoveryCode = ref([]);
 const placeholderTxt = ref('');
+const nextId = ref('');
 
 // const myCaptcha = ref(null);
 
@@ -264,7 +265,7 @@ const rules = {
   ],
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
-    { max: 10, message: "不能大于10个字符", trigger: "blur" },
+    { max: 12, message: "不能大于12个字符", trigger: "blur" },
   ],
 };
 
@@ -313,12 +314,17 @@ async function handleOptcodeComplete(optcode) {
     const verifyResponse = await verifyOtp({
       username: form.value.username,
       otp_code: optcode,
+      next_id: nextId.value,
     });
     ElMessage.success(verifyResponse.data.message);
     cacheUserInfoAndRedirect(verifyResponse.data.userinfo);
   } catch (error) {
     formOtp.value.optcode = '';
-    console.error(error);
+    console.error('错误信息：', error.message); // 如 'token过期'/'参数错误'
+    // 捕获异常：读取挂载的 code 和 错误信息
+    if (error.code === 301) {
+      loginPage.value = true;
+    }
   }
 }
 
@@ -328,12 +334,17 @@ async function handleRecoveryCodeComplete(recoveryCode) {
     const verifyResponse = await verifyRecovery({
       username: form.value.username,
       recovery_code: encryptAes(recoveryCode),
+      next_id: nextId.value,
     });
     ElMessage.success(verifyResponse.data.message);
     cacheUserInfoAndRedirect(verifyResponse.data.userinfo);
   } catch (error) {
     formOtp.value.optcode = '';
-    console.error(error);
+    console.error('错误信息：', error.message); // 如 'token过期'/'参数错误'
+    // 捕获异常：读取挂载的 code 和 错误信息
+    if (error.code === 301) {
+      loginPage.value = true;
+    }
   }
 }
 
@@ -369,6 +380,7 @@ async function sendPostRequest() {
     );
     if (response.code === 200) {
       loginPage.value = false;
+      nextId.value = response.data.next_id || '';
       // 检查用户是否注册了WebAuthn
       state.open = !response.data.register_authenticated;
     } else {
@@ -384,8 +396,8 @@ function cacheUserInfoAndRedirect(userinfo) {
   store.dispatch("app/setUserRole", userinfo.superAdmin);
   store.dispatch("app/setNickName", userinfo.nickName);
   store.dispatch("app/setUserName", userinfo.userName);
-  store.dispatch("app/setUserEmail", userinfo.email);
-  store.dispatch("app/setAvatar", userinfo.avatar);
+  store.dispatch("app/setUserEmail", userinfo.email || '');
+  store.dispatch("app/setAvatar", userinfo.avatar || '');
   router.replace("/home/chat");
 }
 
@@ -456,7 +468,6 @@ async function verifyOtpOrAuthn() {
     cacheUserInfoAndRedirect(result.data.userinfo);
 
   } catch (error) {
-    console.error('身份验证失败:', error);
     let errorMessage = error.message || '未知错误';
     // Handle specific error types
     if (error.name === 'NotAllowedError') {
@@ -466,7 +477,8 @@ async function verifyOtpOrAuthn() {
     } else if (error.name === 'NotFoundError') {
       errorMessage = '未找到匹配的凭证';
     }
-    ElMessage.error(`身份验证失败: ${errorMessage}`);
+    console.error('身份验证失败:', errorMessage);
+    // ElMessage.error(`身份验证失败: ${errorMessage}`);
   }
 }
 

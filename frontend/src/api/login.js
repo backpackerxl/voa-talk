@@ -26,6 +26,14 @@ export function enrollUser(params) {
     });
 }
 
+export function sendEnrollCode(params) {
+    return request({
+        url: '/sys_user/enroll/code',
+        method: 'post',
+        params: params,
+    });
+}
+
 // 找回密码
 export function forgetPwd(params) {
     return request({

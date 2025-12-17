@@ -8,6 +8,7 @@ from datetime import datetime
 
 import pyotp
 import qrcode
+from sqlalchemy import or_
 from webauthn import (
     generate_registration_options,
     verify_registration_response,
@@ -55,7 +56,10 @@ def register_begin(request):
         return ReturnTool.ErrorReturn('用户名必填！', 400)
 
     with DatabaseSession() as session:
-        queue = session.query(SysUser.credentials_data).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser.credentials_data).filter(or_(
+            SysUser.user_name == username,
+            SysUser.email == username,
+        )).first()
         # 检查用户是否已存在
         if queue.credentials_data:
             return ReturnTool.ErrorReturn('不能重复注册二次身份验证！', 409)
@@ -163,7 +167,10 @@ def register_complete(request):
             transport_enums.append(AuthenticatorTransport.INTERNAL)
 
     with DatabaseSession() as session:
-        queue = session.query(SysUser.id).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser.id).filter(or_(
+            SysUser.user_name == username,
+            SysUser.email == username,
+        )).first()
         if not queue:
             return ReturnTool.ErrorReturn('用户不存在', 404)
         credentials_data = {
@@ -206,7 +213,11 @@ def register_complete(request):
 
 def generate_otp_qrcode(username):
     with DatabaseSession() as session:
-        queue = session.query(SysUser.otp_secrets).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser.otp_secrets).filter(
+            or_(
+                SysUser.user_name == username,
+                SysUser.email == username,
+            )).first()
         if not queue:
             return ReturnTool.ErrorReturn('用户不存在!', 404)
 
@@ -255,7 +266,12 @@ def login_begin(request):
 
     # 检查用户是否存在（新增：判空 queue，避免 AttributeError）
     with DatabaseSession() as session:
-        queue = session.query(SysUser.credentials_data).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser.user_name, SysUser.credentials_data).filter(or_(
+            SysUser.user_name == username,
+            SysUser.email == username,
+        )).first()
+        if not queue or not queue.user_name:
+            return ReturnTool.ErrorReturn('用户未注册！', 400)
         if not queue or not queue.credentials_data:  # 新增 queue 判空
             return ReturnTool.ErrorReturn('用户没有开通二次身份验证！', 404)
 
@@ -349,7 +365,10 @@ def login_complete(request):
 
     # 检查用户是否存在
     with DatabaseSession() as session:
-        queue = session.query(SysUser).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser).filter(or_(
+            SysUser.user_name == username,
+            SysUser.email == username,
+        )).first()
         if not queue.credentials_data:
             return ReturnTool.ErrorReturn('用户没有开通二次身份验证！', 404)
 
@@ -427,13 +446,17 @@ def verify_otp(request):
 
     username = data.get('username')
     otp_code = data.get('otp_code')
+    next_id = data.get('next_id')
 
     if not username or not otp_code:
         return ReturnTool.ErrorReturn('二次验证码和用户名必填！', 400)
 
     # 检查用户是否存在
     with DatabaseSession() as session:
-        queue = session.query(SysUser.otp_secrets).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser.otp_secrets).filter(or_(
+            SysUser.user_name == username,
+            SysUser.email == username,
+        )).first()
         if not queue.otp_secrets:
             return ReturnTool.ErrorReturn('用户没有开通OTP二次身份验证！', 404)
         # 获取用户的OTP密钥
@@ -442,17 +465,18 @@ def verify_otp(request):
         # 创建TOTP对象并验证OTP代码
         totp = pyotp.TOTP(otp_secret)
         if totp.verify(otp_code):
-            userinfo = RedisHandler().get_key("user:info:" + username)
-            user_login_info = None
+            userinfo = RedisHandler().get_key("user:info:" + next_id)
             if userinfo:
                 user_login_info = json.loads(userinfo)
-
-            return ReturnTool.SuccessReturn({
-                'status': 'ok',
-                'message': '验证成功!',
-                'username': username,
-                'userinfo': user_login_info
-            })
+                RedisHandler().remove_key("user:info:" + next_id)
+                return ReturnTool.SuccessReturn({
+                    'status': 'ok',
+                    'message': '验证成功!',
+                    'username': username,
+                    'userinfo': user_login_info
+                })
+            else:
+                return ReturnTool.ErrorReturn('登录信息已过期，请重新登录！', 301)
         else:
             return ReturnTool.ErrorReturn('验证码错误!', 401)
 
@@ -464,13 +488,17 @@ def verify_recovery(request):
 
     username = data.get('username')
     recovery_code = aes_decrypt(data.get('recovery_code'))
+    next_id = data.get('next_id')
 
     if not username or not recovery_code:
         return ReturnTool.ErrorReturn('恢复码和用户名必填！', 400)
 
     # 检查用户是否存在
     with DatabaseSession() as session:
-        queue = session.query(SysUser.recovery_code_md5, SysUser.id).filter(SysUser.user_name == username).first()
+        queue = session.query(SysUser.recovery_code_md5, SysUser.id).filter(or_(
+            SysUser.user_name == username,
+            SysUser.email == username,
+        )).first()
         if not queue.recovery_code_md5:
             return ReturnTool.ErrorReturn('用户没有开通恢复码！', 404)
         # 获取用户的OTP密钥
@@ -482,19 +510,21 @@ def verify_recovery(request):
         if len(recovery_code_arr) == len(recovery_code_arr_new):
             return ReturnTool.ErrorReturn('恢复码错误!', 401)
         else:
-            userinfo = RedisHandler().get_key("user:info:" + username)
-            user_login_info = None
+            userinfo = RedisHandler().get_key("user:info:" + next_id)
             if userinfo:
                 user_login_info = json.loads(userinfo)
-            sql_data = {
-                'id': queue.id,
-                'recovery_code_md5': json.dumps(recovery_code_arr_new),
-                "update_date": TimeToolClass.get_time()
-            }
-            DbTools.saveOrUpdate(session, sql_data, SysUser)
-            return ReturnTool.SuccessReturn({
-                'status': 'ok',
-                'message': f'验证成功, 还剩{len(recovery_code_arr_new)}次机会！',
-                'username': username,
-                'userinfo': user_login_info
-            })
+                sql_data = {
+                    'id': queue.id,
+                    'recovery_code_md5': json.dumps(recovery_code_arr_new),
+                    "update_date": TimeToolClass.get_time()
+                }
+                DbTools.saveOrUpdate(session, sql_data, SysUser)
+                RedisHandler().remove_key("user:info:" + next_id)
+                return ReturnTool.SuccessReturn({
+                    'status': 'ok',
+                    'message': f'验证成功, 还剩{len(recovery_code_arr_new)}次机会！',
+                    'username': username,
+                    'userinfo': user_login_info
+                })
+            else:
+                return ReturnTool.ErrorReturn('登录信息已过期，请重新登录！', 301)

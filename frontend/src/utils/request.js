@@ -35,7 +35,13 @@ service.interceptors.response.use(
       // 非200业务码：提示错误后，统一用 reject 抛出
       const errMsg = response.data.msg || '服务器错误';
       ElMessage.error(errMsg);
-      return Promise.reject(new Error(errMsg)); // 包装成 Error 对象，方便后续捕获
+      // 1. 创建自定义 Error 对象，挂载 code 属性
+      const error = new Error(errMsg);
+      error.code = response.data.code; // 核心：把业务码挂到 Error 上
+      // 可选：挂载完整的响应数据，方便排查
+      error.responseData = response.data;
+      // 2. reject 抛出这个自定义 Error
+      return Promise.reject(error);
     }
   },
   async error => {

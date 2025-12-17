@@ -2,66 +2,34 @@
   <div class="loginbody">
     <div class="register-container">
       <el-card class="register-card">
-        <p class="logintext"><Logo /></p>
-        <el-form
-          :model="registerForm"
-          :rules="rules"
-          ref="registerFormRef"
-          label-position="top"
-        >
+        <p class="logintext">
+          <Logo />
+        </p>
+        <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
           <el-form-item label="邮箱" prop="email">
-            <el-input
-              v-model="registerForm.email"
-              placeholder="请输入邮箱，系统将发送修改密码的邮件"
-              clearable
-              size="large"
-            ></el-input>
+            <el-input v-model="registerForm.email" placeholder="请输入邮箱，系统将发送修改密码的邮件" clearable size="large"></el-input>
           </el-form-item>
           <div class="button-group">
-            <el-button size="large" type="primary" @click="handleForget"
-              >找回密码</el-button
-            >
+            <el-button size="large" type="primary" @click="handleForget">找回密码</el-button>
           </div>
         </el-form>
       </el-card>
     </div>
   </div>
   <Beian />
-  <el-dialog v-model="state.open" title="请拖动滑块完成验证" width="380" align-center>
-    <Captcha ref="myCaptcha" @verify="verifyImg" />
-  </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { forgetPwd } from "@/api/login";
 import Logo from "@/components/Logo";
 import Beian from "@/components/Beian";
-import Captcha from "@/components/Captcha";
 
 const registerForm = ref({
   email: "",
 });
-
-const myCaptcha = ref(null);
-
-const captchaCode = ref("-1");
-
-let state = reactive({
-  open: false,
-});
-
-function verifyImg(obj) {
-  if (obj.tag === true) {
-    captchaCode.value = obj.token;
-    sendForget();
-    state.open = false;
-  } else {
-    ElMessage.error("验证不通过");
-  }
-}
 
 const rules = {
   email: [
@@ -84,14 +52,11 @@ async function sendForget() {
   try {
     const res = await forgetPwd({
       email,
-      req_url,
-      captcha_code: captchaCode.value,
+      req_url
     });
     if (res.code === 200) {
-      ElMessage.success("发送成功！请检查邮箱以完成验证。");
+      ElMessage.success('发送成功，请检查邮箱！');
       router.push("/");
-    } else {
-      ElMessage.error(res.msg);
     }
   } catch (error) {
     console.log(error);
@@ -102,10 +67,9 @@ const registerFormRef = ref(null);
 const router = useRouter();
 
 const handleForget = () => {
-  registerFormRef.value.validate((valid) => {
+  registerFormRef.value.validate(async (valid) => {
     if (valid) {
-      state.open = true;
-      myCaptcha.value && myCaptcha.value.init();
+      await sendForget();
     }
   });
 };

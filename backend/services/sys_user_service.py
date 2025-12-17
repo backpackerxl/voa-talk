@@ -1,10 +1,6 @@
-import json
-
 from services.impl import sys_user_impl
-
-from utils import ReturnTool
-
 from utils import Config
+from utils import ReturnTool
 from utils.JwtUtils import JWTHandler
 from utils.RedisUtils import RedisHandler
 from utils.ReturnTool import ErrorReturn
@@ -35,17 +31,24 @@ def enroll_service(request):
     用户注册服务
     """
     data = request.get_json()
-    name = data.get("name")
     username = data.get("username")
     email = data.get("email")
-    res = RedisHandler().get_key(data["captcha_code"])
-    if res is None:
-        return ErrorReturn("请通过验证后，再尝试注册")
+    password = data.get("password")
+    captcha_code = data.get("captcha_code")
+    redis_code = RedisHandler().get_key(email)
+    if redis_code is None:
+        return ErrorReturn("请先获取邮箱验证码！")
 
-    if not json.loads(res):
-        return ErrorReturn("请通过验证后，再尝试注册")
+    if captcha_code != redis_code:
+        return ErrorReturn("邮箱验证码错误！")
 
-    return sys_user_impl.enroll_impl(name, username, email)
+    return sys_user_impl.enroll_impl(password, username, email)
+
+
+def enroll_code(request):
+    email = request.get_json().get("email")
+    username = request.get_json().get("username")
+    return sys_user_impl.enroll_code_impl(username, email)
 
 
 def forget_pwd_service(request):
@@ -55,12 +58,6 @@ def forget_pwd_service(request):
     data = request.get_json()
     email = data.get("email")
     req_url = data.get("req_url")
-    res = RedisHandler().get_key(data["captcha_code"])
-    if res is None:
-        return ErrorReturn("请通过验证后，再尝试找回密码")
-
-    if not json.loads(res):
-        return ErrorReturn("请通过验证后，再尝试找回密码")
 
     return sys_user_impl.forget_pwd_impl(email, req_url)
 
@@ -72,12 +69,6 @@ def reset_pwd(request):
     data = request.get_json()
     pwd = data.get('pwd')
     secret_key = data.get('secret_key')
-    res = RedisHandler().get_key(data["captcha_code"])
-    if res is None:
-        return ErrorReturn("请通过验证后，再尝试重置密码")
-
-    if not json.loads(res):
-        return ErrorReturn("请通过验证后，再尝试重置密码")
 
     return sys_user_impl.reset_pwd(pwd, secret_key)
 
@@ -87,16 +78,12 @@ def send_email_code(request):
     用户获取验证码
     '''
     data = request.get_json()
-    nick_name = data["nickName"]
+    user = get_req_user(request)
+    user_id = user.get("id")
     email = data["email"]
-    res = RedisHandler().get_key(data["captcha_code"])
-    if res is None:
-        return ErrorReturn("请通过验证后，再尝试重置密码")
+    nick_name = user.get("nickName")
 
-    if not json.loads(res):
-        return ErrorReturn("请通过验证后，再尝试重置密码")
-
-    return sys_user_impl.send_email_code(email, nick_name)
+    return sys_user_impl.send_email_code(user_id, email, nick_name)
 
 
 def update_user_email(request):
@@ -104,16 +91,18 @@ def update_user_email(request):
     用户重置邮箱号
     '''
     data = request.get_json()
-    id = get_req_user(request).get('id')
+    user_id = get_req_user(request).get('id')
     email = data["email"]
-    res = RedisHandler().get_key(data["reqId"])
-    if res is None:
-        return ErrorReturn("验证码错误")
+    code = data["verCode"]
+    redis_code = RedisHandler().get_key("user:email:code:" + str(user_id))
+    if not redis_code:
+        return ReturnTool.ErrorReturn('验证码已过期！', 401)
+    if code != redis_code:
+        return ReturnTool.ErrorReturn('验证码错误！', 500)
 
-    if res != data["verCode"]:
-        return ErrorReturn("验证码错误")
+    RedisHandler().remove_key("user:email:code:" + str(user_id))
 
-    return sys_user_impl.update_user_email(email, id)
+    return sys_user_impl.update_user_email(email, user_id)
 
 
 def get_req_user(request):

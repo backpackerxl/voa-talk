@@ -1,24 +1,14 @@
 <template>
   <div class="user-edit">
-    <el-upload
-      ref="uploadRef"
-      :style="imageUrl ? 'display: none' : 'display: block'"
-      :action="config.BASE_URL + '/upload'"
-      list-type="picture-card"
-      :headers="{ Token: store.state.app.authorization }"
-      :on-success="handleSuccess"
-      :before-upload="beforeUpload"
-      :show-file-list="false"
-      accept="image/png, image/jpeg"
-    >
-      <el-icon><Plus /></el-icon>
+    <el-upload ref="uploadRef" :style="imageUrl ? 'display: none' : 'display: block'"
+      :action="config.BASE_URL + '/upload'" list-type="picture-card" :headers="{ Token: store.state.app.authorization }"
+      :on-success="handleSuccess" :before-upload="beforeUpload" :show-file-list="false" accept="image/png, image/jpeg">
+      <el-icon>
+        <Plus />
+      </el-icon>
     </el-upload>
     <div @click="uploadImg" class="avater" v-if="imageUrl">
-      <img
-        :src="imageUrl"
-        alt="Uploaded Image"
-        style="max-width: 100%; margin-top: 20px"
-      />
+      <img :src="imageUrl" alt="Uploaded Image" style="max-width: 100%; margin-top: 20px" />
     </div>
 
     <h3 class="nick-name">{{ welcomStr }}</h3>
@@ -34,27 +24,18 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item
-                v-for="(item, index) in themList"
-                :key="index"
-                @click="changeThem(item)"
-              >
+              <el-dropdown-item v-for="(item, index) in themList" :key="index" @click="changeThem(item)">
                 <div class="me-icon">
                   <span :class="item.icon"></span>
                 </div>
-                &nbsp;{{ item.label }}</el-dropdown-item
-              >
+                &nbsp;{{ item.label }}
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
       </el-form-item>
       <el-form-item label="昵称: " prop="nickName">
-        <el-input
-          v-model="welcomStr"
-          placeholder="请输入新的昵称"
-          clearable
-          size="large"
-        ></el-input>
+        <el-input v-model="welcomStr" placeholder="请输入新的昵称" clearable size="large"></el-input>
       </el-form-item>
       <el-form-item label="邮箱: " prop="email">
         <div class="email-setting">
@@ -72,87 +53,37 @@
       </el-form-item>
       <el-form-item>
         <div class="button-group">
-          <el-button
-            size="large"
-            type="primary"
-            @click="saveUserInfo"
-            :icon="Edit"
-            >保 存</el-button
-          >
+          <el-button size="large" type="primary" @click="saveUserInfo" :icon="Edit">保 存</el-button>
         </div>
       </el-form-item>
     </el-form>
     <div class="opt">
       <p>便捷操作</p>
-      <el-button
-        size="large"
-        type="primary"
-        @click="openChatHis"
-        :icon="ChatLineRound"
-        v-if="isMob"
-        >查看历史对话</el-button
-      >
-      <el-button
-        size="large"
-        type="primary"
-        @click="openNewChat"
-        :icon="ChatDotSquare"
-        >开启新对话</el-button
-      >
-      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit"
-        >重置密码</el-button
-      >
+      <el-button size="large" type="primary" @click="openChatHis" :icon="ChatLineRound" v-if="isMob">查看历史对话</el-button>
+      <el-button size="large" type="primary" @click="openNewChat" :icon="ChatDotSquare">开启新对话</el-button>
+      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit">重置密码</el-button>
       <p class="them-text">自定义主题色</p>
       <div class="them-color">
-        <el-tooltip
-          v-for="item in colorList"
-          :key="item.id"
-          class="box-item"
-          effect="light"
-          :content="item.tip"
-          :placement="item.place"
-        >
-          <div
-            :class="checkThemId === item.id ? 'item checked' : 'item'"
-            @click="selectColor(item)"
-            :style="'background-color: ' + item.bgColor"
-          >
+        <el-tooltip v-for="item in colorList" :key="item.id" class="box-item" effect="light" :content="item.tip"
+          :placement="item.place">
+          <div :class="checkThemId === item.id ? 'item checked' : 'item'" @click="selectColor(item)"
+            :style="'background-color: ' + item.bgColor">
             <i class="fas fa-check"></i>
           </div>
         </el-tooltip>
       </div>
     </div>
   </div>
-  <el-dialog
-    v-model="editDialogVisible"
-    title="修改邮箱号"
-    width="380"
-    align-center
-  >
-    <el-form
-      :model="registerForm"
-      :rules="rules"
-      ref="registerFormRef"
-      placeholder="请输入邮箱号"
-    >
+  <el-dialog v-model="editDialogVisible" title="修改邮箱号" width="380" align-center>
+    <el-form :model="registerForm" :rules="rules" ref="registerFormRef" placeholder="请输入邮箱号">
       <el-form-item label="邮箱号: " prop="email">
         <el-input size="large" v-model="registerForm.email" />
       </el-form-item>
       <el-form-item label="验证码: " prop="code">
-        <el-input
-          type="number"
-          size="large"
-          v-model="registerForm.code"
-          placeholder="请输入验证码"
-        >
+        <el-input type="number" size="large" v-model="registerForm.code" placeholder="请输入验证码">
           <template #suffix>
-            <el-button
-              class="get-code"
-              :disabled="codeDisabled"
-              @click="getEmailCode"
-              plain
-              >{{ emailCodeContent }}</el-button
-            >
+            <el-button class="get-code" :disabled="codeDisabled" @click="getEmailCode" plain>{{ emailCodeContent
+            }}</el-button>
           </template>
         </el-input>
       </el-form-item>
@@ -165,19 +96,10 @@
       </div>
     </template>
   </el-dialog>
-
-  <el-dialog
-    v-model="state.open"
-    title="请拖动滑块完成验证"
-    width="380"
-    align-center
-  >
-    <Captcha ref="myCaptcha" @verify="verifyImg" />
-  </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted } from "vue";
 import store from "@/store";
 import {
   Plus,
@@ -198,10 +120,6 @@ const registerForm = ref({
   code: "",
 });
 
-let state = reactive({
-  open: false,
-});
-
 const editDialogVisible = ref(false);
 import router from "@/router";
 import { updateUser, sendEmailCodeApi, updateUserEmail } from "@/api/apiUser";
@@ -209,15 +127,11 @@ import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
 import device from "current-device";
-import Captcha from "@/components/Captcha";
 
 const avatarUrl = store.state.app.avatar;
 const imageUrl = ref(avatarUrl);
-const myCaptcha = ref(null);
 const codeDisabled = ref(false);
 const emailCodeContent = ref("获取验证码");
-const reqCId = ref("-1");
-const captchaCode = ref("-1");
 const saveUrl = ref(config.BASE_URL);
 const checkThemId = ref(1);
 const isMob = ref(!device.mobile());
@@ -321,16 +235,6 @@ function changeThem(item) {
   store.dispatch("app/setThem", JSON.stringify(item));
 }
 
-function verifyImg(obj) {
-  if (obj.tag === true) {
-    captchaCode.value = obj.token;
-    sendEmailCode();
-    state.open = false;
-  } else {
-    ElMessage.error("验证不通过");
-  }
-}
-
 let countdown = 60;
 
 function startCountdown() {
@@ -347,22 +251,28 @@ function startCountdown() {
 }
 
 async function sendEmailCode() {
-  const reqIdObj = await sendEmailCodeApi({
-    nickName: welcomStr.value,
-    email: registerForm.value.email,
-    captcha_code: captchaCode.value,
-  });
-  reqCId.value = reqIdObj.data.reqId;
-  // 实现倒计时
-  codeDisabled.value = true;
-  countdown = 60;
-  startCountdown();
+  try {
+    let resp = await sendEmailCodeApi({
+      email: registerForm.value.email
+    });
+    if (resp.code === 200) {
+      // 实现倒计时
+      codeDisabled.value = true;
+      countdown = 60;
+      startCountdown();
+      ElMessage({
+        message: "验证码发送成功",
+        type: "success",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 function getEmailCode() {
   if (emailRule.test(registerForm.value.email)) {
-    state.open = true;
-    myCaptcha.value && myCaptcha.value.init();
+    sendEmailCode();
   } else {
     ElMessage.error("请填写正确的邮箱号");
   }
@@ -377,22 +287,32 @@ const registerFormRef = ref(null);
 function editEmailOk() {
   registerFormRef.value.validate(async (valid) => {
     if (valid) {
-      const resp = await updateUserEmail({
-        reqId: reqCId.value,
-        email: registerForm.value.email,
-        verCode: registerForm.value.code,
-      });
-      if (resp.code === 200) {
-        store.dispatch("app/setUserEmail", registerForm.value.email);
-        userEmail.value = registerForm.value.email;
-        ElMessage({
-          message: "修改成功",
-          type: "success",
+      try {
+        const resp = await updateUserEmail({
+          email: registerForm.value.email,
+          verCode: registerForm.value.code,
         });
-      } else {
-        ElMessage.error("修改失败");
+        if (resp.code === 200) {
+          // 这里可以添加实际的登出逻辑，比如清除 token 或者重定向到登录页面
+          store.dispatch("app/clearAvatar");
+          store.dispatch("app/clearAuthorization");
+          store.dispatch("app/clearUserRole");
+          store.dispatch("app/clearNickName");
+          store.dispatch("app/clearUserName");
+          store.dispatch("app/clearUserEmail");
+          ElMessage({
+            message: "修改成功",
+            type: "success",
+          });
+          // 重定向到根路径
+          router.push("/");
+        } else {
+          ElMessage.error("修改失败!");
+        }
+        editDialogVisible.value = false;
+      } catch (error) {
+        console.error(error);
       }
-      editDialogVisible.value = false;
     }
   });
 }
@@ -645,6 +565,7 @@ onMounted(function () {
 .opt p::before {
   left: 1px;
 }
+
 .opt p::after {
   right: 1px;
 }

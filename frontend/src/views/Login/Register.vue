@@ -5,42 +5,31 @@
         <p class="logintext">
           <Logo />
         </p>
-        <el-form
-          :model="registerForm"
-          :rules="rules"
-          ref="registerFormRef"
-          label-position="top"
-          label-width="100px"
-        >
-          <el-form-item label="昵称" prop="name">
-            <el-input
-              v-model="registerForm.name"
-              placeholder="请输入昵称"
-              clearable
-              size="large"
-            ></el-input>
-          </el-form-item>
+        <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top" label-width="100px">
           <el-form-item label="用户名" prop="username">
-            <el-input
-              v-model="registerForm.username"
-              placeholder="请输入用户名"
-              clearable
-              size="large"
-            ></el-input>
+            <el-input v-model="registerForm.username" placeholder="请输入用户名" clearable size="large"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="pwd">
+            <el-input v-model="registerForm.pwd" placeholder="请输入新密码" size="large" clearable show-password></el-input>
+          </el-form-item>
+          <el-form-item label="确认密码" prop="pwd_ok">
+            <el-input v-model="registerForm.pwd_ok" placeholder="请确认新密码" clearable size="large"
+              show-password></el-input>
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
-            <el-input
-              v-model="registerForm.email"
-              placeholder="请输入邮箱，登录密码将会发送到你的邮箱"
-              clearable
-              size="large"
-            ></el-input>
+            <el-input v-model="registerForm.email" placeholder="请输入邮箱，登录密码将会发送到你的邮箱" clearable size="large"></el-input>
+          </el-form-item>
+          <el-form-item label="验证码: " prop="code">
+            <el-input type="number" size="large" v-model="registerForm.code" placeholder="请输入6位验证码">
+              <template #suffix>
+                <el-button class="get-code" :disabled="codeDisabled" @click="sendEmailCode" plain>{{ emailCodeContent
+                }}</el-button>
+              </template>
+            </el-input>
           </el-form-item>
           <el-form-item>
             <div class="button-group">
-              <el-button size="large" type="primary" @click="handleRegister"
-                >注 册</el-button
-              >
+              <el-button size="large" type="primary" @click="sendRegister">注 册</el-button>
               <div class="login">
                 <a @click="goToLogin">登 录</a>
               </div>
@@ -51,52 +40,48 @@
     </div>
   </div>
   <Beian />
-
-  <el-dialog
-    v-model="state.open"
-    title="请拖动滑块完成验证"
-    width="380"
-    align-center
-  >
-    <Captcha ref="myCaptcha" @verify="verifyImg" />
-  </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { enrollUser } from "@/api/login";
+import { encryptAes } from "@/utils/tools";
+import { enrollUser, sendEnrollCode } from "@/api/login";
 import Logo from "@/components/Logo";
 import Beian from "@/components/Beian";
-import Captcha from "@/components/Captcha";
 
 const registerForm = ref({
-  name: "",
   username: "",
+  pwd: "",
+  pwd_ok: "",
   email: "",
+  code: ""
 });
 
-const myCaptcha = ref(null);
+const codeDisabled = ref(false);
+const emailCodeContent = ref("获取验证码");
 
-const captchaCode = ref("-1");
-
-let state = reactive({
-  open: false,
-});
-
-function verifyImg(obj) {
-  if (obj.tag === true) {
-    captchaCode.value = obj.token;
-    sendRegister();
-    state.open = false;
+const validatePassword = (rule, value, callback) => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$/;
+  if (!regex.test(value)) {
+    callback(new Error("密码8~12位, 包含大小写、特殊字符(!@#$%^&*)最少一个"));
   } else {
-    ElMessage.error("验证不通过");
+    callback();
   }
-}
+};
+
+const validateConfirmPassword = (rule, value, callback) => {
+  if (value !== registerForm.value.pwd) {
+    callback(new Error("两次密码不一致"));
+  } else {
+    callback();
+  }
+};
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const rules = {
-  name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
   username: [
     { required: true, message: "请输入登录账户", trigger: "blur" },
     {
@@ -105,50 +90,93 @@ const rules = {
       trigger: ["blur", "change"],
     },
   ],
+  pwd: [
+    { required: true, message: "请输入新密码", trigger: "blur" },
+    { validator: validatePassword, trigger: "blur" },
+  ],
+  pwd_ok: [
+    { required: true, message: "请重新输入新密码", trigger: "blur" },
+    { validator: validateConfirmPassword, trigger: "blur" },
+  ],
   email: [
     { required: true, message: "请输入邮箱", trigger: "blur" },
     {
-      pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      pattern: emailRegex,
       type: "email",
       message: "邮箱格式不正确",
       trigger: ["blur", "change"],
     },
   ],
+  code: [
+    { required: true, message: "请输入6位验证码", trigger: "blur" },
+    { min: 6, max: 6, message: "验证码长度为6位", trigger: "blur" },
+  ]
 };
 
-const registerFormRef = ref(null);
 const router = useRouter();
 
-async function sendRegister() {
-  const { name, username, email } = registerForm.value;
+const registerFormRef = ref(null);
 
+function sendRegister() {
+  registerFormRef.value.validate(async (valid) => {
+    if (valid) {
+      const { pwd, code, username, email } = registerForm.value;
+
+      try {
+        const res = await enrollUser({
+          username,
+          password: encryptAes(pwd),
+          email,
+          captcha_code: code,
+        });
+        // console.log("注册后端返回：", res);
+        if (res.code === 200) {
+          ElMessage.success('注册成功！');
+          router.push("/");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  });
+}
+
+let countdown = 60;
+
+function startCountdown() {
+  const timer = setInterval(() => {
+    countdown--;
+    emailCodeContent.value = "重新发送 " + countdown + "s";
+
+    if (countdown <= 0) {
+      clearInterval(timer);
+      emailCodeContent.value = "重新发送";
+      codeDisabled.value = false;
+    }
+  }, 1000);
+}
+
+async function sendEmailCode() {
   try {
-    const res = await enrollUser({
-      name,
-      username,
-      email,
-      captcha_code: captchaCode.value,
+    if (!emailRegex.test(registerForm.value.email)) {
+      ElMessage.error("邮箱格式不正确");
+      return;
+    }
+    let res = await sendEnrollCode({
+      username: registerForm.value.username,
+      email: registerForm.value.email
     });
-    // console.log("注册后端返回：", res);
+    // 实现倒计时
+    codeDisabled.value = true;
+    countdown = 60;
+    startCountdown();
     if (res.code === 200) {
-      ElMessage.success("注册成功,密码已发送到您的注册邮箱。");
-      router.push("/");
-    } else {
-      ElMessage.error(res.msg);
+      ElMessage.success('邮件发送成功，注意查收！');
     }
   } catch (error) {
     console.log(error);
   }
 }
-
-const handleRegister = () => {
-  registerFormRef.value.validate((valid) => {
-    if (valid) {
-      state.open = true;
-      myCaptcha.value && myCaptcha.value.init();
-    }
-  });
-};
 
 const goToLogin = () => {
   router.push("/");
@@ -220,5 +248,13 @@ const goToLogin = () => {
 
 :deep(.el-form-item.is-error .el-input__wrapper) {
   box-shadow: 0 0 0 3px var(--el-color-danger) inset !important;
+}
+
+.get-code {
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 </style>

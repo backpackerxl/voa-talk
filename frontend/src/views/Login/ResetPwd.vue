@@ -5,87 +5,43 @@
         <p class="logintext">
           <Logo />
         </p>
-        <el-form
-          :model="registerForm"
-          :rules="rules"
-          ref="registerFormRef"
-          label-position="top"
-        >
+        <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
           <el-form-item label="新密码" prop="pwd">
-            <el-input
-              v-model="registerForm.pwd"
-              placeholder="请输入新密码"
-              size="large"
-              clearable
-              show-password
-            ></el-input>
+            <el-input v-model="registerForm.pwd" placeholder="请输入新密码" size="large" clearable show-password></el-input>
           </el-form-item>
           <el-form-item label="确认新密码" prop="pwd_ok">
-            <el-input
-              v-model="registerForm.pwd_ok"
-              placeholder="请确认新密码"
-              clearable
-              size="large"
-              show-password
-            ></el-input>
+            <el-input v-model="registerForm.pwd_ok" placeholder="请确认新密码" clearable size="large"
+              show-password></el-input>
           </el-form-item>
           <div class="button-group">
-            <el-button size="large" type="primary" @click="handleResetPwd"
-              >修改密码</el-button
-            >
+            <el-button size="large" type="primary" @click="handleResetPwd">修改密码</el-button>
           </div>
         </el-form>
       </el-card>
     </div>
   </div>
   <Beian />
-  <el-dialog
-    v-model="state.open"
-    title="请拖动滑块完成验证"
-    width="380"
-    align-center
-  >
-    <Captcha ref="myCaptcha" @verify="verifyImg" />
-  </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { resetPWD } from "@/api/login";
 import { encryptAes } from "@/utils/tools";
 import Logo from "@/components/Logo";
 import Beian from "@/components/Beian";
-import Captcha from "@/components/Captcha";
 
 const registerForm = ref({
   pwd: "",
   pwd_ok: "",
 });
 
-const myCaptcha = ref(null);
-
-const captchaCode = ref("-1");
-
-let state = reactive({
-  open: false,
-});
-
-function verifyImg(obj) {
-  if (obj.tag === true) {
-    captchaCode.value = obj.token;
-    sendResetPwd();
-    state.open = false;
-  } else {
-    ElMessage.error("验证不通过");
-  }
-}
 
 const validatePassword = (rule, value, callback) => {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$/;
   if (!regex.test(value)) {
-    callback(new Error("密码最低8位, 包含小写、大写、特殊字符最少各一个"));
+    callback(new Error("密码8~12位, 包含大小写、特殊字符(!@#$%^&*)最少一个"));
   } else {
     callback();
   }
@@ -121,8 +77,7 @@ async function sendResetPwd() {
   try {
     const res = await resetPWD({
       pwd: encryptAes(pwd),
-      secret_key,
-      captcha_code: captchaCode.value,
+      secret_key
     });
     // console.log("密码重置后端返回：", res);
     if (res.code === 200) {
@@ -139,8 +94,7 @@ async function sendResetPwd() {
 const handleResetPwd = () => {
   registerFormRef.value.validate((valid) => {
     if (valid) {
-      state.open = true;
-      myCaptcha.value && myCaptcha.value.init();
+      sendResetPwd();
     }
   });
 };

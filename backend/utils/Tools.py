@@ -1,5 +1,6 @@
 import hashlib
 import random
+import secrets
 import string
 
 import shortuuid
@@ -166,6 +167,12 @@ def count_tokens_messages(messages, model="gpt-3.5-turbo"):
     # 回复的固定开销（<|end_of_text|>）
     num_tokens += 3
     return num_tokens
+
+
+# 加密安全的6位数字密码生成
+def generate_code_email():
+    return ''.join(secrets.choice('0123456789') for _ in range(6))
+
 
 #
 # # 示例消息列表
