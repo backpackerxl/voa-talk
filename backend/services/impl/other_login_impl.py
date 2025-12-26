@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 
 import requests
@@ -20,7 +21,7 @@ def public_login_handler(queue, login_type, ip):
         "nickName": queue.nick_name,
         "avatar": queue.avatar,
         "email": queue.email,
-        "login_type": login_type,
+        "loginType": login_type,
         "IP": ip,
         "superAdmin": queue.super_admin
     }
@@ -81,3 +82,59 @@ def qq(code, redirect_uri, ip):
         queue_qq.last_login_time = datetime.datetime.now()
         session.commit()
         return ReturnTool.SuccessReturn(public_login_handler(queue_qq, ip, 'qq'))
+
+
+def github(code, redirect_uri, ip):
+    client_id = "Ov23liTrl7t8g4EZP3j7"
+    github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+    token_open = requests.post("https://github.com/login/oauth/access_token", headers={
+        "Accept": "application/json"
+    }, json=json.dumps({
+        "client_id": client_id,
+        "client_secret": github_client_secret,
+        "code": code,
+        "redirect_uri": redirect_uri
+    }))
+
+    obj = token_open.json()
+    if "error" in obj:
+        return ReturnTool.ErrorReturn("Github授权失败！", 401)
+    access_token = obj["access_token"]
+    token_type = obj["token_type"]
+    user_resp = requests.get("https://api.github.com/user", headers={
+        "Authorization": token_type.title() + " " + access_token
+    })
+    user_obj = user_resp.json()
+    openid = user_obj["id"]
+    username = user_obj["login"]
+    avatar = user_obj["avatar_url"]
+    if openid is None:
+        return ReturnTool.ErrorReturn("Github授权失败！", 401)
+
+    # 如果平台已经有了次qq用户，直接登录返回
+    with DatabaseSession() as session:
+        queue = session.query(SysUser).filter(SysUser.github_open_id == openid).first()
+        if queue is not None:
+            # 设置用户最后登录时间
+            queue.last_login_time = datetime.datetime.now()
+            session.commit()
+            return ReturnTool.SuccessReturn(public_login_handler(queue, ip, 'github'))
+        # 平台没有该用户，则创建用户，登录返回
+        password = Tools.generate_random_password()
+        hashed_password, salt = Tools.generate_hashed_password(password)
+        sql_data = {
+            "nick_name": username,
+            "avatar": avatar,
+            "super_admin": 0, "user_state": 1,
+            "user_name": f"github_{Tools.generate_custom_id(12)}",
+            "pass_word": hashed_password,
+            "salt": salt,
+            "update_date": TimeToolClass.get_time(),
+            "create_date": TimeToolClass.get_time(),
+            "github_open_id": openid,
+        }
+        DbTools.saveOrUpdate(session, sql_data, SysUser)
+        queue_github = session.query(SysUser).filter(SysUser.github_open_id == openid).first()
+        queue_github.last_login_time = datetime.datetime.now()
+        session.commit()
+        return ReturnTool.SuccessReturn(public_login_handler(queue_github, ip, 'github'))

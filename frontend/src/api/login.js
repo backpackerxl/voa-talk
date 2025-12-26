@@ -8,14 +8,13 @@ export function loginUser(userName, passWord) {
     });
 }
 
-export function qqUserLogin(params) {
+export function otherLogin(params) {
     return request({
-        url: '/login/qq_login',
+        url: '/login/other_login',
         method: 'post',
         params: params,
     });
 }
-
 
 // 注册用户
 export function enrollUser(params) {

@@ -48,6 +48,7 @@ def login_impl(request):
             "nickName": queue.nick_name,
             "avatar": queue.avatar,
             "email": queue.email,
+            "loginType": "voatalk",
             "IP": ip,
             "superAdmin": queue.super_admin
         }

@@ -26,10 +26,12 @@ def pt_login():
         return jsonify({"code": 500, "msg": f"服务器内部错误: {str(e)}"}), 500
 
 
-@login_blueprint.route("/qq_login", methods=["POST"])
-def qq_login():
+@login_blueprint.route("/other_login", methods=["POST"])
+def other_login():
     try:
-        response = other_login_service.qq(request)
+        response = other_login_service.other_login(request)
+        if response is None:
+            return jsonify(ErrorReturn("不支持的第三方登录！", 404)), 404
         return jsonify(response), response.get("code")
     except BusinessException as e:
         print(traceback.format_exc())

@@ -5,6 +5,7 @@ const state = {
     userName: localStorage.getItem('userName') || '', // 初始化
     userEmail: localStorage.getItem('userEmail') || '', // 初始化
     avatar: localStorage.getItem('avatar') || '', // 初始化
+    loginType: localStorage.getItem('loginType') || '', // 初始化
     sliderData: null,
     them: localStorage.getItem('them') || JSON.stringify({
         them: "light",
@@ -79,6 +80,12 @@ const mutations = {
     },
     CLEAR_SLIDER_MENU(state) {
         state.sliderMenu = true
+    },
+    SET_LOGIN_TYPE(state, loginType) {
+        state.loginType = loginType;
+    },
+    CLEAR_LOGIN_TYPE(state) {
+        state.loginType = '';
     },
 };
 
@@ -163,6 +170,14 @@ const actions = {
     clearSliderMenu({ commit }) {
         commit('CLEAR_SLIDER_MENU');
         localStorage.setItem('sliderMenu', true);
+    },
+    setLoginType({ commit }, loginType) {
+        commit('SET_LOGIN_TYPE', loginType);
+        localStorage.setItem('loginType', loginType); // 同步保存到 localStorage
+    },
+    clearLoginType({ commit }) {
+        commit('CLEAR_LOGIN_TYPE');
+        localStorage.removeItem('loginType'); // 清除 localStorage 中的登录类型
     },
 };
 

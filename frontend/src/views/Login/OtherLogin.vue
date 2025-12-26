@@ -1,9 +1,9 @@
 <template>
-  <p class="txt">登录成功！正在为您跳转...</p>
+  <p class="txt">🎉登录成功！正在为您跳转...</p>
 </template>
 
 <script setup>
-import { qqUserLogin } from "@/api/login";
+import { otherLogin } from "@/api/login";
 import { ElMessage } from "element-plus";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -17,28 +17,28 @@ onMounted(function () {
   const code = params.get("code");
   const state = params.get("state");
 
-  if (state === "qqLogin") {
-    qqUserLogin({
-      code,
-      redirect_uri: encodeURIComponent("https://voatalk.online/others/handle"),
+  otherLogin({
+    code,
+    login_type: state,
+    redirect_uri: encodeURIComponent("https://www.voatalk.online/others/handle"),
+  })
+    .then((obj) => {
+      ElMessage.success("登录成功");
+
+      store.dispatch("app/setAuthorization", obj.data.jwtToken);
+      store.dispatch("app/setUserRole", obj.data.superAdmin);
+      store.dispatch("app/setNickName", obj.data.nickName);
+      store.dispatch("app/setUserName", obj.data.userName);
+      store.dispatch("app/setUserEmail", obj.data.email);
+      store.dispatch("app/setAvatar", obj.data.avatar);
+      store.dispatch("app/setLoginType", obj.data.loginType || '');
+
+      router.replace("/home/chat");
     })
-      .then((obj) => {
-        ElMessage.success("登录成功");
-
-        store.dispatch("app/setAuthorization", obj.data.jwtToken);
-        store.dispatch("app/setUserRole", obj.data.superAdmin);
-        store.dispatch("app/setNickName", obj.data.nickName);
-        store.dispatch("app/setUserName", obj.data.userName);
-        store.dispatch("app/setUserEmail", obj.data.email);
-        store.dispatch("app/setAvatar", obj.data.avatar);
-
-        router.replace("/home/chat");
-      })
-      .catch((err) => {
-        console.log(err);
-        router.replace("/login");
-      });
-  }
+    .catch((err) => {
+      console.log(err);
+      router.replace("/login");
+    });
 });
 </script>
 

@@ -421,6 +421,7 @@ def login_complete(request):
             "nickName": queue.nick_name,
             "avatar": queue.avatar,
             "email": queue.email,
+            "loginType": "voatalk",
             "IP": request.remote_addr,
             "superAdmin": queue.super_admin
         }

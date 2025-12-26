@@ -213,13 +213,23 @@ import device from "current-device";
 let pcOrMobile = device.mobile() ? "mobile" : "pc";
 
 const appId = "102796804";
-const redirectUri = encodeURIComponent("https://voatalk.online/others/handle");
+const redirectUri = encodeURIComponent("https://www.voatalk.online/others/handle");
 const stateF = "qqLogin"; // 用于防止攻击
 const scope = "get_user_info"; // 所需权限
 
 const qqLoginUrl = ref(
   `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${appId}&redirect_uri=${redirectUri}&state=${stateF}&scope=${scope}&display=${pcOrMobile}`
 );
+
+const githubClientId = "Ov23liTrl7t8g4EZP3j7";
+const githubStateF = "githubLogin"; // 用于防止攻击
+const gitHubScope = "user"; // 所需权限
+
+
+const githubLoginUrl = ref(
+  `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&state=${githubStateF}&scope=${gitHubScope}`
+);
+
 const form = ref({
   username: null,
   password: null,
@@ -398,6 +408,7 @@ function cacheUserInfoAndRedirect(userinfo) {
   store.dispatch("app/setUserName", userinfo.userName);
   store.dispatch("app/setUserEmail", userinfo.email || '');
   store.dispatch("app/setAvatar", userinfo.avatar || '');
+  store.dispatch("app/setLoginType", userinfo.loginType || '');
   router.replace("/home/chat");
 }
 
@@ -644,15 +655,16 @@ function register() {
 }
 
 function githubLogin() {
-  if (device.mobile()) {
-    window.open("https://github.com");
-  } else {
-    window.open(
-      "https://github.com",
-      "GitHub登录",
-      "width=800,height=500,top=100,left=100,menubar=no,toolbar=no"
-    );
-  }
+  window.location.replace(githubLoginUrl.value);
+  // if (device.mobile()) {
+  //   window.open("https://github.com");
+  // } else {
+  //   window.open(
+  //     "https://github.com",
+  //     "GitHub登录",
+  //     "width=800,height=500,top=100,left=100,menubar=no,toolbar=no"
+  //   );
+  // }
 }
 
 function qqLogin() {

@@ -61,7 +61,8 @@
       <p>便捷操作</p>
       <el-button size="large" type="primary" @click="openChatHis" :icon="ChatLineRound" v-if="isMob">查看历史对话</el-button>
       <el-button size="large" type="primary" @click="openNewChat" :icon="ChatDotSquare">开启新对话</el-button>
-      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit">重置密码</el-button>
+      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit"
+        v-if="loginType === 'voatalk'">更换密码</el-button>
       <p class="them-text">自定义主题色</p>
       <div class="them-color">
         <el-tooltip v-for="item in colorList" :key="item.id" class="box-item" effect="light" :content="item.tip"
@@ -129,6 +130,7 @@ import { handleThem } from "@/utils/tools";
 import device from "current-device";
 
 const avatarUrl = store.state.app.avatar;
+const loginType = store.state.app.loginType;
 const imageUrl = ref(avatarUrl);
 const codeDisabled = ref(false);
 const emailCodeContent = ref("获取验证码");
