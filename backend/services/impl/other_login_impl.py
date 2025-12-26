@@ -95,8 +95,9 @@ def github(code, redirect_uri, ip):
         "code": code,
         "redirect_uri": redirect_uri
     }))
-
+    print(token_open)
     obj = token_open.json()
+    print(obj)
     access_token = obj["access_token"]
     if access_token is None:
         return ReturnTool.ErrorReturn("Github授权失败！", 401)
