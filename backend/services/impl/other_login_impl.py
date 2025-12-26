@@ -1,16 +1,18 @@
-import requests
 import datetime
+import os
+
+import requests
 
 from dbinfo import DatabaseSession
 from entity import SysUser
+from utils import DbTools
 from utils import ReturnTool
 from utils import TimeToolClass
 from utils import Tools
-from utils import DbTools
 from utils.JwtUtils import JWTHandler
 
 
-def public_login_handler(queue, ip):
+def public_login_handler(queue, login_type, ip):
     # 准备返回数据
     user_data = {
         "id": queue.id,
@@ -18,6 +20,7 @@ def public_login_handler(queue, ip):
         "nickName": queue.nick_name,
         "avatar": queue.avatar,
         "email": queue.email,
+        "login_type": login_type,
         "IP": ip,
         "superAdmin": queue.super_admin
     }
@@ -33,7 +36,7 @@ def qq(code, redirect_uri, ip):
     token_open_id = requests.get("https://graph.qq.com/oauth2.0/token", {
         "grant_type": "authorization_code",
         "client_id": client_id,
-        "client_secret": "86pMgkYAZicJl14u",
+        "client_secret": os.getenv("CLIENT_SECRET"),
         "code": code,
         "redirect_uri": redirect_uri,
         "fmt": "json",
@@ -52,7 +55,7 @@ def qq(code, redirect_uri, ip):
             # 设置用户最后登录时间
             queue.last_login_time = datetime.datetime.now()
             session.commit()
-            return ReturnTool.SuccessReturn(public_login_handler(queue, ip))
+            return ReturnTool.SuccessReturn(public_login_handler(queue, ip, 'qq'))
         # 平台没有该用户，则创建用户，登录返回
         qq_user_info = requests.get("https://graph.qq.com/user/get_user_info", {
             "access_token": access_token,
@@ -77,4 +80,4 @@ def qq(code, redirect_uri, ip):
         queue_qq = session.query(SysUser).filter(SysUser.qq_open_id == openid).first()
         queue_qq.last_login_time = datetime.datetime.now()
         session.commit()
-        return ReturnTool.SuccessReturn(public_login_handler(queue_qq, ip))
+        return ReturnTool.SuccessReturn(public_login_handler(queue_qq, ip, 'qq'))
