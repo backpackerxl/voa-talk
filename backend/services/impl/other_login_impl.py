@@ -97,9 +97,9 @@ def github(code, redirect_uri, ip):
     }))
 
     obj = token_open.json()
-    if "error" in obj:
-        return ReturnTool.ErrorReturn("Github授权失败！", 401)
     access_token = obj["access_token"]
+    if access_token is None:
+        return ReturnTool.ErrorReturn("Github授权失败！", 401)
     token_type = obj["token_type"]
     user_resp = requests.get("https://api.github.com/user", headers={
         "Authorization": token_type.title() + " " + access_token
