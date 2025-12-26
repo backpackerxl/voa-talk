@@ -64,7 +64,8 @@ EMAIL_CODE = os.getenv('EMAIL_PASSWORD')
 # 核心：配置允许的 Origin 白名单（包含报错中提到的两个 Origin）
 ALLOWED_ORIGINS = [
     "http://localhost:10011",
-    "https://localhost:8080",
+    "https://localhost:8443",
+    "http://localhost:8080",
     "https://www.voatalk.online",
     "https://www.voatalk.online/voatalk_api"
 ]
