@@ -17,7 +17,7 @@ TheExpirationTimeOfTheToken = 5
 # 数据库地址，分本地环境(DEV)/生产环境(PRO)
 mysqlAddress = {
     "DEV": "127.0.0.1",
-    "PRO": "127.0.0.1"
+    "PRO": "172.17.0.1"
 }
 # 数据库端口，分本地环境(DEV)/生产环境(PRO)
 mysqlPort = {
