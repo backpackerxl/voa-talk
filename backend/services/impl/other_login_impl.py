@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 
 import requests
@@ -91,12 +92,12 @@ def github(code, redirect_uri, ip):
     print(redirect_uri)
     token_open = requests.post("https://github.com/login/oauth/access_token", headers={
         "Accept": "application/json"
-    }, data={
+    }, json=json.dumps({
         "client_id": client_id,
         "client_secret": github_client_secret,
         "code": code,
         "redirect_uri": redirect_uri
-    }, timeout=30)
+    }), timeout=30)
     print(token_open)
     obj = token_open.json()
     print(obj)
