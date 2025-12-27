@@ -89,7 +89,7 @@ def github(code, redirect_uri, ip):
     client_id = "Ov23liTrl7t8g4EZP3j7"
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
     redirect_uri = unquote(redirect_uri)
-    print(code, redirect_uri, client_id, github_client_secret)
+    # print(code, redirect_uri, client_id, github_client_secret)
     url = "https://github.com/login/oauth/access_token"
 
     payload = json.dumps({
@@ -104,9 +104,8 @@ def github(code, redirect_uri, ip):
     }
 
     token_open = requests.request("POST", url, headers=headers, data=payload)
-    print(token_open)
+    # print(token_open)
     obj = token_open.json()
-    print(obj)
     access_token = obj["access_token"]
     if access_token is None:
         return ReturnTool.ErrorReturn("Github授权失败！", 401)
@@ -128,7 +127,7 @@ def github(code, redirect_uri, ip):
             # 设置用户最后登录时间
             queue.last_login_time = datetime.datetime.now()
             session.commit()
-            return ReturnTool.SuccessReturn(public_login_handler(queue, ip, 'github'))
+            return ReturnTool.SuccessReturn(public_login_handler(queue, 'github', ip))
         # 平台没有该用户，则创建用户，登录返回
         password = Tools.generate_random_password()
         hashed_password, salt = Tools.generate_hashed_password(password)
@@ -147,4 +146,4 @@ def github(code, redirect_uri, ip):
         queue_github = session.query(SysUser).filter(SysUser.github_open_id == openid).first()
         queue_github.last_login_time = datetime.datetime.now()
         session.commit()
-        return ReturnTool.SuccessReturn(public_login_handler(queue_github, ip, 'github'))
+        return ReturnTool.SuccessReturn(public_login_handler(queue_github, 'github', ip))
