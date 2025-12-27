@@ -87,6 +87,7 @@ def qq(code, redirect_uri, ip):
 def github(code, redirect_uri, ip):
     client_id = "Ov23liTrl7t8g4EZP3j7"
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+    print(redirect_uri)
     token_open = requests.post("https://github.com/login/oauth/access_token", headers={
         "Accept": "application/json"
     }, data={
