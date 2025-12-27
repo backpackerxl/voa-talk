@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+from urllib.parse import unquote
 
 import requests
 
@@ -84,15 +85,18 @@ def qq(code, redirect_uri, ip):
         return ReturnTool.SuccessReturn(public_login_handler(queue_qq, ip, 'qq'))
 
 
-def github(code, ip):
+def github(code, redirect_uri, ip):
     client_id = "Ov23liTrl7t8g4EZP3j7"
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+    redirect_uri = unquote(redirect_uri)
+    print(code, redirect_uri, client_id, github_client_secret)
     token_open = requests.post("https://github.com/login/oauth/access_token", headers={
         "Accept": "application/json"
     }, json=json.dumps({
         "client_id": client_id,
         "client_secret": github_client_secret,
         "code": code,
+        'redirect_uri': redirect_uri
     }), timeout=30)
     print(token_open)
     obj = token_open.json()

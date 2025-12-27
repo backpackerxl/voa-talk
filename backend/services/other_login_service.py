@@ -10,6 +10,6 @@ def other_login(request):
     if login_type == 'qqLogin':
         return other_login_impl.qq(code, redirect_uri, ip)
     elif login_type == 'githubLogin':
-        return other_login_impl.github(code, ip)
+        return other_login_impl.github(code, redirect_uri, ip)
     else:
         return None
