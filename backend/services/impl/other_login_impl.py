@@ -11,7 +11,6 @@ from utils import ReturnTool
 from utils import TimeToolClass
 from utils import Tools
 from utils.JwtUtils import JWTHandler
-from urllib.parse import unquote
 
 
 def public_login_handler(queue, login_type, ip):
@@ -85,18 +84,15 @@ def qq(code, redirect_uri, ip):
         return ReturnTool.SuccessReturn(public_login_handler(queue_qq, ip, 'qq'))
 
 
-def github(code, redirect_uri, ip):
+def github(code, ip):
     client_id = "Ov23liTrl7t8g4EZP3j7"
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
-    redirect_uri = unquote(redirect_uri)
-    print(redirect_uri)
     token_open = requests.post("https://github.com/login/oauth/access_token", headers={
         "Accept": "application/json"
     }, json=json.dumps({
         "client_id": client_id,
         "client_secret": github_client_secret,
         "code": code,
-        "redirect_uri": redirect_uri
     }), timeout=30)
     print(token_open)
     obj = token_open.json()
