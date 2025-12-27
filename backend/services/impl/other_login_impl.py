@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 
 import requests
@@ -11,6 +10,7 @@ from utils import ReturnTool
 from utils import TimeToolClass
 from utils import Tools
 from utils.JwtUtils import JWTHandler
+from urllib.parse import unquote
 
 
 def public_login_handler(queue, login_type, ip):
@@ -87,6 +87,7 @@ def qq(code, redirect_uri, ip):
 def github(code, redirect_uri, ip):
     client_id = "Ov23liTrl7t8g4EZP3j7"
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+    redirect_uri = unquote(redirect_uri)
     print(redirect_uri)
     token_open = requests.post("https://github.com/login/oauth/access_token", headers={
         "Accept": "application/json"
