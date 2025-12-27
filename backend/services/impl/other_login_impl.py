@@ -90,14 +90,20 @@ def github(code, redirect_uri, ip):
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
     redirect_uri = unquote(redirect_uri)
     print(code, redirect_uri, client_id, github_client_secret)
-    token_open = requests.post("https://github.com/login/oauth/access_token", headers={
-        "Accept": "application/json"
-    }, data={
+    url = "https://github.com/login/oauth/access_token"
+
+    payload = json.dumps({
+        "code": code,
         "client_id": client_id,
         "client_secret": github_client_secret,
-        "code": code,
-        'redirect_uri': redirect_uri
-    }, timeout=30)
+        "redirect_uri": redirect_uri
+    })
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+
+    token_open = requests.request("POST", url, headers=headers, data=payload)
     print(token_open)
     obj = token_open.json()
     print(obj)
