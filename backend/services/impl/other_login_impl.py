@@ -38,7 +38,7 @@ def qq(code, redirect_uri, ip):
     token_open_id = requests.get("https://graph.qq.com/oauth2.0/token", {
         "grant_type": "authorization_code",
         "client_id": client_id,
-        "client_secret": os.getenv("CLIENT_SECRET"),
+        "client_secret": os.getenv("QQ_CLIENT_SECRET"),
         "code": code,
         "redirect_uri": redirect_uri,
         "fmt": "json",
