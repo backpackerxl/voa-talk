@@ -92,12 +92,12 @@ def github(code, redirect_uri, ip):
     print(code, redirect_uri, client_id, github_client_secret)
     token_open = requests.post("https://github.com/login/oauth/access_token", headers={
         "Accept": "application/json"
-    }, json=json.dumps({
+    }, data={
         "client_id": client_id,
         "client_secret": github_client_secret,
         "code": code,
         'redirect_uri': redirect_uri
-    }), timeout=30)
+    }, timeout=30)
     print(token_open)
     obj = token_open.json()
     print(obj)
