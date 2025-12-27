@@ -3,45 +3,69 @@
     <el-row :gutter="24">
       <el-col :span="6">
         <div class="grid-content header">
-          <i class="fa-regular fa-comments"></i>
-          <p class="name">对话数量</p>
-          <p class="number">
+          <i class="fa-regular fa-comments left-icon"></i>
+          <div class="name">
+            对话数量
+            <el-tooltip effect="light" content="系统使用过程中的所有对话数量" placement="right">
+              <el-icon style="margin-left: 4px" :size="12">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+          <div class="number">
             {{
               headerObj.talk_count > 1000
                 ? `${(headerObj.talk_count / 1000).toFixed(1)} k`
                 : headerObj.talk_count
             }}
-          </p>
-          <p class="desc">系统使用过程中的所有对话数量</p>
+          </div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="grid-content header">
-          <i class="fa-solid fa-robot"></i>
-          <p class="name">模型数量</p>
-          <p class="number">{{ headerObj.model_count }}</p>
-          <p class="desc">系统已接入的大模型的数量</p>
+          <i class="fa-solid fa-robot left-icon"></i>
+          <div class="name">
+            模型数量
+            <el-tooltip effect="light" content="系统已接入的大模型的数量" placement="right">
+              <el-icon style="margin-left: 4px" :size="12">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+          <div class="number">{{ headerObj.model_count }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="grid-content header">
-          <i class="fa-solid fa-user-plus"></i>
-          <p class="name">用户数量</p>
-          <p class="number">{{ headerObj.user_count }}</p>
-          <p class="desc">系统注册的用户数量</p>
+          <i class="fa-solid fa-user-plus left-icon"></i>
+          <div class="name">
+            用户数量
+            <el-tooltip effect="light" content="系统注册的用户数量" placement="right">
+              <el-icon style="margin-left: 4px" :size="12">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+          <div class="number">{{ headerObj.user_count }}</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="grid-content header">
-          <i class="fa-solid fa-envelope"></i>
-          <p class="name">邮件数量</p>
-          <p class="number">{{ headerObj.email_count }}</p>
-          <p class="desc">系统发送的邮件数量</p>
+          <i class="fa-solid fa-envelope left-icon"></i>
+          <div class="name">
+            邮件数量
+            <el-tooltip effect="light" content="系统发送的邮件数量" placement="right">
+              <el-icon style="margin-left: 4px" :size="12">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+          <div class="number">{{ headerObj.email_count }}</div>
         </div>
       </el-col>
     </el-row>
     <el-row :gutter="24">
-      <el-col :span="16">
+      <el-col :span="18">
         <div class="grid-content midle">
           <div class="title">
             <span>日对话量</span>
@@ -53,7 +77,7 @@
           <ECharts ref="barChart" :option="barChartOption" height="240px" />
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="grid-content midle">
           <div class="title">
             <span>模型调用量</span>
@@ -67,7 +91,7 @@
       </el-col>
     </el-row>
     <el-row :gutter="24">
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="grid-content bottom">
           <h2 class="title">Tokens 调用量周榜</h2>
           <div class="box" v-for="(item, index) in topTalkList" :key="index">
@@ -88,7 +112,7 @@
           </div>
         </div>
       </el-col>
-      <el-col :span="16">
+      <el-col :span="18">
         <div class="grid-content bottom">
           <div class="title">
             <span>Tokens 日调用量</span>
@@ -107,6 +131,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import ECharts from "@/components/ECharts";
+import { InfoFilled } from "@element-plus/icons-vue";
 import store from "@/store";
 import echarts from "@/utils/echarts";
 import { formatDateTime, hexToRGB } from "@/utils/tools";
@@ -409,7 +434,7 @@ onMounted(() => {
 <style scoped>
 .container {
   padding: 16px;
-  width: 1200px;
+  max-width: 1200px;
   margin: 0 auto;
   overflow: hidden;
 }
@@ -458,41 +483,31 @@ onMounted(() => {
 }
 
 .header {
-  height: 90px;
+  height: 60px;
   position: relative;
 }
 
-.header i {
+.header i.left-icon {
   position: absolute;
-  font-size: 24px;
-  line-height: 90px;
+  font-size: 20px;
+  line-height: 60px;
   color: var(--el-color-primary);
-}
-
-.header p {
-  padding: 0;
-  margin: 0;
-  line-height: 1.6em;
-  margin-left: 40px;
-  padding-left: 10px;
-  border-left: 1px solid var(--me-report-text-color);
+  border-right: 1px solid var(--el-text-color-regular);
+  padding-right: 5px;
 }
 
 .header .number {
   font-size: 24px;
   font-weight: 700;
   color: var(--el-color-primary);
+  margin-left: 45px;
 }
 
 .header .name {
   font-weight: 600;
   font-size: 16px;
   color: var(--el-text-color-regular);
-}
-
-.header .desc {
-  font-size: 14px;
-  color: var(--me-report-text-color);
+  margin-left: 45px;
 }
 
 .midle {
@@ -515,16 +530,17 @@ onMounted(() => {
 }
 
 .bottom .box {
+  font-size: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--el-color-info-light-5);
   color: var(--me-report-text-color);
-  height: 48px;
+  height: 38px;
 }
 
 .bottom .box .txt {
-  max-width: 300px;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
