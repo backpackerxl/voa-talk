@@ -2,58 +2,34 @@
   <div class="chat-header">
     <div class="opt">
       <div class="menu" v-if="!props.menu">
-        <svg
-          t="1748089203220"
-          class="menu-icon"
-          viewBox="0 0 1024 1024"
-          version="1.1"
-          xmlns="http://www.w3.org/2000/svg"
-          p-id="8748"
-          width="20"
-          height="20"
-          @click="handleMenu"
-        >
+        <svg t="1748089203220" class="menu-icon" viewBox="0 0 1024 1024" version="1.1"
+          xmlns="http://www.w3.org/2000/svg" p-id="8748" width="20" height="20" @click="handleMenu">
           <path
             d="M640 448h128V320h-128v128z m256-384H128a64 64 0 0 0-64 64v704a64 64 0 0 0 64 64h768a64 64 0 0 0 64-64V128a64 64 0 0 0-64-64zM448 768H256a64 64 0 0 1-64-64V256a64 64 0 0 1 64-64h192v576z m384-64a64 64 0 0 1-64 64H576V192h192a64 64 0 0 1 64 64v448z m-192-64h128V512h-128v128z"
-            p-id="8749"
-          ></path>
+            p-id="8749"></path>
         </svg>
       </div>
       <div class="title-text">
         <p :class="!props.menu ? 'has' : 'no'">
           {{ props.title }}
         </p>
-        <el-icon class="edit-icon" v-if="props.title" @click="editTitle"
-          ><EditPen
-        /></el-icon>
+        <el-icon class="edit-icon" v-if="props.title" @click="editTitle">
+          <EditPen />
+        </el-icon>
       </div>
     </div>
 
     <div class="opt-menu">
-      <el-dropdown
-        @visible-change="handleVisibleChange"
-        @command="handleCommand"
-        trigger="click"
-        placement="bottom-end"
-      >
+      <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click"
+        placement="bottom-end">
         <!-- <div> -->
         <el-avatar v-if="imageUrl" :src="imageUrl" />
-        <el-avatar
-          v-else
-          src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-        />
+        <el-avatar v-else :src="avater" />
         <!-- </div> -->
         <template #dropdown>
-          <el-dropdown-menu
-            :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
-          >
-            <el-dropdown-item command="profile"
-              ><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item
-            >
-            <el-dropdown-item command="logout"
-              ><i class="fa-solid fa-right-from-bracket"></i
-              >退出登录</el-dropdown-item
-            >
+          <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
+            <el-dropdown-item command="profile"><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item>
+            <el-dropdown-item command="logout"><i class="fa-solid fa-right-from-bracket"></i>退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -66,6 +42,7 @@ import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex"; // Use Vuex's useStore function
 import { defineEmits, computed, ref } from "vue";
+import avater from "@/assets/images/avater.png";
 
 let emit = defineEmits(["submit", "open-menu"]);
 import { EditPen } from "@element-plus/icons-vue";

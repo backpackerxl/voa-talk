@@ -20,7 +20,9 @@
               <span :class="them.icon"></span>
             </div>
             &nbsp;{{ them.label
-            }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+            }}<el-icon class="el-icon--right">
+              <ArrowDown />
+            </el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -57,12 +59,17 @@
         </div>
       </el-form-item>
     </el-form>
-    <div class="opt">
+    <div class="opt" v-if="loginType === 'voatalk'">
       <p>便捷操作</p>
-      <el-button size="large" type="primary" @click="openChatHis" :icon="ChatLineRound" v-if="isMob">查看历史对话</el-button>
-      <el-button size="large" type="primary" @click="openNewChat" :icon="ChatDotSquare">开启新对话</el-button>
-      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit"
-        v-if="loginType === 'voatalk'">更换密码</el-button>
+      <div v-if="isSupportBiometric">
+        <el-button size="large" type="primary" @click="noKeyLogin" :icon="Key" v-if="isNoKeyLogin">开启{{ biometricType
+        }}登录</el-button>
+        <el-button size="large" type="primary" @click="closeKeyLogin" :icon="Key" v-else>关闭{{ biometricType
+        }}登录</el-button>
+      </div>
+      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit">更换密码</el-button>
+      <el-button size="large" type="primary" @click="linkQQ" :icon="Link">关联QQ账号</el-button>
+      <el-button size="large" type="primary" @click="linkGitHub" :icon="Link">关联GitHub账号</el-button>
       <p class="them-text">自定义主题色</p>
       <div class="them-color">
         <el-tooltip v-for="item in colorList" :key="item.id" class="box-item" effect="light" :content="item.tip"
@@ -104,8 +111,8 @@ import { ref, onMounted } from "vue";
 import store from "@/store";
 import {
   Plus,
-  ChatDotSquare,
-  ChatLineRound,
+  Link,
+  Key,
   Edit,
   ArrowDown,
 } from "@element-plus/icons-vue";
@@ -124,6 +131,9 @@ const registerForm = ref({
 const editDialogVisible = ref(false);
 import router from "@/router";
 import { updateUser, sendEmailCodeApi, updateUserEmail } from "@/api/apiUser";
+import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
+import { checkBiometricSupport } from "@/utils/webAuthn";
+import { loginBegin, loginComplete } from "@/api/twoFAuth";
 import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
@@ -137,6 +147,9 @@ const emailCodeContent = ref("获取验证码");
 const saveUrl = ref(config.BASE_URL);
 const checkThemId = ref(1);
 const isMob = ref(!device.mobile());
+const isSupportBiometric = ref(false);
+const isNoKeyLogin = ref(true);
+const biometricType = ref('');
 const colorList = ref([
   {
     id: 1,
@@ -302,6 +315,7 @@ function editEmailOk() {
           store.dispatch("app/clearNickName");
           store.dispatch("app/clearUserName");
           store.dispatch("app/clearUserEmail");
+          store.dispatch("app/clearLoginType");
           ElMessage({
             message: "修改成功",
             type: "success",
@@ -354,12 +368,12 @@ function beforeUpload(file) {
   return isJpgOrPng;
 }
 
-function openNewChat() {
-  router.replace("/home/chat");
+function linkQQ() {
+  console.log("绑定QQ");
 }
 
-function openChatHis() {
-  router.replace("/home/chat/history");
+function linkGitHub() {
+  console.log("绑定GitHub");
 }
 
 function forgetPwd() {
@@ -406,12 +420,110 @@ function selectColor(item) {
   store.dispatch("app/setMainColor", JSON.stringify(item));
 }
 
-onMounted(function () {
+function closeKeyLogin() {
+  store.dispatch("app/clearNoKeyLogin");
+  isNoKeyLogin.value = true;
+  ElMessage.success(`${biometricType.value}登录已关闭！`);
+}
+
+async function noKeyLogin() {
+  // 开始设备验证
+  try {
+    // 注册WebAuthn
+    const support = await checkBiometricSupport();
+    if (!support.supported) {
+      ElMessage.error('当前设备不支持生物验证');
+      return;
+    }
+    const obj = await loginBegin({ username: store.state.app.userName });
+    if (obj.code !== 200) {
+      ElMessage.error(obj.msg);
+      return;
+    }
+    const options = obj.data;
+
+    // 验证场景：仅处理必要参数，删除 rp/user（验证场景不需要）
+    const publicKey = {
+      ...options,
+      challenge: base64UrlToArrayBuffer(options.challenge || ''),
+      allowCredentials: options.allowCredentials?.map(cred => ({
+        ...cred,
+        id: base64UrlToArrayBuffer(cred.id || '')
+      })) || [],
+      // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
+      timeout: options.timeout || 60000
+    };
+
+    // 前置校验：确保 allowCredentials 非空
+    if (!publicKey.allowCredentials.length) {
+      throw new Error('未找到匹配的验证凭证');
+    }
+
+    // 3. 调用 WebAuthn API 创建凭证
+    // ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
+
+    // 关键：验证场景用 get，不是 create！！！
+    const credential = await navigator.credentials.get({
+      publicKey: publicKey
+    });
+
+    // 后续处理凭证逻辑不变（注意：验证场景的 response 字段和注册场景不同）
+    const credentialJson = {
+      id: credential.id,
+      rawId: arrayBufferToBase64Url(credential.rawId),
+      type: credential.type,
+      response: {
+        authenticatorData: arrayBufferToBase64Url(credential.response.authenticatorData),
+        clientDataJSON: arrayBufferToBase64Url(credential.response.clientDataJSON),
+        signature: arrayBufferToBase64Url(credential.response.signature),
+        userHandle: credential.response.userHandle ? arrayBufferToBase64Url(credential.response.userHandle) : null
+      },
+      req_id: options.req_id // 传递后端的 req_id 用于验证
+    };
+    // 5. 验证身份信息
+    const result = await loginComplete(credentialJson);
+
+    if (result.code !== 200) {
+      ElMessage.error(result.error || '关联验证失败');
+      throw new Error(result.error || '关联验证失败');
+    }
+
+    ElMessage.success(`${biometricType.value}登录已开启！`);
+    const noKeyLoginObj = {
+      avatar: result.data.userinfo.avatar || '',
+      gid: result.data.userinfo.userName,
+      biometricType: biometricType.value,
+    }
+    store.dispatch("app/setNoKeyLogin", JSON.stringify(noKeyLoginObj));
+    isNoKeyLogin.value = false;
+  } catch (error) {
+    let errorMessage = error.message || '未知错误';
+    // Handle specific error types
+    if (error.name === 'NotAllowedError') {
+      errorMessage = '用户拒绝了认证请求或操作超时';
+    } else if (error.name === 'InvalidStateError') {
+      errorMessage = '认证器状态无效';
+    } else if (error.name === 'NotFoundError') {
+      errorMessage = '未找到匹配的凭证';
+    } else if (error.name === 'SecurityError') {
+      errorMessage = '登录网址未注册认证器';
+    }
+    console.error('身份验证失败:', error.name);
+    ElMessage.error(`身份验证失败: ${errorMessage}`);
+  }
+}
+
+onMounted(async function () {
   let colorObj = store.state.app.mainColor;
   if (colorObj) {
     checkThemId.value = JSON.parse(colorObj).id;
   }
   document.documentElement.querySelector("title").innerText = "我的主页";
+  // 调用检测函数
+  const support = await checkBiometricSupport();
+  isSupportBiometric.value = support.supported;
+  biometricType.value = support.biometricType || '';
+  isNoKeyLogin.value = store.state.app.noKeyLogin === '' || JSON.parse(store.state.app.noKeyLogin).gid !== store.state.app.userName;
 });
 </script>
 

@@ -2,73 +2,86 @@
   <div class="loginbody">
     <div class="logindata">
       <el-card v-if="loginPage">
-        <p class="logintext">
-          <Logo />
-        </p>
-        <div class="formdata">
-          <el-form ref="loginForm" :model="form" :rules="rules" label-position="top" label-width="100px">
-            <el-form-item label="用户名/邮箱号" prop="username">
-              <el-input class="in-box" v-model="form.username" size="large" clearable placeholder="用户名/邮箱号登录">
-                <!-- 使用 prefix-icon 插槽添加图标 -->
-                <template #prefix>
-                  <el-icon>
-                    <User />
-                  </el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="密码" prop="password">
-              <el-input class="in-box" v-model="form.password" size="large" clearable placeholder="请输入密码" show-password>
-                <!-- 使用 prefix-icon 插槽添加图标 -->
-                <template #prefix>
-                  <el-icon>
-                    <Lock />
-                  </el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-          </el-form>
-        </div>
-        <div class="tool">
-          <div>
-            <el-checkbox v-model="checked" @change="remenber">记住密码
-            </el-checkbox>
+        <!-- 账号/密码登录 -->
+        <div v-if="isNoKeyLogin">
+          <p class="logintext">
+            <Logo />
+          </p>
+          <div class="formdata">
+            <el-form ref="loginForm" :model="form" :rules="rules" label-position="top" label-width="100px">
+              <el-form-item label="用户名/邮箱号" prop="username">
+                <el-input class="in-box" v-model="form.username" size="large" clearable placeholder="用户名/邮箱号登录">
+                  <!-- 使用 prefix-icon 插槽添加图标 -->
+                  <template #prefix>
+                    <el-icon>
+                      <User />
+                    </el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+              <el-form-item label="密码" prop="password">
+                <el-input class="in-box" v-model="form.password" size="large" clearable placeholder="请输入密码"
+                  show-password>
+                  <!-- 使用 prefix-icon 插槽添加图标 -->
+                  <template #prefix>
+                    <el-icon>
+                      <Lock />
+                    </el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-form>
           </div>
-          <div>
-            <a @click="forgetpas">忘记密码？</a>
+          <div class="tool">
+            <div>
+              <el-checkbox v-model="checked" @change="remenber">记住密码
+              </el-checkbox>
+            </div>
+            <div>
+              <a @click="forgetpas">忘记密码？</a>
+            </div>
+          </div>
+          <div class="butt">
+            <el-button size="large" type="primary" @click="submitLogin">登 录</el-button>
+            <div class="register">
+              <a @click="register">注 册</a>
+            </div>
+          </div>
+          <div class="other-login">
+            <p class="text">其他登录方式</p>
+            <div class="logo-container">
+              <el-tooltip class="box-item" effect="light" content="QQ登录" placement="bottom">
+                <div class="item" @click="qqLogin">
+                  <i class="fa-brands fa-qq"></i>
+                </div>
+              </el-tooltip>
+              <el-tooltip class="box-item" effect="light" content="GitHub登录" placement="bottom">
+                <div class="item" @click="githubLogin">
+                  <i class="fa-brands fa-github"></i>
+                </div>
+              </el-tooltip>
+            </div>
           </div>
         </div>
-        <div class="butt">
-          <el-button size="large" type="primary" @click="submitLogin">登 录</el-button>
-          <div class="register">
-            <a @click="register">注 册</a>
+        <!-- 免密登录 -->
+        <div v-else>
+          <div class="logintext">
+            <img :src="userAvatarUrl ? userAvatarUrl : avater" alt="头像" class="user-avatar" />
+            <h4 class="user-name-txt">{{ userNameTxt }}</h4>
           </div>
-        </div>
-        <div class="other-login">
-          <p class="text">其他登录方式</p>
-          <div class="logo-container">
-            <el-tooltip class="box-item" effect="light" content="免密登录" placement="bottom">
-              <div class="item" @click="verifyOtpOrAuthn">
-                <i class="fa-solid fa-key"></i>
-              </div>
-            </el-tooltip>
-            <el-tooltip class="box-item" effect="light" content="QQ登录" placement="bottom">
-              <div class="item" @click="qqLogin">
-                <i class="fa-brands fa-qq"></i>
-              </div>
-            </el-tooltip>
-            <el-tooltip class="box-item" effect="light" content="GitHub登录" placement="bottom">
-              <div class="item" @click="githubLogin">
-                <i class="fa-brands fa-github"></i>
-              </div>
-            </el-tooltip>
+          <div class="butt">
+            <el-button size="large" type="primary" @click="noKeyLogin">{{ loginPrefix }}登录</el-button>
+            <div class="register">
+              <a @click="isNoKeyLogin = !isNoKeyLogin">切换账号登录</a>
+            </div>
           </div>
         </div>
       </el-card>
       <el-card v-if="!loginPage">
-        <p class="logintext">
-          <Logo />
-        </p>
+        <div class="logintext">
+          <img :src="userAvatarUrl ? userAvatarUrl : avater" alt="头像" class="user-avatar" />
+          <h4 class="user-name-txt">{{ userNameTxt }}</h4>
+        </div>
         <div class="link-user" v-if="state.open">
           <p class="text">开启WebAuthn登录</p>
           <div v-if="!linkOTPShow">
@@ -94,7 +107,8 @@
                 @click="copySecret($event.currentTarget, recoveryCode.join(' '))"></i>
             </p>
           </div>
-          <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">关联此账号</el-button>
+          <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">使用{{ supportBiometric
+          }}认证</el-button>
           <el-button size="large" type="primary" @click="dialogOTPVisible = true" v-else>
             完 成
           </el-button>
@@ -201,6 +215,8 @@ import { User, Lock } from "@element-plus/icons-vue";
 import { encryptAes, decryptAes } from "@/utils/tools";
 import { copySecret } from "@/utils/render-html";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
+import { checkBiometricSupport } from "@/utils/webAuthn";
+import avater from "@/assets/images/avater.png";
 import Logo from "@/components/Logo";
 // import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
@@ -209,6 +225,11 @@ import { InfoFilled, Pointer } from '@element-plus/icons-vue'
 import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
 import device from "current-device";
+const isNoKeyLogin = ref(store.state.app.noKeyLogin === '');
+const userAvatarUrl = ref("");
+const userNameTxt = ref("");
+const loginPrefix = ref("");
+const supportBiometric = ref('');
 
 let pcOrMobile = device.mobile() ? "mobile" : "pc";
 
@@ -255,7 +276,7 @@ const activeNames = ref(['1']);
 const linkOTPShow = ref(false);
 const otpShow = ref(false);
 const authnBtn = ref(false);
-const authnTxt = ref('设备验证');
+const authnTxt = ref('');
 const recoveryCode = ref([]);
 const placeholderTxt = ref('');
 const nextId = ref('');
@@ -293,22 +314,22 @@ const otpRules = {
         // 2. 长度为6时触发目标函数
         if (value.length === 6 && placeholderTxt.value === 'XXX XXX') {
           authnBtn.value = true;
-          authnTxt.value = '验证中...';
+          authnTxt.value = '一次性密码验证中...';
           setTimeout(() => {
             handleOptcodeComplete(value); // 触发自定义逻辑
             authnBtn.value = false;
-            authnTxt.value = '验 证';
-          }, 600);
+            authnTxt.value = `使用${supportBiometric.value}认证`;
+          }, 1000);
         }
         // 4. 长度为8时触发目标函数
         if (value.length === 8 && placeholderTxt.value === 'XXXX XXXX') {
           authnBtn.value = true;
-          authnTxt.value = '验证中...';
+          authnTxt.value = '恢复码验证中...';
           setTimeout(() => {
             handleRecoveryCodeComplete(value); // 触发自定义逻辑
             authnBtn.value = false;
-            authnTxt.value = '验 证';
-          }, 600);
+            authnTxt.value = `使用${supportBiometric.value}认证`;
+          }, 1000);
         }
         // 3. 校验通过（不阻断原有校验）
         callback();
@@ -393,6 +414,9 @@ async function sendPostRequest() {
       nextId.value = response.data.next_id || '';
       // 检查用户是否注册了WebAuthn
       state.open = !response.data.register_authenticated;
+      userNameTxt.value = response.data.username;
+      userAvatarUrl.value = response.data.avatar || '';
+      form.value.username = response.data.username;
     } else {
       ElMessage.error(response.msg);
     }
@@ -412,16 +436,22 @@ function cacheUserInfoAndRedirect(userinfo) {
   router.replace("/home/chat");
 }
 
+async function noKeyLogin() {
+  form.value.username = userNameTxt.value;
+  verifyOtpOrAuthn();
+}
+
 async function verifyOtpOrAuthn() {
   otpShow.value = false;
-  authnTxt.value = '设备验证';
+  authnTxt.value = `使用${supportBiometric.value}认证`;
   if (!form.value.username) {
     ElMessage.error('请输入用户名进行免密登录！');
     return;
   }
   // 开始设备验证
   try {
-    // 注册WebAuthn
+    // 使用WebAuthn登录
+    // console.log('使用WebAuthn登录', form.value.username);
     const obj = await loginBegin({ username: form.value.username });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
@@ -447,7 +477,7 @@ async function verifyOtpOrAuthn() {
     }
 
     // 3. 调用 WebAuthn API 创建凭证
-    ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
+    // ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
 
     // 关键：验证场景用 get，不是 create！！！
     const credential = await navigator.credentials.get({
@@ -487,9 +517,11 @@ async function verifyOtpOrAuthn() {
       errorMessage = '认证器状态无效';
     } else if (error.name === 'NotFoundError') {
       errorMessage = '未找到匹配的凭证';
+    } else if (error.name === 'SecurityError') {
+      errorMessage = '登录网址未注册认证器';
     }
-    console.error('身份验证失败:', errorMessage);
-    // ElMessage.error(`身份验证失败: ${errorMessage}`);
+    console.error('身份验证失败:', error.name);
+    ElMessage.error(`身份验证失败: ${errorMessage}`);
   }
 }
 
@@ -546,7 +578,7 @@ async function linkAccount() {
     };
 
     // 3. 调用 WebAuthn API 创建凭证
-    ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证关联...');
+    // ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证关联...');
 
     const credential = await navigator.credentials.create({
       publicKey: publicKey
@@ -607,6 +639,8 @@ async function linkAccount() {
       errorMessage = '认证器状态无效';
     } else if (error.name === 'ConstraintError') {
       errorMessage = '凭证已存在';
+    } else if (error.name === 'SecurityError') {
+      errorMessage = '网址不支持注册认证器';
     }
     ElMessage.error(`关联失败: ${errorMessage}`);
   }
@@ -639,12 +673,19 @@ function remenber(data) {
   }
 }
 
-onMounted(function () {
+onMounted(async function () {
   const obj = localStorage.getItem("userInfo");
   if (obj) {
     form.value = JSON.parse(obj);
     checked.value = true;
   }
+  const noKeyLoginObj = JSON.parse(store.state.app.noKeyLogin || '{}');
+  userAvatarUrl.value = noKeyLoginObj.avatar || '';
+  userNameTxt.value = noKeyLoginObj.gid || '';
+  loginPrefix.value = noKeyLoginObj.biometricType || '';
+  const support = await checkBiometricSupport();
+  supportBiometric.value = support.biometricType || '';
+  authnTxt.value = `使用${supportBiometric.value}认证`;
 });
 
 function forgetpas() {
@@ -851,5 +892,20 @@ function qqLogin() {
   border: none;
   width: 100%;
   margin: 5px 0;
+}
+
+.user-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name-txt {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+  color: var(--el-text-color-primary);
 }
 </style>

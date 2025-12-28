@@ -65,11 +65,13 @@ def login_impl(request):
             return ReturnTool.SuccessReturn({
                 'next_id': next_id,
                 'username': queue.user_name,
+                "avatar": queue.avatar,
                 'register_authenticated': False
             })
         else:
             return ReturnTool.SuccessReturn({
                 'next_id': next_id,
                 'username': queue.user_name,
+                "avatar": queue.avatar,
                 'register_authenticated': True
             })

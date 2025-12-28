@@ -6,6 +6,7 @@ const state = {
     userEmail: localStorage.getItem('userEmail') || '', // 初始化
     avatar: localStorage.getItem('avatar') || '', // 初始化
     loginType: localStorage.getItem('loginType') || '', // 初始化
+    noKeyLogin: localStorage.getItem('noKeyLogin') || '', // 初始化
     sliderData: null,
     them: localStorage.getItem('them') || JSON.stringify({
         them: "light",
@@ -86,6 +87,12 @@ const mutations = {
     },
     CLEAR_LOGIN_TYPE(state) {
         state.loginType = '';
+    },
+    SET_NO_KEY_LOGIN(state, noKeyLogin) {
+        state.noKeyLogin = noKeyLogin;
+    },
+    CLEAR_NO_KEY_LOGIN(state) {
+        state.noKeyLogin = '';
     },
 };
 
@@ -178,6 +185,14 @@ const actions = {
     clearLoginType({ commit }) {
         commit('CLEAR_LOGIN_TYPE');
         localStorage.removeItem('loginType'); // 清除 localStorage 中的登录类型
+    },
+    setNoKeyLogin({ commit }, noKeyLogin) {
+        commit('SET_NO_KEY_LOGIN', noKeyLogin);
+        localStorage.setItem('noKeyLogin', noKeyLogin); // 同步保存到 localStorage
+    },
+    clearNoKeyLogin({ commit }) {
+        commit('CLEAR_NO_KEY_LOGIN');
+        localStorage.removeItem('noKeyLogin'); // 清除 localStorage 中的免密登录
     },
 };
 
