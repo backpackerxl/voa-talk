@@ -6,8 +6,8 @@ from flask import Response
 from openai import OpenAI
 
 from dbinfo import DatabaseSession
-from entity import ModelConfig, TalkUserRelation, TalkLogs, RequestLogs, TalkRecommendation
-from utils import ReturnTool, DbTools, Tools
+from entity import ModelConfig, TalkUserRelation, TalkLogs, RequestLogs, TalkRecommendation, SysUser
+from utils import ReturnTool, DbTools, Tools, logs, TimeToolClass
 from utils.GetChatId import Snowflake
 from utils.RedisUtils import RedisHandler
 
@@ -376,3 +376,122 @@ def get_redis_chat(r_id):
             arr.append({"id": mc.id, "type": 'bot', "content": mc.resp_content})
         res_dict['talk_logs'] = arr
         return ReturnTool.SuccessReturn(res_dict)
+
+
+def api_link_qq(other_user_id, user_id):
+    with DatabaseSession() as session:
+        other_user_quen = session.query(SysUser.id, SysUser.qq_open_id).filter(SysUser.id == other_user_id).first()
+
+        if other_user_quen.qq_open_id is None:
+            logs.setup_logger().error(f"业务错误: qq全平台唯一ID丢失！！！查询id：{other_user_id}")
+            return ReturnTool.ErrorReturn('关联QQ失败！', 400)
+        # 处理数据
+        query_talk = session.query(TalkUserRelation.id).filter(
+            TalkUserRelation.user_id == other_user_id).all()
+
+        # 构造批量更新数据
+        update_data = []
+        for item in query_talk:
+            update_data.append({
+                "id": item.id,  # 主键
+                "user_id": user_id
+            })
+
+        if len(update_data) > 0:
+            DbTools.bulk_update(session, update_data, TalkUserRelation)
+
+        query_req = session.query(RequestLogs.id).filter(
+            RequestLogs.user_id == other_user_id).all()
+
+        # 构造批量更新数据
+        update_data_req = []
+        for item in query_req:
+            update_data_req.append({
+                "id": item.id,  # 主键
+                "user_id": user_id
+            })
+        if len(update_data_req) > 0:
+            DbTools.bulk_update(session, update_data_req, RequestLogs)
+        # 绑定账号
+        user_quen = session.query(SysUser.id, SysUser.qq_open_id).filter(SysUser.id == user_id).first()
+        DbTools.saveOrUpdate(session, {
+            "id": user_quen.id,
+            "qq_open_id": other_user_quen.qq_open_id,
+            "update_date": TimeToolClass.get_time()
+        }, SysUser)
+        # 删除原有账号
+        session.query(SysUser).filter(SysUser.id == other_user_id).delete()
+        session.commit()
+        return ReturnTool.SuccessReturn()
+
+
+def api_link_github(other_user_id, user_id):
+    with DatabaseSession() as session:
+        other_user_quen = session.query(SysUser.id, SysUser.github_open_id).filter(SysUser.id == other_user_id).first()
+
+        if other_user_quen.github_open_id is None:
+            logs.setup_logger().error(f"业务错误: qq全平台唯一ID丢失！！！查询id{other_user_id}")
+            return ReturnTool.ErrorReturn('关联QQ失败！', 401)
+        # 处理数据
+        query_talk = session.query(TalkUserRelation.id).filter(
+            TalkUserRelation.user_id == other_user_id).all()
+
+        # 构造批量更新数据
+        update_data = []
+        for item in query_talk:
+            update_data.append({
+                "id": item.id,  # 主键
+                "user_id": user_id
+            })
+
+        if len(update_data) > 0:
+            DbTools.bulk_update(session, update_data, TalkUserRelation)
+
+        query_req = session.query(RequestLogs.id).filter(
+            RequestLogs.user_id == other_user_id).all()
+
+        # 构造批量更新数据
+        update_data_req = []
+        for item in query_req:
+            update_data_req.append({
+                "id": item.id,  # 主键
+                "user_id": user_id
+            })
+        if len(update_data_req) > 0:
+            DbTools.bulk_update(session, update_data_req, RequestLogs)
+        # 绑定账号
+        user_quen = session.query(SysUser.id, SysUser.github_open_id).filter(SysUser.id == user_id).first()
+        user_quen.github_open_id = other_user_quen.github_open_id
+        DbTools.saveOrUpdate(session, {
+            "id": user_quen.id,
+            "github_open_id": other_user_quen.github_open_id,
+            "update_date": TimeToolClass.get_time()
+        }, SysUser)
+        # 删除原有账号
+        session.query(SysUser).filter(SysUser.id == other_user_id).delete()
+        session.commit()
+        return ReturnTool.SuccessReturn()
+
+
+def api_no_link_qq_other(user_id):
+    with DatabaseSession() as session:
+        user_quen = session.query(SysUser.id, SysUser.qq_open_id).filter(SysUser.id == user_id).first()
+        DbTools.saveOrUpdate(session, {
+            "id": user_quen.id,
+            "qq_open_id": None,
+            "update_date": TimeToolClass.get_time()
+        }, SysUser)
+        session.commit()
+        return ReturnTool.SuccessReturn()
+
+
+def api_no_link_github_other(user_id):
+    with DatabaseSession() as session:
+        user_quen = session.query(SysUser.id, SysUser.github_open_id).filter(SysUser.id == user_id).first()
+        DbTools.saveOrUpdate(session, {
+            "id": user_quen.id,
+            "github_open_id": None,
+            "update_date": TimeToolClass.get_time()
+        }, SysUser)
+        session.commit()
+        return ReturnTool.SuccessReturn()

@@ -59,7 +59,7 @@
         </div>
       </el-form-item>
     </el-form>
-    <div class="opt" v-if="loginType === 'voatalk'">
+    <div class="opt">
       <p>便捷操作</p>
       <div v-if="isSupportBiometric">
         <el-button size="large" type="primary" @click="noKeyLogin" :icon="Key" v-if="isNoKeyLogin">开启{{ biometricType
@@ -68,8 +68,16 @@
         }}登录</el-button>
       </div>
       <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit">更换密码</el-button>
-      <el-button size="large" type="primary" @click="linkQQ" :icon="Link">关联QQ账号</el-button>
-      <el-button size="large" type="primary" @click="linkGitHub" :icon="Link">关联GitHub账号</el-button>
+      <div v-if="isMob && loginType === 'voatalk'">
+        <el-button size="large" type="primary" @click="linkQQ" :icon="Link" v-if="clickQQFlow !== 0">{{
+          qqActionTxt[clickQQFlow]
+        }}</el-button>
+      </div>
+      <div v-if="isMob && loginType === 'voatalk'">
+        <el-button size="large" type="primary" @click="linkGitHub" :icon="Link" v-if="clickGitHubFlow !== 0">{{
+          githubActionTxt[clickGitHubFlow]
+        }}</el-button>
+      </div>
       <p class="them-text">自定义主题色</p>
       <div class="them-color">
         <el-tooltip v-for="item in colorList" :key="item.id" class="box-item" effect="light" :content="item.tip"
@@ -104,10 +112,35 @@
       </div>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="bindAccountDialogVisible" width="380" :show-close="false" align-center>
+    <div class="logintext">
+      <img :src="userAvatarUrl ? userAvatarUrl : avater" alt="头像" class="user-avatar" />
+      <h4 class="user-name-txt">关联：{{ userNameTxt }} 账号</h4>
+    </div>
+    <div>
+      <p></p>
+      <el-tag type="warning" class="bind-warning">注意：关联号后，下面的对话内容将合并到当前登录账号下</el-tag>
+      <el-table v-loading="state.loading" :data="tableData" border stripe style="width: 360px">
+        <el-table-column fixed prop="talk_name" label="对话名称" width="360" />
+      </el-table>
+      <div class="me-pagination">
+        <span>共 {{ tableCount }} 条</span>
+        <el-pagination layout="prev, pager, next" :page-size="pageSize" :total="tableCount"
+          @current-change="pageQuery" />
+      </div>
+    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="cancelBindAccount">取消</el-button>
+        <el-button type="primary" @click="bindAccount"> 关联 </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import store from "@/store";
 import {
   Plus,
@@ -131,6 +164,7 @@ const registerForm = ref({
 const editDialogVisible = ref(false);
 import router from "@/router";
 import { updateUser, sendEmailCodeApi, updateUserEmail } from "@/api/apiUser";
+import { getOtherUserChatList, linkOtherUser, noLinkOtherUser } from "@/api/aiChat";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
 import { checkBiometricSupport } from "@/utils/webAuthn";
 import { loginBegin, loginComplete } from "@/api/twoFAuth";
@@ -138,6 +172,9 @@ import { ElMessage } from "element-plus";
 import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
 import device from "current-device";
+import avater from "@/assets/images/avater.png";
+const userNameTxt = ref('');
+const userAvatarUrl = ref('');
 
 const avatarUrl = store.state.app.avatar;
 const loginType = store.state.app.loginType;
@@ -150,6 +187,18 @@ const isMob = ref(!device.mobile());
 const isSupportBiometric = ref(false);
 const isNoKeyLogin = ref(true);
 const biometricType = ref('');
+const bindAccountDialogVisible = ref(false);
+const tableData = ref([]);
+const tableCount = ref(0);
+// 当前页码
+const currentPage = ref(1);
+// 每页显示数量
+const pageSize = ref(6);
+
+let state = reactive({
+  loading: false,
+});
+
 const colorList = ref([
   {
     id: 1,
@@ -222,6 +271,27 @@ const colorList = ref([
     place: "bottom",
   },
 ]);
+
+let pcOrMobile = device.mobile() ? "mobile" : "pc";
+
+const appId = "102796804";
+const redirectUri = encodeURIComponent("https://www.voatalk.online/others/handle");
+const stateF = "qqLogin"; // 用于防止攻击
+const scope = "get_user_info"; // 所需权限
+
+const qqLoginUrl = ref(
+  `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${appId}&redirect_uri=${redirectUri}&state=${stateF}&scope=${scope}&display=${pcOrMobile}`
+);
+
+const githubClientId = "Ov23liTrl7t8g4EZP3j7";
+const githubStateF = "githubLogin"; // 用于防止攻击
+const gitHubScope = "user"; // 所需权限
+
+
+const githubLoginUrl = ref(
+  `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&state=${githubStateF}&scope=${gitHubScope}`
+);
+
 
 const uploadRef = ref(null);
 const them = ref(JSON.parse(store.state.app.them));
@@ -368,12 +438,189 @@ function beforeUpload(file) {
   return isJpgOrPng;
 }
 
-function linkQQ() {
-  console.log("绑定QQ");
+const qqActionTxt = {
+  1: '关联QQ账号',
+  2: '继续关联QQ账号',
+  3: '解除关联QQ账号',
 }
 
-function linkGitHub() {
-  console.log("绑定GitHub");
+const clickQQFlow = ref(+store.state.app.bindQQ)
+
+const githubActionTxt = {
+  1: '关联GitHub账号',
+  2: '继续关联GitHub账号',
+  3: '解除关联GitHub账号',
+}
+
+const clickGitHubFlow = ref(+store.state.app.bindGitHub);
+
+function cancelBindAccount() {
+  store.dispatch("app/clearBindOtherAccount");
+  if (clickQQFlow.value === 2) {
+    clickQQFlow.value = 1;
+  }
+
+  if (clickGitHubFlow.value === 2) {
+    clickGitHubFlow.value = 1;
+  }
+  bindAccountDialogVisible.value = false;
+}
+
+async function bindAccount() {
+  try {
+    if (clickQQFlow.value === 2) {
+      try {
+        const resp = await linkOtherUser({
+          bindOtherAccount: store.state.app.bindOtherAccount,
+          state: '1'
+        })
+        if (resp.code === 200) {
+          ElMessage({
+            message: "关联成功",
+            type: "success",
+          });
+          store.dispatch("app/setBindQQ", 3);
+          clickQQFlow.value = 3;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (clickGitHubFlow.value === 2) {
+      try {
+        const resp = await linkOtherUser({
+          bindOtherAccount: store.state.app.bindOtherAccount,
+          state: '2'
+        })
+        if (resp.code === 200) {
+          ElMessage({
+            message: "关联成功",
+            type: "success",
+          });
+          clickGitHubFlow.value = 3;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  } catch (error) {
+    if (clickQQFlow.value === 2) {
+      clickQQFlow.value = 1;
+    }
+
+    if (clickGitHubFlow.value === 2) {
+      clickGitHubFlow.value = 1;
+    }
+    console.error("Failed to bind account:", error);
+  }
+  bindAccountDialogVisible.value = false;
+}
+
+const pageQuery = (page) => {
+  currentPage.value = page;
+  fetchChatHisData();
+};
+
+async function fetchChatHisData() {
+  try {
+    state.loading = true; // 请求开始时设置为true
+    const params = {
+      pageSize: pageSize.value,
+      pageIndex: currentPage.value,
+      bindOtherAccount: store.state.app.bindOtherAccount,
+      search_criteria: '{"sort": {"field": "create_date", "order": "desc"}}',
+    };
+    const response = await getOtherUserChatList(params);
+    if (response.code === 200) {
+      userNameTxt.value = response.data.other_username;
+      userAvatarUrl.value = response.data.other_avatar;
+      tableData.value = response.data.list.records;
+      tableCount.value = response.data.list.total_count;
+      state.loading = false; // 请求开始时设置为true
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+async function linkQQ() {
+  switch (clickQQFlow.value) {
+    case 1:
+      // console.log('关联QQ账号');
+      store.dispatch("app/setBindOtherAccount", 'qq_' + store.state.app.userName + '_' + new Date().getTime());
+      window.open(
+        qqLoginUrl.value, // 要打开的URL（本地页面/远程链接均可）
+        '关联QQ账号',       // 窗口名称（可用于复用窗口）
+        'width=800,height=600,left=100,top=100' // 窗口特征（尺寸、位置等）
+      );
+      clickQQFlow.value = 2;
+      break;
+    case 2:
+      await fetchChatHisData();
+      bindAccountDialogVisible.value = true;
+      break;
+    case 3:
+      // console.log('解除关联QQ账号');
+      try {
+        const resp = await noLinkOtherUser({
+          state: '1'
+        })
+        if (resp.code === 200) {
+          ElMessage({
+            message: "解除关联成功",
+            type: "success",
+          });
+          store.dispatch("app/setBindQQ", 1);
+          clickQQFlow.value = 1;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+async function linkGitHub() {
+  switch (clickGitHubFlow.value) {
+    case 1:
+      // console.log('关联GitHub账号');
+      store.dispatch("app/setBindOtherAccount", 'github_' + store.state.app.userName + '_' + new Date().getTime());
+      window.open(
+        githubLoginUrl.value, // 要打开的URL（本地页面/远程链接均可）
+        '关联GitHub账号',       // 窗口名称（可用于复用窗口）
+        'width=800,height=600,left=100,top=100' // 窗口特征（尺寸、位置等）
+      );
+      clickGitHubFlow.value = 2;
+      break;
+    case 2:
+      await fetchChatHisData();
+      bindAccountDialogVisible.value = true;
+      break;
+    case 3:
+      // console.log('解除关联GitHub账号');
+      try {
+        const resp = await noLinkOtherUser({
+          state: '2'
+        })
+        if (resp.code === 200) {
+          ElMessage({
+            message: "解除关联成功",
+            type: "success",
+          });
+          store.dispatch("app/setBindGitHub", 1);
+          clickGitHubFlow.value = 1;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+      break;
+    default:
+      break;
+  }
 }
 
 function forgetPwd() {
@@ -720,5 +967,44 @@ onMounted(async function () {
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.logintext {
+  display: flex;
+  height: 50px;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.user-name-txt {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+  margin-left: 6px;
+  padding: 0;
+  color: var(--el-text-color-primary);
+}
+
+.me-pagination {
+  width: inherit;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.me-pagination span {
+  font-size: 14px;
+  color: var(--el-text-color-primary);
+  line-height: 45px;
+  margin-right: 20px;
+}
+
+.bind-warning {
+  margin: 10px 0;
+  width: 350px;
 }
 </style>

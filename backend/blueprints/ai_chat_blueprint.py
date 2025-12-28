@@ -75,6 +75,52 @@ def api_list_page():
         return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
 
 
+@ai_chat_blueprint.route('/other_user/list', methods=['GET'])
+@token_on
+def api_other_user_list_page():
+    try:
+        response = ai_chat_service.api_other_user_list_page(request)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        logs.setup_logger().error(f'Error processing request: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+@ai_chat_blueprint.route('/link/other', methods=['GET'])
+@token_on
+def api_link_other():
+    try:
+        response = ai_chat_service.api_link_other(request)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        logs.setup_logger().error(f'Error processing request: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+@ai_chat_blueprint.route('/no_link/other', methods=['GET'])
+@token_on
+def api_no_link_other():
+    try:
+        response = ai_chat_service.api_no_link_other(request)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        logs.setup_logger().error(f'Error processing request: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
 @ai_chat_blueprint.route('/one_chat', methods=['GET'])
 @token_on
 def one_chat():

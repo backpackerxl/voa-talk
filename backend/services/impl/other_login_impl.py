@@ -12,9 +12,10 @@ from utils import ReturnTool
 from utils import TimeToolClass
 from utils import Tools
 from utils.JwtUtils import JWTHandler
+from utils.RedisUtils import RedisHandler
 
 
-def public_login_handler(queue, login_type, ip):
+def public_login_handler(queue, login_type, ip, bind_other_account):
     # 准备返回数据
     user_data = {
         "id": queue.id,
@@ -24,16 +25,21 @@ def public_login_handler(queue, login_type, ip):
         "email": queue.email,
         "loginType": login_type,
         "IP": ip,
-        "superAdmin": queue.super_admin
+        "superAdmin": queue.super_admin,
+        "bindQQ": 0,
+        "bindGithub": 0,
     }
     # 生成token
     token = JWTHandler().encode_jwt(user_data)
     user_data["jwtToken"] = token
     user_data["refreshToken"] = token
+    if bind_other_account != '':
+        RedisHandler().save_key(bind_other_account, token, 300)  # 登录成功信息5分钟内有效
+        return None
     return user_data
 
 
-def qq(code, redirect_uri, ip):
+def qq(code, redirect_uri, ip, bind_other_account):
     client_id = "102796804"
     token_open_id = requests.get("https://graph.qq.com/oauth2.0/token", {
         "grant_type": "authorization_code",
@@ -57,7 +63,7 @@ def qq(code, redirect_uri, ip):
             # 设置用户最后登录时间
             queue.last_login_time = datetime.datetime.now()
             session.commit()
-            return ReturnTool.SuccessReturn(public_login_handler(queue, ip, 'qq'))
+            return ReturnTool.SuccessReturn(public_login_handler(queue, 'qq', ip, bind_other_account))
         # 平台没有该用户，则创建用户，登录返回
         qq_user_info = requests.get("https://graph.qq.com/user/get_user_info", {
             "access_token": access_token,
@@ -82,10 +88,10 @@ def qq(code, redirect_uri, ip):
         queue_qq = session.query(SysUser).filter(SysUser.qq_open_id == openid).first()
         queue_qq.last_login_time = datetime.datetime.now()
         session.commit()
-        return ReturnTool.SuccessReturn(public_login_handler(queue_qq, ip, 'qq'))
+        return ReturnTool.SuccessReturn(public_login_handler(queue_qq, 'qq', ip, bind_other_account))
 
 
-def github(code, redirect_uri, ip):
+def github(code, redirect_uri, ip, bind_other_account):
     client_id = "Ov23liTrl7t8g4EZP3j7"
     github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
     redirect_uri = unquote(redirect_uri)
@@ -127,7 +133,7 @@ def github(code, redirect_uri, ip):
             # 设置用户最后登录时间
             queue.last_login_time = datetime.datetime.now()
             session.commit()
-            return ReturnTool.SuccessReturn(public_login_handler(queue, 'github', ip))
+            return ReturnTool.SuccessReturn(public_login_handler(queue, 'github', ip, bind_other_account))
         # 平台没有该用户，则创建用户，登录返回
         password = Tools.generate_random_password()
         hashed_password, salt = Tools.generate_hashed_password(password)
@@ -146,4 +152,4 @@ def github(code, redirect_uri, ip):
         queue_github = session.query(SysUser).filter(SysUser.github_open_id == openid).first()
         queue_github.last_login_time = datetime.datetime.now()
         session.commit()
-        return ReturnTool.SuccessReturn(public_login_handler(queue_github, 'github', ip))
+        return ReturnTool.SuccessReturn(public_login_handler(queue_github, 'github', ip, bind_other_account))

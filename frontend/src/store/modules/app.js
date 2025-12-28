@@ -7,6 +7,9 @@ const state = {
     avatar: localStorage.getItem('avatar') || '', // 初始化
     loginType: localStorage.getItem('loginType') || '', // 初始化
     noKeyLogin: localStorage.getItem('noKeyLogin') || '', // 初始化
+    bindOtherAccount: localStorage.getItem('bindOtherAccount') || '', // 初始化
+    bindQQ: localStorage.getItem('bindQQ') || 0, // 初始化
+    bindGitHub: localStorage.getItem('bindGitHub') || 0, // 初始化
     sliderData: null,
     them: localStorage.getItem('them') || JSON.stringify({
         them: "light",
@@ -93,6 +96,24 @@ const mutations = {
     },
     CLEAR_NO_KEY_LOGIN(state) {
         state.noKeyLogin = '';
+    },
+    SET_BIND_OTHER_ACCOUNT(state, bindOtherAccount) {
+        state.bindOtherAccount = bindOtherAccount;
+    },
+    CLEAR_BIND_OTHER_ACCOUNT(state) {
+        state.bindOtherAccount = '';
+    },
+    SET_BIND_QQ(state, bindQQ) {
+        state.bindQQ = bindQQ;
+    },
+    CLEAR_BIND_QQ(state) {
+        state.bindQQ = 0;
+    },
+    SET_BIND_GITHUB(state, bindGitHub) {
+        state.bindGitHub = bindGitHub;
+    },
+    CLEAR_BIND_GITHUB(state) {
+        state.bindGitHub = 0;
     },
 };
 
@@ -194,7 +215,33 @@ const actions = {
         commit('CLEAR_NO_KEY_LOGIN');
         localStorage.removeItem('noKeyLogin'); // 清除 localStorage 中的免密登录
     },
+    setBindOtherAccount({ commit }, bindOtherAccount) {
+        commit('SET_BIND_OTHER_ACCOUNT', bindOtherAccount);
+        localStorage.setItem('bindOtherAccount', bindOtherAccount); // 同步保存到 localStorage
+    },
+    clearBindOtherAccount({ commit }) {
+        commit('CLEAR_BIND_OTHER_ACCOUNT');
+        localStorage.removeItem('bindOtherAccount'); // 清除 localStorage 中的绑定其他账号
+    },
+    setBindQQ({ commit }, bindQQ) {
+        commit('SET_BIND_QQ', bindQQ);
+        localStorage.setItem('bindQQ', bindQQ); // 同步保存到 localStorage
+    },
+    clearBindQQ({ commit }) {
+        commit('CLEAR_BIND_QQ');
+        localStorage.removeItem('bindQQ'); // 清除 localStorage 中的绑定QQ账号
+    },
+    setBindGitHub({ commit }, bindGitHub) {
+        commit('SET_BIND_GITHUB', bindGitHub);
+        localStorage.setItem('bindGitHub', bindGitHub); // 同步保存到 localStorage
+    },
+    clearBindGitHub({ commit }) {
+        commit('CLEAR_BIND_GITHUB');
+        localStorage.removeItem('bindGitHub'); // 清除 localStorage 中的绑定GitHub账号
+    },
 };
+
+
 
 export default {
     namespaced: true,

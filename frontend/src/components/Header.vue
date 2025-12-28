@@ -96,6 +96,8 @@ const handleCommand = (command) => {
         store.dispatch("app/clearUserName");
         store.dispatch("app/clearUserEmail");
         store.dispatch("app/clearLoginType");
+        store.dispatch("app/clearBindQQ");
+        store.dispatch("app/clearBindGitHub");
       })
       .catch(() => {
         console.log("Logout canceled");

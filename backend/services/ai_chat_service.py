@@ -3,6 +3,7 @@ import json
 from services.impl import ai_chat_impl
 from utils import Config, ReturnTool
 from utils.JwtUtils import JWTHandler
+from utils.RedisUtils import RedisHandler
 
 
 def ai_chat_dialogue_serve(request):
@@ -59,6 +60,55 @@ def api_list_page(request):
         "sort": {"field": "create_date", "order": "desc"}
     }
     return ai_chat_impl.api_list_impl(json.dumps(search_criteria_dict), page_size, page_index)
+
+
+def api_other_user_list_page(request):
+    page_size = request.args.get('pageSize', default=Config.PageSize, type=int)
+    page_index = request.args.get('pageIndex', default=Config.PageIndex, type=int)
+    res = RedisHandler().get_key(request.args.get('bindOtherAccount'))
+    if res is None:
+        return ReturnTool.ErrorReturn('第三方授权失效！', 400)
+    res = JWTHandler().decode_jwt(res)
+    data = res['data']
+    user_id = data['id'],
+    search_criteria_dict = {
+        "user_id": {"value": user_id, "operator": "eq"},
+        "sort": {"field": "create_date", "order": "desc"}
+    }
+    resp_data = ai_chat_impl.api_list_impl(json.dumps(search_criteria_dict), page_size, page_index)
+    return ReturnTool.SuccessReturn({
+        'other_avatar': data['avatar'],
+        'other_username': data['userName'],
+        'list': resp_data['data']
+    })
+
+
+def api_link_other(request):
+    state = request.args.get('state')
+    res = RedisHandler().get_key(request.args.get('bindOtherAccount'))
+    if res is None:
+        return ReturnTool.ErrorReturn('第三方授权失效！', 400)
+    res = JWTHandler().decode_jwt(res)
+    data = res['data']
+    other_user_id = data['id']
+    user_id = get_req_user(request).get('id')
+    if state == '1':
+        return ai_chat_impl.api_link_qq(other_user_id, user_id)
+    elif state == '2':
+        return ai_chat_impl.api_link_github(other_user_id, user_id)
+    else:
+        return ReturnTool.ErrorReturn('不支持的第三方绑定！', 500)
+
+
+def api_no_link_other(request):
+    state = request.args.get('state')
+    user_id = get_req_user(request).get('id')
+    if state == '1':
+        return ai_chat_impl.api_no_link_qq_other(user_id)
+    elif state == '2':
+        return ai_chat_impl.api_no_link_github_other(user_id)
+    else:
+        return ReturnTool.ErrorReturn('不支持的第三方绑定！', 500)
 
 
 def one_chat(request):

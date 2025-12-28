@@ -123,3 +123,27 @@ export function getRedisChat(params) {
         params: params,
     });
 }
+
+export function getOtherUserChatList(params) {
+    return request({
+        url: 'ai_chat/other_user/list',
+        method: 'get',
+        params: params,
+    });
+}
+
+export function linkOtherUser(params) {
+    return request({
+        url: 'ai_chat/link/other',
+        method: 'get',
+        params: params,
+    });
+}
+
+export function noLinkOtherUser(params) {
+    return request({
+        url: 'ai_chat/no_link/other',
+        method: 'get',
+        params: params,
+    });
+}

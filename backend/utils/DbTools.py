@@ -2,7 +2,7 @@ import json
 import traceback
 from datetime import datetime
 
-from sqlalchemy import or_, desc, asc, and_
+from sqlalchemy import or_, desc, asc, and_, update, inspect
 
 from utils.BusinessException import BusinessException
 
@@ -138,6 +138,104 @@ def bulk_insert(session, request_body_list, model, commit=True):
         session.rollback()
         raise BusinessException(-18690, "数据更新失败")
     return model_instances
+
+
+def bulk_update(
+        session,
+        update_body_list,
+        model,
+        primary_key: str = "id",  # 模型的主键字段名（默认id）
+        commit: bool = True,
+        ignore_none: bool = True,  # 是否忽略值为None的字段（避免覆盖已有值）
+        allow_empty_update: bool = False  # 是否允许空字段更新（无有效字段时抛错）
+) -> int:
+    """
+    批量修改数据（按主键更新）。
+    :param session: SQLAlchemy数据库会话
+    :param update_body_list: 更新数据列表，每条数据必须包含主键字段（如id）
+    :param model: 数据库模型（SQLAlchemy ORM类）
+    :param primary_key: 模型的主键字段名（默认id）
+    :param commit: 是否立即提交事务，默认True
+    :param ignore_none: 是否忽略值为None的字段，默认True
+    :param allow_empty_update: 是否允许无有效字段的更新（避免空更新），默认False
+    :return: 成功更新的记录数
+    :raises BusinessException: 数据更新失败时抛出
+    """
+    # 前置校验
+    if not isinstance(update_body_list, list) or len(update_body_list) == 0:
+        raise BusinessException(-18693, "批量更新数据列表不能为空")
+
+    # 获取模型的有效字段（仅数据库列，排除关系字段/私有属性）
+    model_inspector = inspect(model)
+    model_fields = {column.name for column in model_inspector.columns}
+    # 校验主键是否存在于模型中
+    if primary_key not in model_fields:
+        raise BusinessException(-18694, f"模型{model.__name__}不存在主键字段：{primary_key}")
+
+    # 统计成功更新数 & 预处理更新数据
+    total_updated = 0
+    valid_update_list = []
+
+    for idx, update_body in enumerate(update_body_list):
+        try:
+            # 校验单条数据类型
+            if not isinstance(update_body, dict):
+                raise ValueError(f"第{idx + 1}条更新数据必须为字典类型")
+
+            # 校验主键字段是否存在
+            if primary_key not in update_body:
+                raise ValueError(f"第{idx + 1}条更新数据缺少主键字段：{primary_key}")
+            pk_value = update_body[primary_key]
+            if pk_value is None:
+                raise ValueError(f"第{idx + 1}条更新数据的主键{primary_key}值不能为空")
+
+            # 过滤有效更新字段：排除主键 + 仅保留模型定义字段 + 可选忽略None值
+            update_fields = {}
+            for key, value in update_body.items():
+                if key == primary_key:
+                    continue  # 主键不参与更新（仅作为查询条件）
+                if key in model_fields:
+                    if ignore_none and value is None:
+                        continue
+                    update_fields[key] = value
+
+            # 校验是否有有效更新字段
+            if not update_fields and not allow_empty_update:
+                raise ValueError(f"第{idx + 1}条更新数据无有效更新字段（仅主键或全为None）")
+
+            valid_update_list.append({
+                "pk_value": pk_value,
+                "update_fields": update_fields
+            })
+
+        except Exception as e:
+            raise BusinessException(-18695, f"第{idx + 1}条更新数据格式错误：{str(e)}")
+
+    # 批量执行更新
+    try:
+        for item in valid_update_list:
+            # 构造更新语句：按主键过滤 + 更新指定字段
+            stmt = update(model).where(
+                getattr(model, primary_key) == item["pk_value"]
+            ).values(**item["update_fields"])
+            # 执行更新并返回受影响行数
+            result = session.execute(stmt)
+            total_updated += result.rowcount
+
+        if commit:
+            session.commit()
+
+        return total_updated
+
+    except Exception as e:
+        # 详细异常日志：包含模型名、更新条数、具体错误
+        error_msg = (
+            f"批量更新{model.__name__}失败，待更新条数：{len(update_body_list)}，错误：{str(e)}\n"
+            f"详细堆栈：{traceback.format_exc()}"
+        )
+        print(error_msg)
+        session.rollback()
+        raise BusinessException(-18690, "数据更新失败")
 
 
 def apply_filters(query, model, filters):

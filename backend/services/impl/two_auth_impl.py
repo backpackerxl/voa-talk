@@ -423,7 +423,9 @@ def login_complete(request):
             "email": queue.email,
             "loginType": "voatalk",
             "IP": request.remote_addr,
-            "superAdmin": queue.super_admin
+            "superAdmin": queue.super_admin,
+            "bindQQ": (1 if queue.qq_open_id is None else 3),
+            "bindGithub": (1 if queue.github_open_id is None else 3),
         }
         # 生成token
         token = JWTHandler().encode_jwt(user_data)

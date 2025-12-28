@@ -1,6 +1,4 @@
-<template>
-  <p class="txt">🎉登录成功！正在为您跳转...</p>
-</template>
+<template></template>
 
 <script setup>
 import { otherLogin } from "@/api/login";
@@ -13,6 +11,7 @@ const router = useRouter();
 onMounted(function () {
   const url = new URL(window.location.href);
   const params = new URLSearchParams(url.search);
+  const bindOtherAccount = store.state.app.bindOtherAccount || '';
 
   const code = params.get("code");
   const state = params.get("state");
@@ -21,19 +20,24 @@ onMounted(function () {
     code,
     login_type: state,
     redirect_uri: encodeURIComponent("https://www.voatalk.online/others/handle"),
+    bind_other_account: bindOtherAccount,
   })
     .then((obj) => {
-      ElMessage.success("登录成功");
+      if (!bindOtherAccount) {
+        ElMessage.success("🎉登录成功！正在为您跳转...");
 
-      store.dispatch("app/setAuthorization", obj.data.jwtToken);
-      store.dispatch("app/setUserRole", obj.data.superAdmin);
-      store.dispatch("app/setNickName", obj.data.nickName);
-      store.dispatch("app/setUserName", obj.data.userName);
-      store.dispatch("app/setUserEmail", obj.data.email);
-      store.dispatch("app/setAvatar", obj.data.avatar);
-      store.dispatch("app/setLoginType", obj.data.loginType || '');
+        store.dispatch("app/setAuthorization", obj.data.jwtToken);
+        store.dispatch("app/setUserRole", obj.data.superAdmin);
+        store.dispatch("app/setNickName", obj.data.nickName);
+        store.dispatch("app/setUserName", obj.data.userName);
+        store.dispatch("app/setUserEmail", obj.data.email);
+        store.dispatch("app/setAvatar", obj.data.avatar);
+        store.dispatch("app/setLoginType", obj.data.loginType || '');
 
-      router.replace("/home/chat");
+        router.replace("/home/chat");
+      } else {
+        ElMessage.success("🎉第三方已响应！请手动关闭弹窗，继续后面的操作！");
+      }
     })
     .catch((err) => {
       console.log(err);
@@ -42,8 +46,4 @@ onMounted(function () {
 });
 </script>
 
-<style scoped>
-.txt {
-  text-align: center;
-}
-</style>
+<style scoped></style>

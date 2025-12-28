@@ -433,6 +433,8 @@ function cacheUserInfoAndRedirect(userinfo) {
   store.dispatch("app/setUserEmail", userinfo.email || '');
   store.dispatch("app/setAvatar", userinfo.avatar || '');
   store.dispatch("app/setLoginType", userinfo.loginType || '');
+  store.dispatch("app/setBindQQ", userinfo.bindQQ || 0);
+  store.dispatch("app/setBindGitHub", userinfo.bindGithub || 0);
   router.replace("/home/chat");
 }
 
