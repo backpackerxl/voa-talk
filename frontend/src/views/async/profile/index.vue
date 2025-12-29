@@ -699,7 +699,11 @@ async function noKeyLogin() {
         id: base64UrlToArrayBuffer(cred.id || '')
       })) || [],
       // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
-      timeout: options.timeout || 60000
+      timeout: options.timeout || 60000,
+      userVerification: 'required', // 必须：不设置则可能跳过生物识别
+      authenticatorSelection: {
+        authenticatorAttachment: 'platform' // 限定仅使用设备内验证器（FaceID/TouchID/指纹），排除外部安全密钥
+      }
     };
 
     // 前置校验：确保 allowCredentials 非空
@@ -1010,7 +1014,7 @@ onMounted(async function () {
 }
 
 @media (max-width: 768px) {
-  .them-color{
+  .them-color {
     margin-bottom: 50px;
   }
 }
