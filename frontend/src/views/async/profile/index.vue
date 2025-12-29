@@ -693,6 +693,7 @@ async function noKeyLogin() {
     // 验证场景：仅处理必要参数，删除 rp/user（验证场景不需要）
     const publicKey = {
       ...options,
+      rp: { id: window.location.hostname },
       challenge: base64UrlToArrayBuffer(options.challenge || ''),
       allowCredentials: options.allowCredentials?.map(cred => ({
         ...cred,
@@ -700,9 +701,8 @@ async function noKeyLogin() {
       })) || [],
       // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
       timeout: options.timeout || 60000,
-      userVerification: 'required', // 必须：不设置则可能跳过生物识别
       authenticatorSelection: {
-        authenticatorAttachment: 'platform' // 限定仅使用设备内验证器（FaceID/TouchID/指纹），排除外部安全密钥
+         userVerification: 'required', // 必须：不设置则可能跳过生物识别
       }
     };
 
