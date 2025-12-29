@@ -29,6 +29,7 @@ def login_impl(request):
         if queue.user_state != 1:
             return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！")
         pwd = request.get_json().get('passWord')
+        platform = request.get_json().get('platform')
         decrypt = aes_decrypt(pwd)
         password = Tools.verify_password(decrypt, queue.salt)
 
@@ -62,18 +63,14 @@ def login_impl(request):
         next_id = str(uuid.uuid4())
         ## 缓存登录信息
         RedisHandler().save_key("user:info:" + next_id, json.dumps(user_data), 300)  # 登录成功信息5分钟内有效
-
-        if not queue.otp_secrets and not queue.credentials_data:
-            return ReturnTool.SuccessReturn({
-                'next_id': next_id,
-                'username': queue.user_name,
-                "avatar": queue.avatar,
-                'register_authenticated': False
-            })
+        if platform == 'mobile':
+            register_authenticated = bool(queue.credentials_data_mobile)
         else:
-            return ReturnTool.SuccessReturn({
-                'next_id': next_id,
-                'username': queue.user_name,
-                "avatar": queue.avatar,
-                'register_authenticated': True
-            })
+            register_authenticated = bool(queue.credentials_data)
+        return ReturnTool.SuccessReturn({
+            'next_id': next_id,
+            'username': queue.user_name,
+            "avatar": queue.avatar,
+            "platform": platform,
+            'register_authenticated': register_authenticated
+        })

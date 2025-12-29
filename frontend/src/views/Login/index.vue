@@ -211,7 +211,7 @@ import { loginUser } from "@/api/login";
 import { registerBegin, registerComplete, generateOtpQrcode, verifyRecovery, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
-import { User, Lock } from "@element-plus/icons-vue";
+import { User, Lock, Platform } from "@element-plus/icons-vue";
 import { encryptAes, decryptAes } from "@/utils/tools";
 import { copySecret } from "@/utils/render-html";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
@@ -407,7 +407,8 @@ async function sendPostRequest() {
     // 使用加密后的密码进行登录
     const response = await loginUser(
       form.value.username,
-      encryptedPassword
+      encryptedPassword,
+      pcOrMobile
     );
     if (response.code === 200) {
       loginPage.value = false;
@@ -454,7 +455,7 @@ async function verifyOtpOrAuthn() {
   try {
     // 使用WebAuthn登录
     // console.log('使用WebAuthn登录', form.value.username);
-    const obj = await loginBegin({ username: form.value.username });
+    const obj = await loginBegin({ username: form.value.username, platform: pcOrMobile });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;
@@ -497,7 +498,8 @@ async function verifyOtpOrAuthn() {
         signature: arrayBufferToBase64Url(credential.response.signature),
         userHandle: credential.response.userHandle ? arrayBufferToBase64Url(credential.response.userHandle) : null
       },
-      req_id: options.req_id // 传递后端的 req_id 用于验证
+      req_id: options.req_id, // 传递后端的 req_id 用于验证
+      platform: pcOrMobile
     };
     // 5. 验证身份信息
     const result = await loginComplete(credentialJson);
@@ -555,7 +557,7 @@ function linkOTP() {
 async function linkAccount() {
   try {
     // 注册WebAuthn
-    const obj = await registerBegin({ username: form.value.username });
+    const obj = await registerBegin({ username: form.value.username, platform: pcOrMobile });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;
@@ -615,7 +617,8 @@ async function linkAccount() {
         ),
         transports: transports // 确保是纯数组，无Set/undefined
       },
-      req_id: options.req_id || '' // 空值兜底
+      req_id: options.req_id || '',
+      platform: pcOrMobile
     };
     // 5. 验证注册
     const result = await registerComplete(credentialJson);
@@ -625,10 +628,15 @@ async function linkAccount() {
       throw new Error(result.error || '关联验证失败');
     }
 
-    ElMessage.success('关联成功！');
-    recoveryCode.value = result.data.fa_recovery_code.map(item => decryptAes(item));
 
-    linkOTPShow.value = true;
+    if (pcOrMobile == 'mobile') {
+      ElMessage.success('关联成功, 正在跳转登录...');
+      goLogin();
+    } else {
+      ElMessage.success('关联成功！');
+      recoveryCode.value = result.data.fa_recovery_code.map(item => decryptAes(item));
+      linkOTPShow.value = true;
+    }
 
   } catch (error) {
     console.error('关联失败:', error);

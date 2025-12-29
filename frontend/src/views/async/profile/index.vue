@@ -683,7 +683,7 @@ async function noKeyLogin() {
       ElMessage.error('当前设备不支持生物验证');
       return;
     }
-    const obj = await loginBegin({ username: store.state.app.userName });
+    const obj = await loginBegin({ username: store.state.app.userName, platform: pcOrMobile });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;
@@ -726,7 +726,8 @@ async function noKeyLogin() {
         signature: arrayBufferToBase64Url(credential.response.signature),
         userHandle: credential.response.userHandle ? arrayBufferToBase64Url(credential.response.userHandle) : null
       },
-      req_id: options.req_id // 传递后端的 req_id 用于验证
+      req_id: options.req_id || '',
+      platform: pcOrMobile
     };
     // 5. 验证身份信息
     const result = await loginComplete(credentialJson);

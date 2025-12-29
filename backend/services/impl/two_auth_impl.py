@@ -52,17 +52,22 @@ def register_begin(request):
         return ReturnTool.ErrorReturn('参数必填！', 400)
 
     username = data.get('username')
+    platform = data.get('platform')
     if not username:
         return ReturnTool.ErrorReturn('用户名必填！', 400)
 
     with DatabaseSession() as session:
-        queue = session.query(SysUser.credentials_data).filter(or_(
+        queue = session.query(SysUser.credentials_data, SysUser.credentials_data_mobile).filter(or_(
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
-        # 检查用户是否已存在
-        if queue.credentials_data:
-            return ReturnTool.ErrorReturn('不能重复注册二次身份验证！', 409)
+        # 检查用户凭证是否已存在
+        if platform == 'mobile':
+            if queue.credentials_data_mobile:
+                return ReturnTool.ErrorReturn('不能重复注册二次身份验证！', 409)
+        else:
+            if queue.credentials_data:
+                return ReturnTool.ErrorReturn('不能重复注册二次身份验证！', 409)
 
         # 生成挑战值
         challenge = generate_challenge()
@@ -114,6 +119,7 @@ def register_complete(request):
         return ReturnTool.ErrorReturn('参数必填！', 400)
 
     req_id = data.get('req_id')
+    platform = data.get('platform')
     cha_res_str = RedisHandler().get_key(req_id)
     if not cha_res_str:
         return ReturnTool.ErrorReturn('挑战注册已过期或错误！', 400)
@@ -188,13 +194,21 @@ def register_complete(request):
         # 为用户生成OTP密钥
         otp_secret = pyotp.random_base32()
 
-        sql_data = {
-            'id': queue.id,
-            'otp_secrets': otp_secret,
-            'credentials_data': json.dumps(credentials_data),
-            'recovery_code_md5': json.dumps(recovery_code_md5),
-            "update_date": TimeToolClass.get_time()
-        }
+        if platform == 'mobile':
+            sql_data = {
+                'id': queue.id,
+                'credentials_data_mobile': json.dumps(credentials_data),
+                "update_date": TimeToolClass.get_time()
+            }
+        else:
+            sql_data = {
+                'id': queue.id,
+                'otp_secrets': otp_secret,
+                'credentials_data': json.dumps(credentials_data),
+                'recovery_code_md5': json.dumps(recovery_code_md5),
+                "update_date": TimeToolClass.get_time()
+            }
+
         # 使用 saveOrUpdate 函数
         result = DbTools.saveOrUpdate(session, sql_data, SysUser)
         if result:
@@ -261,21 +275,26 @@ def login_begin(request):
         return ReturnTool.ErrorReturn('参数为空！', 400)
 
     username = data.get('username')
+    platform = data.get('platform')
     if not username:
         return ReturnTool.ErrorReturn('用户名必填!', 400)
 
     # 检查用户是否存在（新增：判空 queue，避免 AttributeError）
     with DatabaseSession() as session:
-        queue = session.query(SysUser.user_name, SysUser.credentials_data).filter(or_(
+        queue = session.query(SysUser.user_name, SysUser.credentials_data, SysUser.credentials_data_mobile).filter(or_(
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
         if not queue or not queue.user_name:
             return ReturnTool.ErrorReturn('用户未注册！', 400)
-        if not queue or not queue.credentials_data:  # 新增 queue 判空
-            return ReturnTool.ErrorReturn('用户没有开通二次身份验证！', 404)
-
-        credential = json.loads(queue.credentials_data)
+        if platform == 'mobile':
+            if not queue or not queue.credentials_data_mobile:  # 新增 queue 判空
+                return ReturnTool.ErrorReturn('用户没有开通移动端二次身份验证！', 404)
+            credential = json.loads(queue.credentials_data_mobile)
+        else:
+            if not queue or not queue.credentials_data:  # 新增 queue 判空
+                return ReturnTool.ErrorReturn('用户没有开通PC端二次身份验证！', 404)
+            credential = json.loads(queue.credentials_data)
 
         # 生成挑战值（确保是32字节随机数，符合WebAuthn规范）
         challenge = generate_challenge()  # 需确保该函数返回 bytes 类型，长度建议32
@@ -353,6 +372,7 @@ def login_complete(request):
 
     # 从 redis 获取挑战值和用户名
     req_id = data.get('req_id')
+    platform = data.get('platform')
     auth_cha_str = RedisHandler().get_key(req_id)
     if not auth_cha_str:
         return ReturnTool.ErrorReturn('请先生成挑战验证信息！', 400)
@@ -369,10 +389,14 @@ def login_complete(request):
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
-        if not queue.credentials_data:
-            return ReturnTool.ErrorReturn('用户没有开通二次身份验证！', 404)
-
-        stored_credential = json.loads(queue.credentials_data)
+        if platform == 'mobile':
+            if not queue or not queue.credentials_data_mobile:  # 新增 queue 判空
+                return ReturnTool.ErrorReturn('用户没有开通移动端二次身份验证！', 404)
+            stored_credential = json.loads(queue.credentials_data_mobile)
+        else:
+            if not queue or not queue.credentials_data:  # 新增 queue 判空
+                return ReturnTool.ErrorReturn('用户没有开通PC端二次身份验证！', 404)
+            stored_credential = json.loads(queue.credentials_data)
 
         # 转换挑战值为字节
         expected_challenge = base64url_to_bytes(challenge_base64)
@@ -402,11 +426,19 @@ def login_complete(request):
         # 更新签名计数
         stored_credential['sign_count'] = verification.new_sign_count
 
-        sql_data = {
-            'id': queue.id,
-            'credentials_data': json.dumps(stored_credential),
-            "update_date": TimeToolClass.get_time()
-        }
+        if platform == 'mobile':
+            sql_data = {
+                'id': queue.id,
+                'credentials_data_mobile': json.dumps(stored_credential),
+                "update_date": TimeToolClass.get_time()
+            }
+        else:
+            sql_data = {
+                'id': queue.id,
+                'credentials_data': json.dumps(stored_credential),
+                "update_date": TimeToolClass.get_time()
+            }
+
         # 使用 saveOrUpdate 函数
         DbTools.saveOrUpdate(session, sql_data, SysUser)
         # 清理 redis
