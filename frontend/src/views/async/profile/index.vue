@@ -1008,4 +1008,10 @@ onMounted(async function () {
   margin: 10px 0;
   width: 350px;
 }
+
+@media (max-width: 768px) {
+  .them-color{
+    margin-bottom: 50px;
+  }
+}
 </style>
