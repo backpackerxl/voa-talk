@@ -1144,7 +1144,7 @@ function scrollTopBottom(animation = false) {
   }
 
   .chat-page {
-    height: calc(100vh - 210px);
+    height: calc(100vh - 250px);
   }
 
   .input-container {

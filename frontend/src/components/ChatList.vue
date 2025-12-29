@@ -2,104 +2,46 @@
   <div class="header-container">
     <p>历史对话</p>
     <div class="his-icon" v-if="showHis">
-      <el-tooltip
-        class="box-item"
-        effect="light"
-        content="查看全部"
-        placement="top-start"
-      >
-        <el-icon style="cursor: pointer" @click="openChatHisList"
-          ><i class="fa-regular fa-clock"></i
-        ></el-icon>
+      <el-tooltip class="box-item" effect="light" content="查看全部" placement="top-start">
+        <el-icon style="cursor: pointer" @click="openChatHisList"><i class="fa-regular fa-clock"></i></el-icon>
       </el-tooltip>
     </div>
   </div>
 
   <el-skeleton :loading="openLoading" animated>
     <template #template>
-      <el-skeleton-item
-        variant="text"
-        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
-      />
-      <el-skeleton-item
-        variant="text"
-        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
-      />
-      <el-skeleton-item
-        variant="text"
-        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
-      />
-      <el-skeleton-item
-        variant="text"
-        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
-      />
-      <el-skeleton-item
-        variant="text"
-        style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px"
-      />
+      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
+      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
+      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
+      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
+      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
     </template>
     <template #default>
       <div class="infinite-list-wrapper" style="overflow: auto">
         <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
-          <ul
-            v-infinite-scroll="load"
-            class="list"
-            :infinite-scroll-disabled="disabled"
-          >
-            <li
-              v-for="(chat, index) in tableData"
-              :key="index"
-              :class="
-                chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
-              "
-              @click="openChatHis($event, chat)"
-              :data-index="index"
-              @contextmenu.prevent="openMenu($event, chat)"
-            >
-              <el-tooltip
-                class="box-item"
-                effect="light"
-                :content="chat.talk_name"
-                placement="right"
-                :disabled="!shouldShowTooltip(index) || !showHis"
-              >
+          <ul v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled">
+            <li v-for="(chat, index) in tableData" :key="index" :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
+              " @click="openChatHis($event, chat)" :data-index="index" @contextmenu.prevent="openMenu($event, chat)">
+              <el-tooltip class="box-item" effect="light" :content="chat.talk_name" placement="right"
+                :disabled="!shouldShowTooltip(index) || !showHis">
                 <template #content>
                   {{ chat.talk_name }}
                 </template>
                 <div class="content">
-                  <span
-                    :ref="(el) => handleRef(el, index)"
-                    class="text-truncate"
-                    ><i class="fa-regular fa-comments"></i
-                    >{{ chat.talk_name }}</span
-                  >
-                  <el-dropdown
-                    v-if="showHis"
-                    trigger="click"
-                    @visible-change="handleVisibleChange"
-                    placement="bottom-end"
-                  >
+                  <span :ref="(el) => handleRef(el, index)" class="text-truncate"><i
+                      class="fa-regular fa-comments"></i>{{
+                    chat.talk_name }}</span>
+                  <el-dropdown v-if="showHis" trigger="click" @visible-change="handleVisibleChange"
+                    placement="bottom-end">
                     <span class="el-dropdown-link">
-                      <i
-                        ref="trigger"
-                        :data-index="index"
-                        class="fa-solid fa-ellipsis"
-                      ></i>
+                      <i ref="trigger" :data-index="index" class="fa-solid fa-ellipsis"></i>
                     </span>
                     <template #dropdown>
-                      <el-dropdown-menu
-                        :style="{ pointerEvents: isVisible ? 'auto' : 'none' }"
-                      >
-                        <el-dropdown-item @click="handleEditMsg(chat)"
-                          ><i class="fa-regular fa-pen-to-square"></i
-                          >重命名</el-dropdown-item
-                        >
-                        <el-dropdown-item
-                          class="delete"
-                          @click="handleDeleteMsg(chat)"
-                          ><i class="fa-solid fa-trash"></i
-                          >删除</el-dropdown-item
-                        >
+                      <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
+                        <el-dropdown-item @click="handleEditMsg(chat)"><i
+                            class="fa-regular fa-pen-to-square"></i>重命名</el-dropdown-item>
+                        <el-dropdown-item class="delete" @click="handleDeleteMsg(chat)"><i
+                            class="fa-solid fa-trash"></i>删除</el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -348,7 +290,7 @@ onMounted(function () {
   }
 
   .infinite-list-wrapper {
-    height: calc(100vh - 220px);
+    height: calc(100vh - 250px);
   }
 }
 
@@ -412,7 +354,7 @@ onMounted(function () {
   padding: 6px;
 }
 
-.el-popper[data-popper-placement="bottom-end"] > .el-popper__arrow {
+.el-popper[data-popper-placement="bottom-end"]>.el-popper__arrow {
   top: 0 !important;
 }
 
@@ -430,7 +372,7 @@ onMounted(function () {
   margin-right: 8px;
 }
 
-.infinite-list-wrapper .list-item + .list-item {
+.infinite-list-wrapper .list-item+.list-item {
   margin-top: 1px;
 }
 
