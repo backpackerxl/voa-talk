@@ -30,7 +30,7 @@
                 <div class="content">
                   <span :ref="(el) => handleRef(el, index)" class="text-truncate"><i
                       class="fa-regular fa-comments"></i>{{
-                    chat.talk_name }}</span>
+                        chat.talk_name }}</span>
                   <el-dropdown v-if="showHis" trigger="click" @visible-change="handleVisibleChange"
                     placement="bottom-end">
                     <span class="el-dropdown-link">
@@ -48,6 +48,7 @@
                 </div>
               </el-tooltip>
             </li>
+            <li v-if="!showHis" class="list-item"></li>
           </ul>
         </RightClickMenu>
         <div class="last-msg" v-loading="loading"></div>
@@ -290,7 +291,7 @@ onMounted(function () {
   }
 
   .infinite-list-wrapper {
-    height: calc(100vh - 240px);
+    height: calc(100vh - 230px);
   }
 }
 
