@@ -461,7 +461,6 @@ def api_link_github(other_user_id, user_id):
             DbTools.bulk_update(session, update_data_req, RequestLogs)
         # 绑定账号
         user_quen = session.query(SysUser.id, SysUser.github_open_id).filter(SysUser.id == user_id).first()
-        user_quen.github_open_id = other_user_quen.github_open_id
         DbTools.saveOrUpdate(session, {
             "id": user_quen.id,
             "github_open_id": other_user_quen.github_open_id,
