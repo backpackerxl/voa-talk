@@ -464,17 +464,19 @@ async function verifyOtpOrAuthn() {
     // 验证场景：仅处理必要参数，删除 rp/user（验证场景不需要）
     const publicKey = {
       ...options,
-      rp: { id: window.location.hostname },
+      rp: {
+        id: window.location.hostname,
+        name: "voatalk聊天助手"
+      },
       challenge: base64UrlToArrayBuffer(options.challenge || ''),
       allowCredentials: options.allowCredentials?.map(cred => ({
         ...cred,
+        alg: -7,
         id: base64UrlToArrayBuffer(cred.id || '')
       })) || [],
       // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
       timeout: options.timeout || 60000,
-      authenticatorSelection: {
-        userVerification: 'required', // 必须：不设置则可能跳过生物识别
-      }
+      userVerification: 'required',
     };
 
     // 前置校验：确保 allowCredentials 非空
@@ -583,9 +585,7 @@ async function linkAccount() {
       },
       // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
       timeout: options.timeout || 60000,
-      authenticatorSelection: {
-        userVerification: 'required', // 必须：不设置则可能跳过生物识别
-      }
+      userVerification: 'required', // 必须：不设置则可能跳过生物识别
     };
 
     // 3. 调用 WebAuthn API 创建凭证
