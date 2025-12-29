@@ -78,9 +78,9 @@ def register_begin(request):
             user_name=username,
             user_display_name=username,
             authenticator_selection=AuthenticatorSelectionCriteria(
-                authenticator_attachment=AuthenticatorAttachment.CROSS_PLATFORM,
-                resident_key=ResidentKeyRequirement.PREFERRED,
-                user_verification=UserVerificationRequirement.PREFERRED,
+                authenticator_attachment=AuthenticatorAttachment.PLATFORM,
+                resident_key=ResidentKeyRequirement.REQUIRED,
+                user_verification=UserVerificationRequirement.REQUIRED,
                 require_resident_key=False,
             ),
             challenge=challenge,
@@ -321,7 +321,7 @@ def login_begin(request):
         options = generate_authentication_options(
             rp_id=rp_id,
             allow_credentials=[credential_descriptor],
-            user_verification=UserVerificationRequirement.PREFERRED,
+            user_verification=UserVerificationRequirement.REQUIRED,
             challenge=challenge,  # 直接传 bytes 类型的 challenge
             timeout=60000,
         )
