@@ -47,21 +47,6 @@
               <a @click="register">注 册</a>
             </div>
           </div>
-          <div class="other-login">
-            <p class="text">其他登录方式</p>
-            <div class="logo-container">
-              <el-tooltip class="box-item" effect="light" content="QQ登录" placement="bottom">
-                <div class="item" @click="qqLogin">
-                  <i class="fa-brands fa-qq"></i>
-                </div>
-              </el-tooltip>
-              <el-tooltip class="box-item" effect="light" content="GitHub登录" placement="bottom">
-                <div class="item" @click="githubLogin">
-                  <i class="fa-brands fa-github"></i>
-                </div>
-              </el-tooltip>
-            </div>
-          </div>
         </div>
         <!-- 免密登录 -->
         <div v-else>
@@ -74,6 +59,21 @@
             <div class="register">
               <a @click="isNoKeyLogin = !isNoKeyLogin">切换账号登录</a>
             </div>
+          </div>
+        </div>
+        <div class="other-login">
+          <p class="text">其他登录方式</p>
+          <div class="logo-container">
+            <el-tooltip class="box-item" effect="light" content="QQ登录" placement="bottom">
+              <div class="item" @click="qqLogin">
+                <i class="fa-brands fa-qq"></i>
+              </div>
+            </el-tooltip>
+            <el-tooltip class="box-item" effect="light" content="GitHub登录" placement="bottom">
+              <div class="item" @click="githubLogin">
+                <i class="fa-brands fa-github"></i>
+              </div>
+            </el-tooltip>
           </div>
         </div>
       </el-card>

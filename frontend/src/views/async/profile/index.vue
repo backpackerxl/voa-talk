@@ -514,6 +514,7 @@ async function bindAccount() {
     }
     console.error("Failed to bind account:", error);
   }
+  store.dispatch("app/clearBindOtherAccount");
   bindAccountDialogVisible.value = false;
 }
 
