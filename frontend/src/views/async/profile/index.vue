@@ -47,36 +47,76 @@
             }}</el-tag>
           </div>
           <div>
-            <el-button plain :icon="Edit" @click="changeEmail">{{
-              userEmail !== "" ? "更换" : "绑定"
-            }}</el-button>
+            <el-button plain :icon="Edit" @click="changeEmail">
+              {{ userEmail !== "" ? "更换" : "绑定" }}
+            </el-button>
           </div>
         </div>
       </el-form-item>
       <el-form-item>
         <div class="button-group">
-          <el-button size="large" type="primary" @click="saveUserInfo" :icon="Edit">保 存</el-button>
+          <el-button size="large" type="primary" @click="saveUserInfo">
+            <svg t="1767109869237" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="34482" width="16" height="16">
+              <path
+                d="M512 85.333333c-140.8 0-256 115.2-256 256 0 81.066667 38.4 153.6 98.133333 200.533334C196.266667 605.866667 85.333333 759.466667 85.333333 938.666667h85.333334c0-187.733333 153.6-341.333333 341.333333-341.333334 140.8 0 256-115.2 256-256S652.8 85.333333 512 85.333333z m0 426.666667c-93.866667 0-170.666667-76.8-170.666667-170.666667s76.8-170.666667 170.666667-170.666666 170.666667 76.8 170.666667 170.666666-76.8 170.666667-170.666667 170.666667zM917.333333 597.333333h-128c-12.8 0-21.333333-8.533333-21.333333-21.333333v-42.666667c0-12.8 8.533333-21.333333 21.333333-21.333333h128c12.8 0 21.333333 8.533333 21.333334 21.333333v42.666667c0 12.8-8.533333 21.333333-21.333334 21.333333zM917.333333 938.666667H618.666667c-12.8 0-21.333333-8.533333-21.333334-21.333334v-42.666666c0-12.8 8.533333-21.333333 21.333334-21.333334h298.666666c12.8 0 21.333333 8.533333 21.333334 21.333334v42.666666c0 12.8-8.533333 21.333333-21.333334 21.333334zM917.333333 768H618.666667c-12.8 0-21.333333-8.533333-21.333334-21.333333v-42.666667c0-12.8 8.533333-21.333333 21.333334-21.333333h298.666666c12.8 0 21.333333 8.533333 21.333334 21.333333v42.666667c0 12.8-8.533333 21.333333-21.333334 21.333333z"
+                fill="#ffffff" p-id="34483"></path>
+            </svg>
+            &nbsp;
+            保 存
+          </el-button>
         </div>
       </el-form-item>
     </el-form>
     <div class="opt">
       <p>便捷操作</p>
       <div v-if="isSupportBiometric">
-        <el-button size="large" type="primary" @click="noKeyLogin" :icon="Key" v-if="isNoKeyLogin">开启{{ biometricType
-        }}登录</el-button>
-        <el-button size="large" type="primary" @click="closeKeyLogin" :icon="Key" v-else>关闭{{ biometricType
-        }}登录</el-button>
+        <el-button size="large" type="primary" @click="noKeyLogin" v-if="isNoKeyLogin">
+          <div class="auth-icon">
+            <span :class="authIcon"></span>
+          </div>&nbsp;
+          开启{{ biometricType }}登录
+        </el-button>
+        <el-button size="large" type="primary" @click="closeKeyLogin" v-else>
+          <div class="auth-icon">
+            <span :class="authIcon"></span>
+          </div>&nbsp;
+          关闭{{ biometricType }}登录
+        </el-button>
       </div>
-      <el-button size="large" type="primary" @click="forgetPwd" :icon="Edit">更换密码</el-button>
+      <el-button size="large" type="primary" @click="forgetPwd">
+        <svg t="1767109398317" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+          p-id="28778" width="16" height="16">
+          <path
+            d="M148.835185 426.377261h670.957116v173.28548h65.395426V422.166298c0-33.717704-26.341769-61.183463-58.856484-61.183464h-77.166323V244.237858c0-65.814423-27.909755-127.508882-78.592311-173.742476C620.729046 25.03378 554.653626 0 484.536241 0S348.343435 25.03378 298.499872 70.496382c-50.681556 46.221595-78.592311 107.929054-78.59231 173.742476v116.743976h-77.61132c-32.449715 0-58.855484 27.465759-58.855484 61.118464v453.189026c0 33.704704 26.405768 61.171464 58.855484 61.171464h399.617496v-65.395427H148.835185z m136.454803-182.138403c0-98.616135 89.382216-178.843432 199.246253-178.843431s199.233253 80.227296 199.233253 178.843431v116.743976H285.289988z"
+            fill="#ffffff" p-id="28779"></path>
+          <path
+            d="M383.029131 601.558725h204.021211v65.395426H383.029131z m427.450251 86.126244a32.697713 32.697713 0 0 0 0 46.247595l18.467839 18.401838H636.043912v65.395427h271.783617a32.697713 32.697713 0 0 0 23.136797-55.821511l-74.224349-74.223349a32.697713 32.697713 0 0 0-46.259595 0zM643.001851 893.941161a32.697713 32.697713 0 0 0 0 46.247594l74.224349 74.224349a32.697713 32.697713 0 0 0 46.247595-46.247594l-18.402839-18.402839h192.838309v-65.395426H666.125648a32.592714 32.592714 0 0 0-23.123797 9.573916z"
+            fill="#ffffff" p-id="28780"></path>
+        </svg>&nbsp;
+        更换密码
+      </el-button>
       <div v-if="isMob && loginType === 'voatalk'">
-        <el-button size="large" type="primary" @click="linkQQ" :icon="Link" v-if="clickQQFlow !== 0">{{
-          qqActionTxt[clickQQFlow]
-        }}</el-button>
+        <el-button size="large" type="primary" @click="linkQQ" v-if="clickQQFlow !== 0">
+          <svg t="1767109149691" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            p-id="24966" width="16" height="16">
+            <path
+              d="M824.8 613.2c-16-51.4-34.4-94.6-62.7-165.3C766.5 262.2 689.3 112 511.5 112 331.7 112 256.2 265.2 261 447.9c-28.4 70.8-46.7 113.7-62.7 165.3-34 109.5-23 154.8-14.6 155.8 18 2.2 70.1-82.4 70.1-82.4 0 49 25.2 112.9 79.8 159-26.4 8.1-85.7 29.9-71.6 53.8 11.4 19.3 196.2 12.3 249.5 6.3 53.3 6 238.1 13 249.5-6.3 14.1-23.8-45.3-45.7-71.6-53.8 54.6-46.2 79.8-110.1 79.8-159 0 0 52.1 84.6 70.1 82.4 8.5-1.1 19.5-46.4-14.5-155.8z"
+              p-id="24967" fill="#ffffff"></path>
+          </svg>&nbsp;
+          {{ qqActionTxt[clickQQFlow] }}
+        </el-button>
       </div>
       <div v-if="isMob && loginType === 'voatalk'">
-        <el-button size="large" type="primary" @click="linkGitHub" :icon="Link" v-if="clickGitHubFlow !== 0">{{
-          githubActionTxt[clickGitHubFlow]
-        }}</el-button>
+        <el-button size="large" type="primary" @click="linkGitHub" v-if="clickGitHubFlow !== 0">
+          <svg t="1767109018108" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            p-id="23912" width="16" height="16">
+            <path
+              d="M512 128C299.872 128 128 299.872 128 512c0 169.6 110.016 313.6 262.624 364.384 19.264 3.52 26.24-8.256 26.24-18.496 0-9.152-0.352-33.28-0.48-65.28-106.88 23.136-129.376-51.488-129.376-51.488-17.504-44.384-42.624-56.256-42.624-56.256-34.88-23.744 2.624-23.232 2.624-23.232 38.496 2.752 58.752 39.488 58.752 39.488 34.24 58.752 89.856 41.76 111.744 32 3.52-24.864 13.504-41.76 24.384-51.36-85.248-9.632-174.88-42.624-174.88-189.76 0-42.016 15.008-76.256 39.488-103.136-3.872-9.6-17.12-48.736 3.744-101.6 0 0 32.256-10.24 105.632 39.36A367.584 367.584 0 0 1 512 313.76c32.64 0.128 65.504 4.352 96.128 12.864 73.376-49.6 105.504-39.36 105.504-39.36 20.992 52.864 7.872 92 3.84 101.6 24.64 26.88 39.392 61.12 39.392 103.136 0 147.52-89.728 179.872-175.232 189.504 13.76 11.744 25.984 35.232 25.984 71.008 0 51.36-0.352 92.736-0.352 105.376 0 10.24 6.848 22.24 26.368 18.496C786.112 825.504 896 681.6 896 512c0-212.128-171.872-384-384-384z"
+              p-id="23913" fill="#ffffff"></path>
+          </svg>&nbsp;
+          {{ githubActionTxt[clickGitHubFlow] }}
+        </el-button>
       </div>
       <p class="them-text">自定义主题色</p>
       <div class="them-color">
@@ -144,8 +184,6 @@ import { ref, onMounted, reactive } from "vue";
 import store from "@/store";
 import {
   Plus,
-  Link,
-  Key,
   Edit,
   ArrowDown,
 } from "@element-plus/icons-vue";
@@ -175,6 +213,7 @@ import device from "current-device";
 import avater from "@/assets/images/avater.png";
 const userNameTxt = ref('');
 const userAvatarUrl = ref('');
+const authIcon = ref('');
 
 const avatarUrl = store.state.app.avatar;
 const loginType = store.state.app.loginType;
@@ -773,6 +812,20 @@ onMounted(async function () {
   const support = await checkBiometricSupport();
   isSupportBiometric.value = support.supported && loginType === 'voatalk';
   biometricType.value = support.biometricType || '';
+  switch (biometricType.value) {
+    case 'Face/Touch ID':
+      authIcon.value = 'icon faceid';
+      break;
+    case '指纹/面部':
+    case 'Touch ID':
+      authIcon.value = 'icon fingerprint';
+      break;
+    case 'Windows Hello':
+      authIcon.value = 'icon windowshello';
+      break;
+    default:
+      break;
+  }
   isNoKeyLogin.value = store.state.app.noKeyLogin === '' || JSON.parse(store.state.app.noKeyLogin).gid !== store.state.app.userName;
 });
 </script>
@@ -1015,5 +1068,27 @@ onMounted(async function () {
   .them-color {
     margin-bottom: 5px;
   }
+}
+
+.auth-icon .icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  background-color: #fff;
+}
+
+.auth-icon .icon.fingerprint {
+  -webkit-mask-image: url("@/assets/images/fingerprint.svg");
+  mask-image: url("@/assets/images/fingerprint.svg");
+}
+
+.auth-icon .icon.faceid {
+  -webkit-mask-image: url("@/assets/images/faceid.svg");
+  mask-image: url("@/assets/images/faceid.svg");
+}
+
+.auth-icon .icon.windowshello {
+  -webkit-mask-image: url("@/assets/images/windowshello.svg");
+  mask-image: url("@/assets/images/windowshello.svg");
 }
 </style>

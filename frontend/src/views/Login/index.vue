@@ -55,7 +55,13 @@
             <h4 class="user-name-txt">{{ userNameTxt }}</h4>
           </div>
           <div class="butt">
-            <el-button size="large" type="primary" @click="noKeyLogin">{{ loginPrefix }}登录</el-button>
+            <el-button size="large" type="primary" @click="noKeyLogin">
+              <div class="auth-icon">
+                <span :class="authIcon"></span>
+              </div>
+              &nbsp;
+              {{ loginPrefix }}登录
+            </el-button>
             <div class="register">
               <a @click="isNoKeyLogin = !isNoKeyLogin">切换账号登录</a>
             </div>
@@ -107,8 +113,13 @@
                 @click="copySecret($event.currentTarget, recoveryCode.join(' '))"></i>
             </p>
           </div>
-          <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">使用{{ supportBiometric
-          }}认证</el-button>
+          <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">
+            <div class="auth-icon">
+              <span :class="authIcon"></span>
+            </div>&nbsp;
+            使用{{ supportBiometric
+            }}认证
+          </el-button>
           <el-button size="large" type="primary" @click="dialogOTPVisible = true" v-else>
             完 成
           </el-button>
@@ -123,9 +134,14 @@
             </el-form>
           </div>
           <div class="butt">
-            <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn" :icon="Pointer">{{
-              authnTxt
-            }}</el-button>
+            <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn">
+              <div class="auth-icon">
+                <span :class="authIcon"></span>
+              </div>&nbsp;
+              {{
+                authnTxt
+              }}
+            </el-button>
           </div>
           <div>
             <el-collapse>
@@ -230,6 +246,7 @@ const userAvatarUrl = ref("");
 const userNameTxt = ref("");
 const loginPrefix = ref("");
 const supportBiometric = ref('');
+const authIcon = ref('');
 
 let pcOrMobile = device.mobile() ? "mobile" : "pc";
 
@@ -705,6 +722,20 @@ onMounted(async function () {
   const support = await checkBiometricSupport();
   supportBiometric.value = support.biometricType || '';
   authnTxt.value = `使用${supportBiometric.value}认证`;
+  switch (supportBiometric.value) {
+    case 'Face/Touch ID':
+      authIcon.value = 'icon faceid';
+      break;
+    case '指纹/面部':
+    case 'Touch ID':
+      authIcon.value = 'icon fingerprint';
+      break;
+    case 'Windows Hello':
+      authIcon.value = 'icon windowshello';
+      break;
+    default:
+      break;
+  }
 });
 
 function forgetpas() {
@@ -926,5 +957,27 @@ function qqLogin() {
   margin: 0;
   padding: 0;
   color: var(--el-text-color-primary);
+}
+
+.auth-icon .icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  background-color: #fff;
+}
+
+.auth-icon .icon.fingerprint {
+  -webkit-mask-image: url("@/assets/images/fingerprint.svg");
+  mask-image: url("@/assets/images/fingerprint.svg");
+}
+
+.auth-icon .icon.faceid {
+  -webkit-mask-image: url("@/assets/images/faceid.svg");
+  mask-image: url("@/assets/images/faceid.svg");
+}
+
+.auth-icon .icon.windowshello {
+  -webkit-mask-image: url("@/assets/images/windowshello.svg");
+  mask-image: url("@/assets/images/windowshello.svg");
 }
 </style>
