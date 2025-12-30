@@ -770,7 +770,7 @@ onMounted(async function () {
   document.documentElement.querySelector("title").innerText = "我的主页";
   // 调用检测函数
   const support = await checkBiometricSupport();
-  isSupportBiometric.value = support.supported;
+  isSupportBiometric.value = support.supported && loginType === 'voatalk';
   biometricType.value = support.biometricType || '';
   isNoKeyLogin.value = store.state.app.noKeyLogin === '' || JSON.parse(store.state.app.noKeyLogin).gid !== store.state.app.userName;
 });
@@ -1012,7 +1012,7 @@ onMounted(async function () {
 
 @media (max-width: 768px) {
   .them-color {
-    margin-bottom: 50px;
+    margin-bottom: 5px;
   }
 }
 </style>

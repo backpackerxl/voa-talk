@@ -866,7 +866,7 @@ function scrollTopBottom(animation = false) {
 }
 
 .input-container {
-  width: 43vw;
+  width: 42vw;
   position: fixed;
 }
 
@@ -959,7 +959,7 @@ function scrollTopBottom(animation = false) {
 
 .record-list {
   display: block;
-  padding-bottom: 25px;
+  padding-bottom: 10px;
 }
 
 .record-list.active {
@@ -1144,11 +1144,11 @@ function scrollTopBottom(animation = false) {
   }
 
   .chat-page {
-    height: calc(100vh - 250px);
+    height: calc(100vh - 200px);
   }
 
   .input-container {
-    width: 95vw;
+    width: 90vw;
   }
 
   .box-share {

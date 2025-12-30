@@ -48,7 +48,6 @@
                 </div>
               </el-tooltip>
             </li>
-            <li v-if="!showHis" class="list-item"></li>
           </ul>
         </RightClickMenu>
         <div class="last-msg" v-loading="loading"></div>
@@ -291,7 +290,7 @@ onMounted(function () {
   }
 
   .infinite-list-wrapper {
-    height: calc(100vh - 230px);
+    height: calc(100vh - 220px);
   }
 }
 
