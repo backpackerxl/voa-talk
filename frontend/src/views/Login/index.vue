@@ -720,7 +720,7 @@ onMounted(async function () {
   userNameTxt.value = noKeyLoginObj.gid || '';
   loginPrefix.value = noKeyLoginObj.biometricType || '';
   const support = await checkBiometricSupport();
-  supportBiometric.value = support.biometricType || '';
+  supportBiometric.value = support.biometricType || '其他方式';
   authnTxt.value = `使用${supportBiometric.value}认证`;
   switch (supportBiometric.value) {
     case 'Face/Touch ID':
