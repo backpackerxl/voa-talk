@@ -211,7 +211,7 @@ import { loginUser } from "@/api/login";
 import { registerBegin, registerComplete, generateOtpQrcode, verifyRecovery, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
-import { User, Lock, Platform } from "@element-plus/icons-vue";
+import { User, Lock } from "@element-plus/icons-vue";
 import { encryptAes, decryptAes } from "@/utils/tools";
 import { copySecret } from "@/utils/render-html";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
@@ -404,20 +404,28 @@ async function sendPostRequest() {
   try {
     const password = form.value.password;
     let encryptedPassword = encryptAes(password);
+    const support = await checkBiometricSupport();
+    const supported = support.supported;
     // 使用加密后的密码进行登录
     const response = await loginUser(
       form.value.username,
       encryptedPassword,
-      pcOrMobile
+      pcOrMobile,
+      supported,
     );
     if (response.code === 200) {
-      loginPage.value = false;
-      nextId.value = response.data.next_id || '';
-      // 检查用户是否注册了WebAuthn
-      state.open = !response.data.register_authenticated;
-      userNameTxt.value = response.data.username;
-      userAvatarUrl.value = response.data.avatar || '';
-      form.value.username = response.data.username;
+      if (response.data.next_id) {
+        loginPage.value = false;
+        nextId.value = response.data.next_id || '';
+        // 检查用户是否注册了WebAuthn
+        state.open = !response.data.register_authenticated;
+        userNameTxt.value = response.data.username;
+        userAvatarUrl.value = response.data.avatar || '';
+        form.value.username = response.data.username;
+      } else {
+        ElMessage.success('登录成功!');
+        cacheUserInfoAndRedirect(response.data);
+      }
     } else {
       ElMessage.error(response.msg);
     }
