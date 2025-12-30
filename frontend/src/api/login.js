@@ -1,10 +1,10 @@
 import request from '@/utils/request';
 
-export function loginUser(userName, passWord, platform, supported) {
+export function loginUser(userName, passWord, platform) {
     return request({
         url: '/login/pt_login',
         method: 'post',
-        params: { userName, passWord, platform, supported },
+        params: { userName, passWord, platform },
     });
 }
 

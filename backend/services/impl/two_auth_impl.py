@@ -53,6 +53,7 @@ def register_begin(request):
 
     username = data.get('username')
     platform = data.get('platform')
+    supported = data.get('supported')
     if not username:
         return ReturnTool.ErrorReturn('用户名必填！', 400)
 
@@ -74,6 +75,20 @@ def register_begin(request):
 
         # 获取请求的主机名作为RP ID
         rp_id = request.host.split(':')[0]  # 去掉端口号
+        if supported:
+            authenticator_selection = AuthenticatorSelectionCriteria(
+                authenticator_attachment=AuthenticatorAttachment.PLATFORM,
+                resident_key=ResidentKeyRequirement.REQUIRED,
+                user_verification=UserVerificationRequirement.REQUIRED,
+                require_resident_key=False,
+            )
+        else:
+            authenticator_selection = AuthenticatorSelectionCriteria(
+                authenticator_attachment=AuthenticatorAttachment.CROSS_PLATFORM,
+                resident_key=ResidentKeyRequirement.PREFERRED,
+                user_verification=UserVerificationRequirement.PREFERRED,
+                require_resident_key=False,
+            )
 
         # 生成注册选项
         options = generate_registration_options(
@@ -82,12 +97,7 @@ def register_begin(request):
             user_id=username.encode('utf-8'),
             user_name=username,
             user_display_name=username,
-            authenticator_selection=AuthenticatorSelectionCriteria(
-                authenticator_attachment=AuthenticatorAttachment.PLATFORM,
-                resident_key=ResidentKeyRequirement.REQUIRED,
-                user_verification=UserVerificationRequirement.REQUIRED,
-                require_resident_key=False,
-            ),
+            authenticator_selection=authenticator_selection,
             challenge=challenge,
             timeout=60000,  # 60秒超时
             attestation=AttestationConveyancePreference.NONE,  # 生产环境可能需要 "direct"
@@ -276,6 +286,7 @@ def login_begin(request):
 
     username = data.get('username')
     platform = data.get('platform')
+    supported = data.get('supported')
     if not username:
         return ReturnTool.ErrorReturn('用户名必填!', 400)
 
@@ -336,11 +347,15 @@ def login_begin(request):
 
         # 生成验证场景选项（删除多余的 pubKeyCredParams，验证场景不需要）
         rp_id = request.host.split(':')[0]
+        if supported:
+            user_verification = UserVerificationRequirement.REQUIRED
+        else:
+            user_verification = UserVerificationRequirement.PREFERRED
 
         options = generate_authentication_options(
             rp_id=rp_id,
             allow_credentials=[credential_descriptor],
-            user_verification=UserVerificationRequirement.REQUIRED,
+            user_verification=user_verification,
             challenge=challenge,  # 直接传 bytes 类型的 challenge
             timeout=60000,
         )

@@ -680,10 +680,11 @@ async function noKeyLogin() {
     // 注册WebAuthn
     const support = await checkBiometricSupport();
     if (!support.supported) {
-      ElMessage.error('当前设备不支持生物验证');
+      ElMessage.error('当前设备不支持生物验证, 请使用其他验证方式！');
       return;
     }
-    const obj = await loginBegin({ username: store.state.app.userName, platform: pcOrMobile });
+    const supported = support.supported;
+    const obj = await loginBegin({ username: store.state.app.userName, platform: pcOrMobile, supported });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;

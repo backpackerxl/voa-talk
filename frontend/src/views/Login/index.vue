@@ -404,28 +404,20 @@ async function sendPostRequest() {
   try {
     const password = form.value.password;
     let encryptedPassword = encryptAes(password);
-    const support = await checkBiometricSupport();
-    const supported = support.supported;
     // 使用加密后的密码进行登录
     const response = await loginUser(
       form.value.username,
       encryptedPassword,
-      pcOrMobile,
-      supported,
+      pcOrMobile
     );
     if (response.code === 200) {
-      if (response.data.next_id) {
-        loginPage.value = false;
-        nextId.value = response.data.next_id || '';
-        // 检查用户是否注册了WebAuthn
-        state.open = !response.data.register_authenticated;
-        userNameTxt.value = response.data.username;
-        userAvatarUrl.value = response.data.avatar || '';
-        form.value.username = response.data.username;
-      } else {
-        ElMessage.success('登录成功!');
-        cacheUserInfoAndRedirect(response.data);
-      }
+      loginPage.value = false;
+      nextId.value = response.data.next_id || '';
+      // 检查用户是否注册了WebAuthn
+      state.open = !response.data.register_authenticated;
+      userNameTxt.value = response.data.username;
+      userAvatarUrl.value = response.data.avatar || '';
+      form.value.username = response.data.username;
     } else {
       ElMessage.error(response.msg);
     }
@@ -463,7 +455,14 @@ async function verifyOtpOrAuthn() {
   try {
     // 使用WebAuthn登录
     // console.log('使用WebAuthn登录', form.value.username);
-    const obj = await loginBegin({ username: form.value.username, platform: pcOrMobile });
+    const support = await checkBiometricSupport();
+    if (!support.supported) {
+      ElMessage.error('当前设备不支持生物验证, 请使用其他验证方式！');
+      return;
+    }
+    const supported = support.supported;
+    // const supported = false;
+    const obj = await loginBegin({ username: form.value.username, platform: pcOrMobile, supported });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;
@@ -565,7 +564,10 @@ function linkOTP() {
 async function linkAccount() {
   try {
     // 注册WebAuthn
-    const obj = await registerBegin({ username: form.value.username, platform: pcOrMobile });
+    const support = await checkBiometricSupport();
+    const supported = support.supported;
+    // const supported = false;
+    const obj = await registerBegin({ username: form.value.username, platform: pcOrMobile, supported });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;

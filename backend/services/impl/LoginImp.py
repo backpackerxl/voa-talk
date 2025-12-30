@@ -60,9 +60,6 @@ def login_impl(request):
         user_data["jwtToken"] = token
         user_data["refreshToken"] = token
         user_data['exp'] = user_data['exp'].strftime("%Y-%m-%d %H:%M:%S")
-        if not request.get_json().get("supported"):
-            return ReturnTool.SuccessReturn(user_data)
-
         next_id = str(uuid.uuid4())
         ## 缓存登录信息
         RedisHandler().save_key("user:info:" + next_id, json.dumps(user_data), 300)  # 登录成功信息5分钟内有效

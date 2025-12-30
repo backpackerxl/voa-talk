@@ -24,7 +24,7 @@ onMounted(function () {
   })
     .then((obj) => {
       if (!bindOtherAccount) {
-        ElMessage.success("🎉登录成功！正在为您跳转...");
+        ElMessage.success("🎉登录成功，跳转中...");
 
         store.dispatch("app/setAuthorization", obj.data.jwtToken);
         store.dispatch("app/setUserRole", obj.data.superAdmin);
@@ -36,7 +36,7 @@ onMounted(function () {
 
         router.replace("/home/chat");
       } else {
-        ElMessage.success("🎉第三方已响应！请手动关闭弹窗，继续后面的操作！");
+        ElMessage.success("🎉第三方已响应，请关闭弹窗，继续后面的操作！");
       }
     })
     .catch((err) => {
