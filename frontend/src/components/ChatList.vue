@@ -290,7 +290,7 @@ onMounted(function () {
   }
 
   .infinite-list-wrapper {
-    height: calc(100vh - 220px);
+    height: calc(100vh - 200px);
   }
 }
 
