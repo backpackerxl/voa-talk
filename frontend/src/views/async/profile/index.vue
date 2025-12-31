@@ -671,8 +671,12 @@ function forgetPwd() {
 }
 
 async function saveUserInfo() {
+  let avatar = saveUrl.value;
+  if (saveUrl.value === config.BASE_URL) {
+    avatar = store.state.app.avatar;
+  }
   const resp = await updateUser({
-    avatar: saveUrl.value,
+    avatar: avatar,
     nick_name: welcomStr.value,
   });
   if (resp.code === 200) {
