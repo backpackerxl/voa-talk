@@ -404,6 +404,8 @@ def login_complete(request):
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
+        if queue.user_state != 1:
+            return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！")
         if platform == 'mobile':
             if not queue or not queue.credentials_data_mobile:  # 新增 queue 判空
                 return ReturnTool.ErrorReturn('用户没有开通移动端二次身份验证！', 404)

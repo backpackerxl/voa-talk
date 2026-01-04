@@ -60,6 +60,8 @@ def qq(code, redirect_uri, ip, bind_other_account):
     with DatabaseSession() as session:
         queue = session.query(SysUser).filter(SysUser.qq_open_id == openid).first()
         if queue is not None:
+            if queue.user_state != 1:
+                return ReturnTool.ErrorReturn("QQ用户已经停用，请联系管理员！")
             # 设置用户最后登录时间
             queue.last_login_time = datetime.datetime.now()
             session.commit()
@@ -130,6 +132,8 @@ def github(code, redirect_uri, ip, bind_other_account):
     with DatabaseSession() as session:
         queue = session.query(SysUser).filter(SysUser.github_open_id == openid).first()
         if queue is not None:
+            if queue.user_state != 1:
+                return ReturnTool.ErrorReturn("github用户已经停用，请联系管理员！")
             # 设置用户最后登录时间
             queue.last_login_time = datetime.datetime.now()
             session.commit()
