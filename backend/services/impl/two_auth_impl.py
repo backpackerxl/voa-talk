@@ -118,6 +118,7 @@ def register_begin(request):
         # 确保 challenge 是字符串
         options_dict = json.loads(options_json)
         options_dict['challenge'] = bytes_to_base64url(challenge)
+        options_dict['rp']['icon'] = 'https://www.voatalk.online/voatalk_api/uploads/20251215/logo.png'
         options_dict['req_id'] = req_id
 
         return ReturnTool.SuccessReturn(options_dict)

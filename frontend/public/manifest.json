@@ -1,0 +1,13 @@
+{
+    "name": "VoaTalk",
+    "short_name": "VoaTalk",
+    "start_url": "/home",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "logo.png",
+            "sizes": "97x101",
+            "type": "image/png"
+        }
+    ]
+}

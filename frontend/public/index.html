@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 
 <head>
+  <link rel="manifest" href="/manifest.json">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -11,6 +12,25 @@
 
 <body>
   <div id="app"></div>
+  <script>
+    // 注册Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('Service Worker 注册成功:', registration.scope);
+
+            // 检查更新
+            registration.addEventListener('updatefound', () => {
+              console.log('检测到新版本 Service Worker');
+            });
+          })
+          .catch(error => {
+            console.error('Service Worker 注册失败:', error);
+          });
+      });
+    }
+  </script>
 </body>
 
 </html>
