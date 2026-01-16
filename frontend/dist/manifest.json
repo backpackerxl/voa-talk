@@ -1,7 +1,7 @@
 {
     "name": "VoaTalk",
     "short_name": "VoaTalk",
-    "start_url": "/home",
+    "start_url": "/home/chat",
     "display": "standalone",
     "icons": [
         {
