@@ -9,7 +9,8 @@ const CORE_ASSETS = [
     '/register',
     '/forget',
     '/login',
-    '/logo.png',
+    '/logo-97-101.png',
+    '/logo-206-216.png',
     OFFLINE_PAGE,   // 把兜底页也一起缓存
 ];
 
