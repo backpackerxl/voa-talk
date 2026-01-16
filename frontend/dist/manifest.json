@@ -1,12 +1,17 @@
 {
     "name": "VoaTalk",
     "short_name": "VoaTalk",
-    "start_url": "/home/chat",
+    "start_url": "/",
     "display": "standalone",
     "icons": [
         {
-            "src": "logo.png",
+            "src": "logo-97-101.png",
             "sizes": "97x101",
+            "type": "image/png"
+        },
+        {
+            "src": "logo-206-216.png",
+            "sizes": "206x216",
             "type": "image/png"
         }
     ]
