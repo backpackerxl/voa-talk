@@ -9,9 +9,9 @@ const CORE_ASSETS = [
     '/register',
     '/forget',
     '/login',
-    '/voatalk-pwa64.png',
-    '/voatalk-pwa128.png',
-    '/voatalk-pwa256.png',
+    '/voatalk64.png',
+    '/voatalk128.png',
+    '/voatalk256.png',
     OFFLINE_PAGE,   // 把兜底页也一起缓存
 ];
 

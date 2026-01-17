@@ -3,17 +3,17 @@
     "name": "VoaTalk",
     "icons": [
         {
-            "src": "/voatalk-pwa64.png",
+            "src": "/voatalk64.png",
             "type": "image/png",
             "sizes": "64x64"
         },
         {
-            "src": "/voatalk-pwa128.png",
+            "src": "/voatalk128.png",
             "type": "image/png",
             "sizes": "128x128"
         },
         {
-            "src": "/voatalk-pwa256.png",
+            "src": "/voatalk256.png",
             "type": "image/png",
             "sizes": "256x256"
         }
