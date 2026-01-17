@@ -2,7 +2,7 @@
 // 打卡工具 Service Worker
 // ==========================
 
-const CACHE_NAME = 'voa-talk-v1.0';          // 主缓存
+const CACHE_NAME = 'voa-talk-v1.1';          // 主缓存
 const OFFLINE_PAGE = '/offline.html';             // 兜底页（提前缓存）
 const CORE_ASSETS = [
     '/home/chat',
