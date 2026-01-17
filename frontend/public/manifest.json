@@ -1,19 +1,19 @@
 {
     "short_name": "VoaTalk",
-    "name": "VoaTalk 你的Ai助手",
+    "name": "VoaTalk",
     "icons": [
         {
-            "src": "/logo64.png",
+            "src": "/voatalk-pwa64.png",
             "type": "image/png",
             "sizes": "64x64"
         },
         {
-            "src": "/logo128.png",
+            "src": "/voatalk-pwa128.png",
             "type": "image/png",
             "sizes": "128x128"
         },
         {
-            "src": "/logo256.png",
+            "src": "/voatalk-pwa256.png",
             "type": "image/png",
             "sizes": "256x256"
         }
