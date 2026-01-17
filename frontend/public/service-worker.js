@@ -2,16 +2,16 @@
 // 打卡工具 Service Worker
 // ==========================
 
-const CACHE_NAME = 'voa-talk-v1.1';          // 主缓存
+const CACHE_NAME = 'voa-talk-v1.2';          // 主缓存
 const OFFLINE_PAGE = '/offline.html';             // 兜底页（提前缓存）
 const CORE_ASSETS = [
     '/home/chat',
     '/register',
     '/forget',
     '/login',
-    '/logo64.png',
-    '/logo128.png',
-    '/logo256.png',
+    '/voatalk-pwa64.png',
+    '/voatalk-pwa128.png',
+    '/voatalk-pwa256.png',
     OFFLINE_PAGE,   // 把兜底页也一起缓存
 ];
 
