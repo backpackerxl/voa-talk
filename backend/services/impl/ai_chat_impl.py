@@ -77,11 +77,15 @@ def ai_chat_dialogue_impl(session_id, user_input, model_id):
             for chunk in stream:
                 if not chunk.choices:
                     continue
+                resp = chunk.choices[0].delta.content
+                if resp is None:
+                    continue
+
                 res_dict = {
                     "model_id": model_cfg.model_id,
                     "model_name": model_cfg.name,
                     "session_id": session_id,
-                    "content": chunk.choices[0].delta.content
+                    "content": resp
                 }
                 resp_json = json.dumps(res_dict, ensure_ascii=False)
                 yield f"data: {resp_json}\n\n"  # 遵循 Server-Sent Events 协议
