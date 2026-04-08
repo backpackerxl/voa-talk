@@ -7,14 +7,14 @@ from sqlalchemy import or_
 from dbinfo import DatabaseSession
 from entity import SysUser
 from utils import ReturnTool, Tools
-from utils.JwtUtils import JWTHandler
+from utils.JwtUtils import JWTHandler, real_ip_decorator
 from utils.RedisUtils import RedisHandler
 from utils.encryptUtils import aes_decrypt
 
 
-def login_impl(request):
+@real_ip_decorator
+def login_impl(request, client_ip):
     with DatabaseSession() as session:
-        ip = request.remote_addr
         username = request.get_json().get("userName")
         queue = session.query(SysUser).filter(
             or_(
@@ -50,7 +50,7 @@ def login_impl(request):
             "avatar": queue.avatar,
             "email": queue.email,
             "loginType": "voatalk",
-            "IP": ip,
+            "IP": client_ip,
             "superAdmin": queue.super_admin,
             "bindQQ": (1 if queue.qq_open_id is None else 3),
             "bindGithub": (1 if queue.github_open_id is None else 3),

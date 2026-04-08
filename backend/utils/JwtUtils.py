@@ -117,7 +117,11 @@ def token_required(f):
             nickName = payload.get("nickName")
             admin = payload.get("superAdmin")
             # 获取请求的 IP 地址
-            ip_address = request.remote_addr
+            real_ip = request.headers.get("X-Real-IP")
+            if not real_ip:
+                real_ip = request.remote_addr
+
+            ip_address = real_ip
             # 获取访问的模块（路由）
             accessed_module = request.endpoint
             # 记录日志到数据库
@@ -158,7 +162,11 @@ def token_on(f):
             # 从 payload 中获取用户名称
             nickName = payload.get("nickName")
             # 获取请求的 IP 地址
-            ip_address = request.remote_addr
+            real_ip = request.headers.get("X-Real-IP")
+            if not real_ip:
+                real_ip = request.remote_addr
+
+            ip_address = real_ip
             # 获取访问的模块（路由）
             accessed_module = request.endpoint
             # 记录日志到数据库
@@ -172,6 +180,23 @@ def token_on(f):
 
     # 返回装饰后的函数
     return decorated_function
+
+
+# Flask 真实IP 装饰器
+def real_ip_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 从请求头获取 Nginx 传递的真实IP
+        real_ip = request.headers.get("X-Real-IP")
+        # 兜底：如果没有 X-Real-IP，取 X-Forwarded-For
+        if not real_ip:
+            real_ip = request.remote_addr
+
+        # 把真实IP注入到函数参数，名字叫 client_ip
+        kwargs["client_ip"] = real_ip
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def add_update_time(func):

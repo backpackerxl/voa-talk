@@ -35,7 +35,7 @@ from entity import SysUser
 from utils import ReturnTool, DbTools
 from utils import logs, TimeToolClass
 from utils.Config import ALLOWED_ORIGINS
-from utils.JwtUtils import JWTHandler
+from utils.JwtUtils import JWTHandler, real_ip_decorator
 from utils.RedisUtils import RedisHandler
 from utils.Tools import generate_random_recovery_code, generate_hashed_password, verify_password
 from utils.encryptUtils import encrypt_aes, aes_decrypt
@@ -380,8 +380,8 @@ def login_begin(request):
         # 最终返回：确保返回的是JSON格式，且所有Base64URL字段无非法字符
         return ReturnTool.SuccessReturn(options_dict)
 
-
-def login_complete(request):
+@real_ip_decorator
+def login_complete(request, client_ip):
     data = request.get_json()
     if not data:
         return ReturnTool.ErrorReturn('参数为空！', 400)
@@ -472,7 +472,7 @@ def login_complete(request):
             "avatar": queue.avatar,
             "email": queue.email,
             "loginType": "voatalk",
-            "IP": request.remote_addr,
+            "IP": client_ip,
             "superAdmin": queue.super_admin,
             "bindQQ": (1 if queue.qq_open_id is None else 3),
             "bindGithub": (1 if queue.github_open_id is None else 3),
