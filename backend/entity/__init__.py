@@ -1,4 +1,5 @@
 from .SysUser import SysUser
+from .SysUserWebAuth import SysUserWebAuth
 from .ModelConfig import ModelConfig
 from .RequestLogs import RequestLogs
 from .TalkLogs import TalkLogs

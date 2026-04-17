@@ -2,10 +2,10 @@ import datetime
 import json
 import uuid
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from dbinfo import DatabaseSession
-from entity import SysUser
+from entity import SysUser, SysUserWebAuth
 from utils import ReturnTool, Tools
 from utils.JwtUtils import JWTHandler, real_ip_decorator
 from utils.RedisUtils import RedisHandler
@@ -63,14 +63,15 @@ def login_impl(request, client_ip):
         next_id = str(uuid.uuid4())
         ## 缓存登录信息
         RedisHandler().save_key("user:info:" + next_id, json.dumps(user_data), 300)  # 登录成功信息5分钟内有效
-        if platform == 'mobile':
-            register_authenticated = bool(queue.credentials_data_mobile)
-        else:
-            register_authenticated = bool(queue.credentials_data)
+        c_queue_opt = session.query(SysUserWebAuth.content).filter(and_(
+            SysUserWebAuth.type == '1',  # 是否已经注册二次认证
+            SysUserWebAuth.user_id == queue.id
+        )).first()
+
         return ReturnTool.SuccessReturn({
             'next_id': next_id,
             'username': queue.user_name,
             "avatar": queue.avatar,
             "platform": platform,
-            'register_authenticated': register_authenticated
+            'register_authenticated': bool(c_queue_opt)
         })

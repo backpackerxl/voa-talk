@@ -145,7 +145,6 @@ const currentPage = ref(1);
 
 // 每页显示数量
 const pageSize = ref(20);
-let editDialogVisible = ref(false);
 const selectedUser = ref(null);
 const centerDialogVisible = ref(false);
 let state = reactive({
@@ -256,9 +255,10 @@ onMounted(() => {
 
 <style scoped>
 .body .data-inner {
-  width: 1200px;
+  padding: 16px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 15px 0;
+  overflow: hidden;
 }
 
 @media (max-width: 1024px) {

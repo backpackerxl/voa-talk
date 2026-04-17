@@ -511,9 +511,10 @@ onMounted(() => {
 
 <style scoped>
 .body .data-inner {
-  width: 1200px;
-  padding: 15px 0;
+  padding: 16px;
+  max-width: 1200px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 @media (max-width: 1024px) {

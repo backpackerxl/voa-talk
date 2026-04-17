@@ -67,6 +67,46 @@
           </el-button>
         </div>
       </el-form-item>
+      <el-collapse v-model="activeNames">
+        <el-collapse-item name="1">
+          <template #title="{ isActive }">
+            <div :class="['title-wrapper', { 'is-active': isActive }]">
+              注册WebAuthn
+              <el-icon class="header-icon">
+                <Key />
+              </el-icon>
+            </div>
+          </template>
+          <div>
+            <el-button class="register-btn" type="primary" @click="registerWebAuthn" size="small">
+              <div class="auth-icon">
+                <span :class="authIcon"></span>
+              </div>&nbsp;注册
+            </el-button>
+          </div>
+          <div class="auth-data" v-if="authData.length > 0">
+            <el-table :data="authData" border stripe style="width: 330px">
+              <el-table-column fixed prop="name" label="注册设备" width="230">
+                <template v-slot="scope">
+                  <span class="txt">设备名称：{{ scope.row.name }}</span><br>
+                  <span class="txt">创建时间：{{ scope.row.create_date }}</span>
+                </template>
+              </el-table-column>
+
+              <el-table-column fixed="right" label="操作" min-width="100">
+                <template v-slot="scope">
+                  <el-button link type="primary" size="small" @click="handleUpdateAuth(scope.row)">
+                    修改
+                  </el-button>
+                  <el-button link type="danger" size="small" @click="handleDeleteAuth(scope.row)">
+                    删除
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-collapse-item>
+      </el-collapse>
     </el-form>
     <div class="opt">
       <p>便捷操作</p>
@@ -153,6 +193,46 @@
     </template>
   </el-dialog>
 
+  <el-dialog v-model="addEqNameDialogVisible" title="添加WebAuthn设备" width="380" align-center>
+    <el-form :model="registerEqForm" :rules="rulesEqName" ref="registerEqFormRef" placeholder="请输入设备名称">
+      <el-form-item label="设备名称: " prop="name">
+        <el-input size="large" v-model="registerEqForm.name" />
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="addEqNameDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="addEqNameOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="editEqNameDialogVisible" title="修改WebAuthn设备" width="380" align-center>
+    <el-form :model="registerEqForm" :rules="rulesEqName" ref="registerEqFormRef" placeholder="请输入设备名称">
+      <el-form-item label="设备名称: " prop="name">
+        <el-input size="large" v-model="registerEqForm.name" />
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="editEqNameDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="updateEqNameOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="deleteEqDialogVisible" title="删除WebAuthn设备" width="380" align-center>
+    <span>确定删除，设备将不可恢复</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="deleteEqDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="deleteEqOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
   <el-dialog v-model="bindAccountDialogVisible" width="380" :show-close="false" align-center>
     <div class="logintext">
       <img :src="userAvatarUrl ? userAvatarUrl : avater" alt="头像" class="user-avatar" />
@@ -186,6 +266,7 @@ import {
   Plus,
   Edit,
   ArrowDown,
+  Key,
 } from "@element-plus/icons-vue";
 const welcomStr = ref(store.state.app.nickName);
 const userEmail = ref("");
@@ -205,8 +286,8 @@ import { updateUser, sendEmailCodeApi, updateUserEmail } from "@/api/apiUser";
 import { getOtherUserChatList, linkOtherUser, noLinkOtherUser } from "@/api/aiChat";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
 import { checkBiometricSupport } from "@/utils/webAuthn";
-import { loginBegin, loginComplete } from "@/api/twoFAuth";
-import { ElMessage } from "element-plus";
+import { loginBegin, loginComplete, registerBegin, registerComplete, updateDevice, deleteDevice, getDevices } from "@/api/twoFAuth";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
 import device from "current-device";
@@ -226,9 +307,18 @@ const isMob = ref(!device.mobile());
 const isSupportBiometric = ref(false);
 const isNoKeyLogin = ref(true);
 const biometricType = ref('');
+const activeNames = ref([]);
 const bindAccountDialogVisible = ref(false);
 const tableData = ref([]);
+const authData = ref([]);
 const tableCount = ref(0);
+const addEqNameDialogVisible = ref(false);
+const editEqNameDialogVisible = ref(false);
+const deleteEqDialogVisible = ref(false);
+const registerEqForm = ref({
+  name: "",
+  id: -1,
+});
 // 当前页码
 const currentPage = ref(1);
 // 每页显示数量
@@ -353,6 +443,155 @@ const themList = ref([
 ]);
 const emailRule = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
+function handleDeleteAuth(item) {
+  deleteEqDialogVisible.value = true;
+  registerEqForm.value = item;
+}
+
+function deleteEqOk() {
+  deleteEqDialogVisible.value = false;
+  deleteDevice({ id: registerEqForm.value.id }).then(res => {
+    if (res.code === 200) {
+      ElMessage.success('删除成功');
+      getDevices().then(res => {
+        authData.value = res.data || [];
+      });
+    }
+  }).catch(err => {
+    ElMessage.error(err.msg);
+  });
+}
+
+
+
+function handleUpdateAuth(item) {
+  registerEqForm.value = item;
+  editEqNameDialogVisible.value = true;
+}
+
+function updateEqNameOk() {
+  registerEqFormRef.value.validate((valid) => {
+    if (valid) {
+      editEqNameDialogVisible.value = false;
+      updateDevice({ name: registerEqForm.value.name, id: registerEqForm.value.id }).then(res => {
+        if (res.code === 200) {
+          ElMessage.success('修改成功');
+          getDevices().then(res => {
+            authData.value = res.data || [];
+          });
+        }
+      }).catch(err => {
+        ElMessage.error(err.msg);
+      });
+    }
+  });
+}
+
+function registerWebAuthn() {
+  registerEqForm.value = {
+    name: "",
+    id: -1,
+  };
+  addEqNameDialogVisible.value = true;
+}
+
+const registerEqFormRef = ref(null);
+
+function addEqNameOk() {
+  registerEqFormRef.value.validate((valid) => {
+    if (valid) {
+      addEqNameDialogVisible.value = false;
+      linkAccount();
+    }
+  });
+}
+
+async function linkAccount() {
+  try {
+    // 注册WebAuthn
+    const support = await checkBiometricSupport();
+    const supported = support.supported;
+    // const supported = false;
+    const obj = await registerBegin({ username: store.state.app.userName, supported });
+    if (obj.code !== 200) {
+      ElMessage.error(obj.msg);
+      return;
+    }
+    const options = obj.data;
+
+    // 2. 转换选项格式
+    const publicKey = {
+      ...options,
+      challenge: base64UrlToArrayBuffer(options.challenge || ''),
+      user: {
+        ...options.user,
+        id: base64UrlToArrayBuffer(options.user.id || '')
+      },
+      // 兼容老浏览器：修正residentKey值
+      authenticatorSelection: {
+        ...options.authenticatorSelection
+      },
+      // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
+      timeout: options.timeout || 60000,
+    };
+
+    // 3. 调用 WebAuthn API 创建凭证
+    // ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证关联...');
+
+    const credential = await navigator.credentials.create({
+      publicKey: publicKey
+    });
+
+    // 3. 准备发送到服务器的数据（核心修复：transports字段）
+    let transports = [];
+    // 安全获取transports：兼容不同浏览器实现
+    if (credential.response?.getTransports) {
+      try {
+        const rawTransports = credential.response.getTransports();
+        // 确保transports是数组（防止返回Set/undefined）
+        transports = Array.isArray(rawTransports)
+          ? rawTransports
+          : (rawTransports ? [rawTransports] : []);
+      } catch (e) {
+        transports = ['internal']; // 异常兜底
+      }
+    } else {
+      transports = ['internal']; // 无getTransports方法时兜底
+    }
+
+    const credentialJson = {
+      id: credential.id || '', // 空值兜底
+      rawId: arrayBufferToBase64Url(credential.rawId),
+      type: credential.type || 'public-key', // 兜底默认值
+      response: {
+        attestationObject: arrayBufferToBase64Url(
+          credential.response?.attestationObject || new ArrayBuffer(0)
+        ),
+        clientDataJSON: arrayBufferToBase64Url(
+          credential.response?.clientDataJSON || new ArrayBuffer(0)
+        ),
+        transports: transports // 确保是纯数组，无Set/undefined
+      },
+      req_id: options.req_id || '',
+      name: registerEqForm.value.name || 'smart device',
+    };
+
+    // 5. 验证注册
+    await registerComplete(credentialJson);
+
+    ElMessage.success('注册成功！');
+    getDevices().then(res => {
+      authData.value = res.data || [];
+    });
+
+  } catch (error) {
+    console.error('注册失败:', error);
+    if (error.code !== 400) {
+      ElMessage.error('注册失败');
+    }
+  }
+}
+
 function changeThem(item) {
   handleThem(item);
   them.value = item;
@@ -454,6 +693,12 @@ const rules = {
   ],
   code: [{ required: true, message: "请输入邮箱验证码", trigger: "blur" }],
 };
+
+const rulesEqName = {
+  name: [{ required: true, message: "请输入设备名称", trigger: "blur" }],
+};
+
+
 
 function handleSuccess(response, file, fileList) {
   saveUrl.value = saveUrl.value + response.image_url;
@@ -727,11 +972,13 @@ async function noKeyLogin() {
       return;
     }
     const supported = support.supported;
-    const obj = await loginBegin({ username: store.state.app.userName, platform: pcOrMobile, supported });
+    // const supported = false;
+    const obj = await loginBegin({ username: store.state.app.userName, supported });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;
     }
+
     const options = obj.data;
 
     // 验证场景：仅处理必要参数，删除 rp/user（验证场景不需要）
@@ -770,16 +1017,10 @@ async function noKeyLogin() {
         signature: arrayBufferToBase64Url(credential.response.signature),
         userHandle: credential.response.userHandle ? arrayBufferToBase64Url(credential.response.userHandle) : null
       },
-      req_id: options.req_id || '',
-      platform: pcOrMobile
+      req_id: options.req_id || ''
     };
     // 5. 验证身份信息
     const result = await loginComplete(credentialJson);
-
-    if (result.code !== 200) {
-      ElMessage.error(result.error || '关联验证失败');
-      throw new Error(result.error || '关联验证失败');
-    }
 
     ElMessage.success(`${biometricType.value}登录已开启！`);
     const noKeyLoginObj = {
@@ -790,19 +1031,10 @@ async function noKeyLogin() {
     store.dispatch("app/setNoKeyLogin", JSON.stringify(noKeyLoginObj));
     isNoKeyLogin.value = false;
   } catch (error) {
-    let errorMessage = error.message || '未知错误';
-    // Handle specific error types
-    if (error.name === 'NotAllowedError') {
-      errorMessage = '用户拒绝了认证请求或操作超时';
-    } else if (error.name === 'InvalidStateError') {
-      errorMessage = '认证器状态无效';
-    } else if (error.name === 'NotFoundError') {
-      errorMessage = '未找到匹配的凭证';
-    } else if (error.name === 'SecurityError') {
-      errorMessage = '登录网址未注册认证器';
+    console.error('身份验证失败:', error.name, error.message);
+    if (error.code !== 400) {
+      ElMessage.error('身份验证失败');
     }
-    console.error('身份验证失败:', error.name);
-    ElMessage.error(`身份验证失败: ${errorMessage}`);
   }
 }
 
@@ -831,6 +1063,10 @@ onMounted(async function () {
       break;
   }
   isNoKeyLogin.value = store.state.app.noKeyLogin === '' || JSON.parse(store.state.app.noKeyLogin).gid !== store.state.app.userName;
+  // 获取设备列表
+  getDevices().then(res => {
+    authData.value = res.data || [];
+  });
 });
 </script>
 
@@ -934,6 +1170,10 @@ onMounted(async function () {
   margin: 10px 0;
   border: none;
   box-shadow: none;
+}
+
+.register-btn {
+  border: none;
 }
 
 .them-color {
@@ -1094,5 +1334,14 @@ onMounted(async function () {
 .auth-icon .icon.windowshello {
   -webkit-mask-image: url("@/assets/images/windowshello.svg");
   mask-image: url("@/assets/images/windowshello.svg");
+}
+
+.auth-data .txt {
+  font-size: 12px;
+}
+
+.auth-data .el-table {
+  height: 180px;
+  margin-top: 10px;
 }
 </style>

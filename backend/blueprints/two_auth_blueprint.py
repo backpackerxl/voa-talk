@@ -6,6 +6,7 @@ from utils.ReturnTool import ErrorReturn
 
 two_auth_blueprint = Blueprint('two_auth', __name__, url_prefix='/two_auth')
 
+
 # 1. 注册 - 生成注册选项
 @two_auth_blueprint.route('/register/begin', methods=['POST'])
 def register_begin():
@@ -38,6 +39,39 @@ def generate_otp_qrcode(username):
         return jsonify(response)
     except Exception as e:
         logs.setup_logger().error(f"Generate OTP QR Code error: {str(e)}")
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+# 获取设备的注册列表
+@two_auth_blueprint.route('/get/devices', methods=['GET'])
+def get_devices():
+    try:
+        response = two_auth_service.get_devices()
+        return jsonify(response)
+    except Exception as e:
+        logs.setup_logger().error(f"get devices error: {str(e)}")
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+# 2. 修改注册的设备名称
+@two_auth_blueprint.route('/update/device', methods=['POST'])
+def update_device():
+    try:
+        response = two_auth_service.update_device(request)
+        return jsonify(response)
+    except Exception as e:
+        logs.setup_logger().error(f"update device error: {str(e)}")
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+# 2. 修改注册的设备名称
+@two_auth_blueprint.route('/delete/device', methods=['POST'])
+def delete_device():
+    try:
+        response = two_auth_service.delete_device(request)
+        return jsonify(response)
+    except Exception as e:
+        logs.setup_logger().error(f"delete device error: {str(e)}")
         return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
 
 

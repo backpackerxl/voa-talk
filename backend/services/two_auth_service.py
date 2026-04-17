@@ -1,4 +1,5 @@
 from services.impl import two_auth_impl
+from utils.JwtUtils import get_req_user
 
 
 def register_begin(request):
@@ -27,3 +28,17 @@ def verify_otp(request):
 
 def verify_recovery(request):
     return two_auth_impl.verify_recovery(request)
+
+
+@get_req_user
+def get_devices(req_user):
+    user_id = req_user.get("id")
+    return two_auth_impl.get_devices(user_id)
+
+
+def update_device(request):
+    return two_auth_impl.update_device(request)
+
+
+def delete_device(request):
+    return two_auth_impl.delete_device(request)

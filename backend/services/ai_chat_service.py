@@ -2,7 +2,7 @@ import json
 
 from services.impl import ai_chat_impl
 from utils import Config, ReturnTool
-from utils.JwtUtils import JWTHandler
+from utils.JwtUtils import JWTHandler, get_req_user
 from utils.RedisUtils import RedisHandler
 
 
@@ -19,42 +19,30 @@ def ai_chat_dialogue_serve(request):
     return ai_chat_impl.ai_chat_dialogue_impl(session_id, user_input, model_id)
 
 
-def get_req_user(request):
-    # 从请求头中获取 token
-    token = request.headers.get('token')
-    # 创建 JWTHandler 实例
-    jwt_handler = JWTHandler()
-    # 使用 JWTHandler 的 VerifyToken 方法验证 token
-    valid, payload = jwt_handler.VerifyToken(token)
-    # 如果 token 无效，抛出 ValueError 异常
-    if not valid:
-        raise ValueError("无效的令牌")
-    return payload
-
-
-def ai_save_chat_serve(request):
+@get_req_user
+def ai_save_chat_serve(request, req_user):
     request_data = request.get_json()
-    user_id = get_req_user(request).get("id")
+    user_id = req_user.get("id")
     return ai_chat_impl.ai_save_chat_serve(user_id, request_data)
 
 
-def save_chat_title(request):
+@get_req_user
+def save_chat_title(request, req_user):
     request_data = request.get_json()
     user_input = request_data.get('user_input')
     model_id = request_data.get('model_id')
-    user = get_req_user(request)
-    user_id = user.get('id')
-    nick_name = user.get('nickName')
+    user_id = req_user.get('id')
+    nick_name = req_user.get('nickName')
     return ai_chat_impl.save_chat_title(user_id, nick_name, user_input, model_id, request_data)
 
 
-def api_list_page(request):
+@get_req_user
+def api_list_page(request, req_user):
     # search_criteria = request.args.get('search_criteria')
     # `{"name": {"value": "${state.user_name}", "operator": "like"}, "sort": {"field": "sort", "order": "desc"}}`
     page_size = request.args.get('pageSize', default=Config.PageSize, type=int)
     page_index = request.args.get('pageIndex', default=Config.PageIndex, type=int)
-    user_id = get_req_user(request).get('id')
-    # print(get_req_uer_id(request))
+    user_id = req_user.get('id')
     search_criteria_dict = {
         "user_id": {"value": user_id, "operator": "eq"},
         "sort": {"field": "create_date", "order": "desc"}
@@ -83,7 +71,8 @@ def api_other_user_list_page(request):
     })
 
 
-def api_link_other(request):
+@get_req_user
+def api_link_other(request, req_user):
     state = request.args.get('state')
     res = RedisHandler().get_key(request.args.get('bindOtherAccount'))
     if res is None:
@@ -91,7 +80,7 @@ def api_link_other(request):
     res = JWTHandler().decode_jwt(res)
     data = res['data']
     other_user_id = data['id']
-    user_id = get_req_user(request).get('id')
+    user_id = req_user.get('id')
     if state == '1':
         return ai_chat_impl.api_link_qq(other_user_id, user_id)
     elif state == '2':
@@ -100,9 +89,10 @@ def api_link_other(request):
         return ReturnTool.ErrorReturn('不支持的第三方绑定！', 500)
 
 
-def api_no_link_other(request):
+@get_req_user
+def api_no_link_other(request, req_user):
     state = request.args.get('state')
-    user_id = get_req_user(request).get('id')
+    user_id = req_user.get('id')
     if state == '1':
         return ai_chat_impl.api_no_link_qq_other(user_id)
     elif state == '2':
@@ -134,13 +124,13 @@ def api_update_ids(request):
     return ai_chat_impl.api_update_ids(talk_id, request_data)
 
 
-def api_query_page_service(request):
+@get_req_user
+def api_query_page_service(request, req_user):
     page_size = request.args.get('pageSize', default=Config.PageSize, type=int)
     page_index = request.args.get('pageIndex', default=Config.PageIndex, type=int)
     search_criteria = request.args.get('search_criteria')
-    user = get_req_user(request)
-    super_admin = user.get('superAdmin')
-    user_id = user.get('id')
+    super_admin = req_user.get('superAdmin')
+    user_id = req_user.get('id')
     if super_admin != 1:
         temp = json.loads(search_criteria)
         print(temp)

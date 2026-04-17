@@ -1,12 +1,10 @@
 import datetime
-
-import jwt
-
-from utils import Config
 from functools import wraps
 
+import jwt
 from flask import request, jsonify
 
+from utils import Config
 from utils import logs
 
 
@@ -194,6 +192,27 @@ def real_ip_decorator(func):
 
         # 把真实IP注入到函数参数，名字叫 client_ip
         kwargs["client_ip"] = real_ip
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+# 获取请求的用户
+def get_req_user(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 从请求头中获取 token
+        token = request.headers.get('token')
+        # 创建 JWTHandler 实例
+        jwt_handler = JWTHandler()
+        # 使用 JWTHandler 的 VerifyToken 方法验证 token
+        valid, payload = jwt_handler.VerifyToken(token)
+        # 如果 token 无效，抛出 ValueError 异常
+        if not valid:
+            raise ValueError("无效的令牌")
+
+        # 把真实用户注入
+        kwargs["req_user"] = payload
         return func(*args, **kwargs)
 
     return wrapper

@@ -1,7 +1,7 @@
 from services.impl import sys_user_impl
 from utils import Config
 from utils import ReturnTool
-from utils.JwtUtils import JWTHandler
+from utils.JwtUtils import get_req_user
 from utils.RedisUtils import RedisHandler
 from utils.ReturnTool import ErrorReturn
 
@@ -73,25 +73,26 @@ def reset_pwd(request):
     return sys_user_impl.reset_pwd(pwd, secret_key)
 
 
-def send_email_code(request):
+@get_req_user
+def send_email_code(request, req_user):
     '''
     用户获取验证码
     '''
     data = request.get_json()
-    user = get_req_user(request)
-    user_id = user.get("id")
+    user_id = req_user.get("id")
     email = data["email"]
-    nick_name = user.get("nickName")
+    nick_name = req_user.get("nickName")
 
     return sys_user_impl.send_email_code(user_id, email, nick_name)
 
 
-def update_user_email(request):
+@get_req_user
+def update_user_email(request, req_user):
     '''
     用户重置邮箱号
     '''
     data = request.get_json()
-    user_id = get_req_user(request).get('id')
+    user_id = req_user.get('id')
     email = data["email"]
     code = data["verCode"]
     redis_code = RedisHandler().get_key("user:email:code:" + str(user_id))
@@ -105,26 +106,10 @@ def update_user_email(request):
     return sys_user_impl.update_user_email(email, user_id)
 
 
-def get_req_user(request):
-    # 从请求头中获取 token
-    token = request.headers.get('token')
-    # 创建 JWTHandler 实例
-    jwt_handler = JWTHandler()
-    # 使用 JWTHandler 的 VerifyToken 方法验证 token
-    valid, payload = jwt_handler.VerifyToken(token)
-    # 如果 token 无效，抛出 ValueError 异常
-    if not valid:
-        raise ValueError("无效的令牌")
-    # 从 payload 中获取用户名称
-    # user_id = payload.get("id")
-    # nick_name = payload.get("nickName")
-    # super_admin = payload.get("superAdmin")
-    return payload
-
-
-def api_user_update_nickname(request):
+@get_req_user
+def api_user_update_nickname(request, req_user):
     data = request.get_json()
-    id = get_req_user(request).get('id')
+    id = req_user.get('id')
     avatar = data.get('avatar')
     nick_name = data.get('nick_name')
     return sys_user_impl.api_user_update_nickname(id, avatar, nick_name)

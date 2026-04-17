@@ -1,5 +1,28 @@
 import request from '@/utils/request';
 
+export function updateDevice(params) {
+    return request({
+        url: 'two_auth/update/device',
+        method: 'post',
+        params: params,
+    });
+}
+
+export function deleteDevice(params) {
+    return request({
+        url: 'two_auth/delete/device',
+        method: 'post',
+        params: params,
+    });
+}
+
+export function getDevices() {
+    return request({
+        url: 'two_auth/get/devices',
+        method: 'get',
+    });
+}
+
 export function registerBegin(params) {
     return request({
         url: 'two_auth/register/begin',

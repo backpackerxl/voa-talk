@@ -27,8 +27,3 @@ class SysUser(Base):
     qq_open_id = Column('qq_open_id', String, primary_key=False, nullable=True, comment="第三方开放平台id用于QQ登录")
     github_open_id = Column('github_open_id', String, primary_key=False, nullable=True,
                             comment="第三方开放平台id用于github登录")
-    otp_secrets = Column('otp_secrets', String, primary_key=False, nullable=True, comment="用户的OTP密钥")
-    credentials_data = Column('credentials_data', String, primary_key=False, nullable=True, comment="用户PC凭证数据")
-    credentials_data_mobile = Column('credentials_data_mobile', String, primary_key=False, nullable=True,
-                                     comment="用户Mobile凭证数据")
-    recovery_code_md5 = Column('recovery_code_md5', String, primary_key=False, nullable=True, comment="用户2FA恢复码")

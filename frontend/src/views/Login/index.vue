@@ -60,7 +60,7 @@
                 <span :class="authIcon"></span>
               </div>
               &nbsp;
-              {{ loginPrefix }}登录
+              使用{{ loginPrefix }}登录
             </el-button>
             <div class="register">
               <a @click="isNoKeyLogin = !isNoKeyLogin">切换账号登录</a>
@@ -89,59 +89,21 @@
           <h4 class="user-name-txt">{{ userNameTxt }}</h4>
         </div>
         <div class="link-user" v-if="state.open">
-          <p class="text">开启WebAuthn登录</p>
-          <div v-if="!linkOTPShow">
-            <el-form-item label="账号:" prop="username">
-              <el-input class="in-box" v-model="form.username" size="large" disabled>
-                <!-- 使用 prefix-icon 插槽添加图标 -->
-                <template #prefix>
-                  <el-icon>
-                    <User />
-                  </el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-          </div>
-          <div v-else class="link-success">
-            <p><el-text class="mx-1">关联成功！</el-text></p>
-            <p><el-text class="mx-1" size="small">请点击完成按钮完成后续操作, 并妥善保存恢复码, 以防授权设备丢失可用于找回账号！</el-text></p>
-            <p>
-              <el-text class="mx-1" size="small" v-for="item in recoveryCode" :key="item">
-                {{ item }}&nbsp;&nbsp;
-              </el-text>
-              <i class="copy-icon fa-solid fa-copy"
-                @click="copySecret($event.currentTarget, recoveryCode.join(' '))"></i>
-            </p>
-          </div>
-          <el-button size="large" type="primary" @click="linkAccount" v-if="!linkOTPShow">
-            <div class="auth-icon">
-              <span :class="authIcon"></span>
-            </div>&nbsp;
-            使用{{ supportBiometric
-            }}认证
-          </el-button>
-          <el-button size="large" type="primary" @click="dialogOTPVisible = true" v-else>
+          <el-button size="large" type="primary" @click="state.open = false">
             完 成
           </el-button>
         </div>
         <div class="verify-webAuthn" v-else>
           <div class="formdata">
             <el-form ref="loginForm" :model="formOtp" :rules="otpRules" label-position="top" label-width="100px">
-              <el-form-item label="请输入一次性密码/恢复码" prop="optcode" v-if="otpShow">
+              <el-form-item label="请输入验证码/恢复码" prop="optcode">
                 <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable
                   :placeholder="placeholderTxt"></el-input>
               </el-form-item>
             </el-form>
           </div>
           <div class="butt">
-            <el-button size="large" type="primary" @click="verifyOtpOrAuthn" :disabled="authnBtn">
-              <div class="auth-icon">
-                <span :class="authIcon"></span>
-              </div>&nbsp;
-              {{
-                authnTxt
-              }}
-            </el-button>
+            <el-button type="primary" @click="verifyOTPCode">{{ authnTxt }}</el-button>
           </div>
           <div>
             <el-collapse>
@@ -155,14 +117,18 @@
                   </div>
                 </template>
                 <div class="verify-other-butt">
-                  <el-button type="primary" @click="verifyOTPCode" plain>安全密码验证</el-button>
-                  <el-button type="danger" @click="verifyRecoveryCode" plain>一次性恢复码验证</el-button>
+                  <el-button type="primary" @click="verifyOtpOrAuthn">
+                    <div class="auth-icon">
+                      <span :class="authIcon"></span>
+                    </div>&nbsp;使用{{ supportBiometric }}验证
+                  </el-button>
+                  <el-button type="danger" @click="verifyRecoveryCode" plain>{{ recoveryTxt }}</el-button>
                 </div>
               </el-collapse-item>
             </el-collapse>
           </div>
         </div>
-        <el-collapse class="collapse-container" v-model="activeNames" accordion v-if="state.open">
+        <el-collapse class="collapse-container" v-model="activeNames" v-if="state.open">
           <el-collapse-item name="1" v-if="qrcode">
             <template #title="{ isActive }">
               <div :class="['title-wrapper', { 'is-active': isActive }]">
@@ -174,6 +140,15 @@
             </template>
             <div>
               扫描二维码或通过密钥添加应用, 成功后可通过验证码验明身份, 完成后点击按钮继续完成登录。
+              <!-- 一次性恢复码 -->
+              <p><el-text class="mx-1" size="small">请妥善保存恢复码, 以防授权设备丢失可用于找回账号！</el-text></p>
+              <p>
+                <el-text class="mx-1" size="small" v-for="item in recoveryCode" :key="item">
+                  {{ item }}&nbsp;&nbsp;
+                </el-text>
+                <i class="copy-icon fa-solid fa-copy"
+                  @click="copySecret($event.currentTarget, recoveryCode.join(' '))"></i>
+              </p>
             </div>
             <div class="otp-container">
               <img :src="qrcode" alt="OTP QR Code" class="qr-img" />
@@ -182,16 +157,16 @@
               </p>
             </div>
           </el-collapse-item>
-          <el-collapse-item name="2" title="什么是 WebAuthn?">
+          <el-collapse-item name="2" title="什么是二次登录验证？">
             <div>
-              WebAuthn 是一种 Web 标准，允许用户使用生物识别、安全密钥或手机进行身份验证，提高账户的安全性。
+              二次登录验证 是一种 Web 标准，允许用户使用多种认证方式进行二次身份验证，提高账户的安全性。
             </div>
             <div>
               <p>支持的认证方式:</p>
               <ul>
-                <li>Windows Hello / Face ID / Touch ID</li>
-                <li>YubiKey 等安全密钥</li>
-                <li>手机认证器应用</li>
+                <li>生物识别</li>
+                <li>设备验证码</li>
+                <li>一次性密码/恢复码</li>
               </ul>
             </div>
           </el-collapse-item>
@@ -208,23 +183,11 @@
   >
     <Captcha ref="myCaptcha" @verify="verifyImg" />
   </el-dialog> -->
-
-  <el-dialog v-model="dialogOTPVisible" title="OTP关联" width="380" align-center>
-    <span>是否需要关联OTP认证?</span>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="goLogin">继续登录</el-button>
-        <el-button type="primary" @click="linkOTP">
-          关联OTP
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
 </template>
 
 <script setup>
 import { loginUser } from "@/api/login";
-import { registerBegin, registerComplete, generateOtpQrcode, verifyRecovery, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
+import { generateOtpQrcode, verifyRecovery, loginBegin, loginComplete, verifyOtp } from "@/api/twoFAuth";
 import { useRouter } from "vue-router";
 import store from "@/store"; // 导入Vuex store
 import { User, Lock } from "@element-plus/icons-vue";
@@ -237,7 +200,7 @@ import Logo from "@/components/Logo";
 // import Captcha from "@/components/Captcha";
 import Beian from "@/components/Beian";
 import { ElMessage } from "element-plus";
-import { InfoFilled, Pointer } from '@element-plus/icons-vue'
+import { InfoFilled } from '@element-plus/icons-vue'
 import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
 import device from "current-device";
@@ -286,17 +249,13 @@ const qrSecret = ref(null);
 
 const checked = ref(false);
 
-const dialogOTPVisible = ref(false);
-
 const activeNames = ref(['1']);
 
-const linkOTPShow = ref(false);
-const otpShow = ref(false);
-const authnBtn = ref(false);
-const authnTxt = ref('');
+const authnTxt = ref('验证');
 const recoveryCode = ref([]);
-const placeholderTxt = ref('');
+const placeholderTxt = ref('XXX XXX');
 const nextId = ref('');
+const recoveryTxt = ref('一次性恢复码验证');
 
 // const myCaptcha = ref(null);
 
@@ -330,22 +289,18 @@ const otpRules = {
         }
         // 2. 长度为6时触发目标函数
         if (value.length === 6 && placeholderTxt.value === 'XXX XXX') {
-          authnBtn.value = true;
-          authnTxt.value = '一次性密码验证中...';
+          authnTxt.value = '验证中...';
           setTimeout(() => {
             handleOptcodeComplete(value); // 触发自定义逻辑
-            authnBtn.value = false;
-            authnTxt.value = `使用${supportBiometric.value}认证`;
+            authnTxt.value = `验证`;
           }, 1000);
         }
         // 4. 长度为8时触发目标函数
         if (value.length === 8 && placeholderTxt.value === 'XXXX XXXX') {
-          authnBtn.value = true;
-          authnTxt.value = '恢复码验证中...';
+          authnTxt.value = '验证中...';
           setTimeout(() => {
             handleRecoveryCodeComplete(value); // 触发自定义逻辑
-            authnBtn.value = false;
-            authnTxt.value = `使用${supportBiometric.value}认证`;
+            authnTxt.value = `验证`;
           }, 1000);
         }
         // 3. 校验通过（不阻断原有校验）
@@ -434,7 +389,9 @@ async function sendPostRequest() {
       state.open = !response.data.register_authenticated;
       userNameTxt.value = response.data.username;
       userAvatarUrl.value = response.data.avatar || '';
-      form.value.username = response.data.username;
+      if (!response.data.register_authenticated) {
+        linkOTP();
+      }
     } else {
       ElMessage.error(response.msg);
     }
@@ -462,8 +419,6 @@ async function noKeyLogin() {
 }
 
 async function verifyOtpOrAuthn() {
-  otpShow.value = false;
-  authnTxt.value = `使用${supportBiometric.value}认证`;
   if (!form.value.username) {
     ElMessage.error('请输入用户名进行免密登录！');
     return;
@@ -479,11 +434,12 @@ async function verifyOtpOrAuthn() {
     }
     const supported = support.supported;
     // const supported = false;
-    const obj = await loginBegin({ username: form.value.username, platform: pcOrMobile, supported });
+    const obj = await loginBegin({ username: form.value.username, supported });
     if (obj.code !== 200) {
       ElMessage.error(obj.msg);
       return;
     }
+
     const options = obj.data;
 
     // 验证场景：仅处理必要参数，删除 rp/user（验证场景不需要）
@@ -502,7 +458,6 @@ async function verifyOtpOrAuthn() {
     if (!publicKey.allowCredentials.length) {
       throw new Error('未找到匹配的验证凭证');
     }
-
     // 3. 调用 WebAuthn API 创建凭证
     // ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证...');
 
@@ -523,179 +478,65 @@ async function verifyOtpOrAuthn() {
         userHandle: credential.response.userHandle ? arrayBufferToBase64Url(credential.response.userHandle) : null
       },
       req_id: options.req_id, // 传递后端的 req_id 用于验证
-      platform: pcOrMobile
     };
     // 5. 验证身份信息
     const result = await loginComplete(credentialJson);
-
-    if (result.code !== 200) {
-      ElMessage.error(result.error || '关联验证失败');
-      throw new Error(result.error || '关联验证失败');
-    }
 
     ElMessage.success('身份验证成功！');
     cacheUserInfoAndRedirect(result.data.userinfo);
 
   } catch (error) {
-    let errorMessage = error.message || '未知错误';
-    // Handle specific error types
-    if (error.name === 'NotAllowedError') {
-      errorMessage = '用户拒绝了认证请求或操作超时';
-    } else if (error.name === 'InvalidStateError') {
-      errorMessage = '认证器状态无效';
-    } else if (error.name === 'NotFoundError') {
-      errorMessage = '未找到匹配的凭证';
-    } else if (error.name === 'SecurityError') {
-      errorMessage = '登录网址未注册认证器';
+    console.error('身份验证失败:', error.name, error.message, error);
+    if (error.code !== 400) {
+      ElMessage.error('身份验证失败');
     }
-    console.error('身份验证失败:', error.name);
-    ElMessage.error(`身份验证失败: ${errorMessage}`);
   }
 }
 
 function verifyOTPCode() {
-  otpShow.value = true;
+  if (placeholderTxt.value === 'XXX XXX' && !formOtp.value.optcode) {
+    ElMessage.error('请输入验证码！');
+    return;
+  }
+  if (placeholderTxt.value === 'XXXX XXXX' && !formOtp.value.optcode) {
+    ElMessage.error('请输入一次性恢复码！');
+    return;
+  }
   formOtp.value.optcode = '';
   placeholderTxt.value = 'XXX XXX';
 }
 
 function verifyRecoveryCode() {
-  otpShow.value = true;
-  formOtp.value.optcode = '';
-  placeholderTxt.value = 'XXXX XXXX';
-}
+  if (placeholderTxt.value === 'XXX XXX') {
+    formOtp.value.optcode = '';
+    placeholderTxt.value = 'XXXX XXXX';
+    recoveryTxt.value = '验证码验证';
+    return;
+  }
 
-function goLogin() {
-  dialogOTPVisible.value = false;
-  // 执行继续登录的逻辑
-  loginPage.value = true;
+  formOtp.value.optcode = '';
+  placeholderTxt.value = 'XXX XXX';
+  recoveryTxt.value = '一次性恢复码验证';
 }
 
 function linkOTP() {
-  dialogOTPVisible.value = false;
-  // 执行绑定OTP的逻辑
   // 获取并显示OTP QR码
   fetchOTPQRCode(form.value.username);
-}
-
-async function linkAccount() {
-  try {
-    // 注册WebAuthn
-    const support = await checkBiometricSupport();
-    const supported = support.supported;
-    // const supported = false;
-    const obj = await registerBegin({ username: form.value.username, platform: pcOrMobile, supported });
-    if (obj.code !== 200) {
-      ElMessage.error(obj.msg);
-      return;
-    }
-    const options = obj.data;
-
-    // 2. 转换选项格式
-    const publicKey = {
-      ...options,
-      challenge: base64UrlToArrayBuffer(options.challenge || ''),
-      user: {
-        ...options.user,
-        id: base64UrlToArrayBuffer(options.user.id || '')
-      },
-      // 兼容老浏览器：修正residentKey值
-      authenticatorSelection: {
-        ...options.authenticatorSelection
-      },
-      // 验证场景不需要 pubKeyCredParams/rp/user，后端也无需返回
-      timeout: options.timeout || 60000,
-    };
-
-    // 3. 调用 WebAuthn API 创建凭证
-    // ElMessage.info('请使用您的安全密钥、指纹或面部识别进行验证关联...');
-
-    const credential = await navigator.credentials.create({
-      publicKey: publicKey
-    });
-
-    // 3. 准备发送到服务器的数据（核心修复：transports字段）
-    let transports = [];
-    // 安全获取transports：兼容不同浏览器实现
-    if (credential.response?.getTransports) {
-      try {
-        const rawTransports = credential.response.getTransports();
-        // 确保transports是数组（防止返回Set/undefined）
-        transports = Array.isArray(rawTransports)
-          ? rawTransports
-          : (rawTransports ? [rawTransports] : []);
-      } catch (e) {
-        transports = ['internal']; // 异常兜底
-      }
-    } else {
-      transports = ['internal']; // 无getTransports方法时兜底
-    }
-
-    const credentialJson = {
-      id: credential.id || '', // 空值兜底
-      rawId: arrayBufferToBase64Url(credential.rawId),
-      type: credential.type || 'public-key', // 兜底默认值
-      response: {
-        attestationObject: arrayBufferToBase64Url(
-          credential.response?.attestationObject || new ArrayBuffer(0)
-        ),
-        clientDataJSON: arrayBufferToBase64Url(
-          credential.response?.clientDataJSON || new ArrayBuffer(0)
-        ),
-        transports: transports // 确保是纯数组，无Set/undefined
-      },
-      req_id: options.req_id || '',
-      platform: pcOrMobile
-    };
-    // 5. 验证注册
-    const result = await registerComplete(credentialJson);
-
-    if (result.code !== 200) {
-      ElMessage.error(result.error || '关联验证失败');
-      throw new Error(result.error || '关联验证失败');
-    }
-
-
-    if (pcOrMobile == 'mobile') {
-      ElMessage.success('关联成功, 正在跳转登录...');
-      goLogin();
-    } else {
-      ElMessage.success('关联成功！');
-      recoveryCode.value = result.data.fa_recovery_code.map(item => decryptAes(item));
-      linkOTPShow.value = true;
-    }
-
-  } catch (error) {
-    console.error('关联失败:', error);
-    let errorMessage = error.message || '未知错误';
-    // Handle specific error types
-    if (error.name === 'NotAllowedError') {
-      errorMessage = '用户拒绝了认证请求或操作超时';
-    } else if (error.name === 'InvalidStateError') {
-      errorMessage = '认证器状态无效';
-    } else if (error.name === 'ConstraintError') {
-      errorMessage = '凭证已存在';
-    } else if (error.name === 'SecurityError') {
-      errorMessage = '网址不支持注册认证器';
-    }
-    ElMessage.error(`关联失败: ${errorMessage}`);
-  }
 }
 
 async function fetchOTPQRCode(username) {
   try {
     const result = await generateOtpQrcode(username);
 
-    if (result.code !== 200) {
-      ElMessage.error(result.msg || '获取QR码失败');
-      throw new Error(result.error || '获取QR码失败');
-    }
-
     // 显示QR码和密钥
     qrcode.value = `data:image/png;base64,${result.data.qrcode}`;
     qrSecret.value = result.data.secret;
+    recoveryCode.value = result.data.fa_recovery_code.map(item => decryptAes(item));
   } catch (error) {
     console.error('获取OTP QR码失败:', error);
+    if (error.code !== 400) {
+      ElMessage.error('获取OTP QR码失败');
+    }
   }
 }
 
@@ -721,7 +562,7 @@ onMounted(async function () {
   loginPrefix.value = noKeyLoginObj.biometricType || '';
   const support = await checkBiometricSupport();
   supportBiometric.value = support.biometricType || '其他方式';
-  authnTxt.value = `使用${supportBiometric.value}认证`;
+
   switch (supportBiometric.value) {
     case 'Face/Touch ID':
       authIcon.value = 'icon faceid';

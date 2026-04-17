@@ -8,7 +8,7 @@ from datetime import datetime
 
 import pyotp
 import qrcode
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from webauthn import (
     generate_registration_options,
     verify_registration_response,
@@ -28,10 +28,13 @@ from webauthn.helpers.structs import (
     AuthenticatorAttachment,
     ResidentKeyRequirement,
     AttestationConveyancePreference,
+    PublicKeyCredentialDescriptor,
+    PublicKeyCredentialType,
+    AuthenticatorTransport
 )
 
 from dbinfo import DatabaseSession
-from entity import SysUser
+from entity import SysUser, SysUserWebAuth
 from utils import ReturnTool, DbTools
 from utils import logs, TimeToolClass
 from utils.Config import ALLOWED_ORIGINS
@@ -52,23 +55,23 @@ def register_begin(request):
         return ReturnTool.ErrorReturn('参数必填！', 400)
 
     username = data.get('username')
-    platform = data.get('platform')
     supported = data.get('supported')
     if not username:
         return ReturnTool.ErrorReturn('用户名必填！', 400)
 
     with DatabaseSession() as session:
-        queue = session.query(SysUser.credentials_data, SysUser.credentials_data_mobile).filter(or_(
-            SysUser.user_name == username,
-            SysUser.email == username,
-        )).first()
-        # 检查用户凭证是否已存在
-        if platform == 'mobile':
-            if queue.credentials_data_mobile:
-                return ReturnTool.ErrorReturn('不能重复注册二次身份验证！', 409)
-        else:
-            if queue.credentials_data:
-                return ReturnTool.ErrorReturn('不能重复注册二次身份验证！', 409)
+        user_queue = session.query(SysUser).filter(
+            or_(
+                SysUser.user_name == username,
+                SysUser.email == username,
+            )
+        ).first()
+
+        # 如果用户不存在
+        if not user_queue:
+            return ReturnTool.ErrorReturn("用户不存在", 400)
+        if user_queue.user_state != 1:
+            return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！", 400)
 
         # 生成挑战值
         challenge = generate_challenge()
@@ -130,7 +133,7 @@ def register_complete(request):
         return ReturnTool.ErrorReturn('参数必填！', 400)
 
     req_id = data.get('req_id')
-    platform = data.get('platform')
+    name = data.get('name')
     cha_res_str = RedisHandler().get_key(req_id)
     if not cha_res_str:
         return ReturnTool.ErrorReturn('挑战注册已过期或错误！', 400)
@@ -189,7 +192,7 @@ def register_complete(request):
             SysUser.email == username,
         )).first()
         if not queue:
-            return ReturnTool.ErrorReturn('用户不存在', 404)
+            return ReturnTool.ErrorReturn('用户不存在', 400)
         credentials_data = {
             'credential_id': bytes_to_base64url(verification.credential_id),
             'public_key': bytes_to_base64url(verification.credential_public_key),
@@ -199,29 +202,18 @@ def register_complete(request):
             'authenticator_name': 'Security App',  # 可以从验证器获取
         }
 
-        recovery_code = generate_random_recovery_code()
-        recovery_code_md5 = [generate_hashed_password(code) for code in recovery_code]
-
-        # 为用户生成OTP密钥
-        otp_secret = pyotp.random_base32()
-
-        if platform == 'mobile':
-            sql_data = {
-                'id': queue.id,
-                'credentials_data_mobile': json.dumps(credentials_data),
-                "update_date": TimeToolClass.get_time()
-            }
-        else:
-            sql_data = {
-                'id': queue.id,
-                'otp_secrets': otp_secret,
-                'credentials_data': json.dumps(credentials_data),
-                'recovery_code_md5': json.dumps(recovery_code_md5),
-                "update_date": TimeToolClass.get_time()
-            }
+        now = TimeToolClass.get_time()
+        sql_data = {
+            'user_id': queue.id,
+            'content': json.dumps(credentials_data),
+            'type': '0',
+            'name': name,
+            "create_date": now,
+            "update_date": now
+        }
 
         # 使用 saveOrUpdate 函数
-        result = DbTools.saveOrUpdate(session, sql_data, SysUser)
+        result = DbTools.saveOrUpdate(session, sql_data, SysUserWebAuth)
         if result:
             # 清理 redis
             RedisHandler().remove_key(req_id)
@@ -229,25 +221,57 @@ def register_complete(request):
             return ReturnTool.SuccessReturn({
                 'status': 'ok',
                 'message': '绑定成功！',
-                'fa_recovery_code': [encrypt_aes(code) for code in recovery_code],
                 'username': username
             })
         else:
-            return ReturnTool.ErrorReturn('绑定失败！请联系管理员。', 500)
+            return ReturnTool.ErrorReturn('绑定失败！请联系管理员。', 400)
 
 
 def generate_otp_qrcode(username):
     with DatabaseSession() as session:
-        queue = session.query(SysUser.otp_secrets).filter(
+        user = session.query(SysUser.id).filter(
             or_(
                 SysUser.user_name == username,
                 SysUser.email == username,
             )).first()
-        if not queue:
-            return ReturnTool.ErrorReturn('用户不存在!', 404)
+        if not user:
+            return ReturnTool.ErrorReturn('用户不存在!', 400)
+
+        c_queue_opt = session.query(SysUserWebAuth.content).filter(and_(
+            SysUserWebAuth.type == '1',  # 是否已经注册二次认证
+            SysUserWebAuth.user_id == user.id
+        )).first()
+
+        if c_queue_opt:
+            return ReturnTool.ErrorReturn('用户已经注册了OTP', 400)
 
         # 获取用户的OTP密钥
-        otp_secret = queue.otp_secrets
+        otp_secret = pyotp.random_base32()
+
+        recovery_code = generate_random_recovery_code()
+        recovery_code_md5 = [generate_hashed_password(code) for code in recovery_code]
+
+        now = TimeToolClass.get_time()
+        opt_data_list = [
+            {
+                'user_id': user.id,
+                'content': otp_secret,
+                'type': '1',
+                'name': 'OPT密钥',
+                "create_date": now,
+                "update_date": now
+            },
+            {
+                'user_id': user.id,
+                'content': json.dumps(recovery_code_md5),
+                'type': '2',
+                'name': '一次性恢复码',
+                "create_date": now,
+                "update_date": now
+            }
+        ]
+
+        DbTools.bulk_insert(session, opt_data_list, SysUserWebAuth)
 
         # 创建TOTP对象
         totp = pyotp.totp.TOTP(otp_secret)
@@ -256,7 +280,7 @@ def generate_otp_qrcode(username):
         provisioning_uri = totp.provisioning_uri(
             name=username,
             issuer_name="VoaTalk",
-            image="https://voatalk.online/voatalk_api/uploads/20251215/logo.png"
+            image="https://www.voatalk.online/voatalk_api/uploads/20251215/logo.png"
         )
 
         # 生成QR码
@@ -276,6 +300,7 @@ def generate_otp_qrcode(username):
             'status': 'ok',
             'qrcode': img_str,
             'secret': otp_secret,
+            'fa_recovery_code': [encrypt_aes(code) for code in recovery_code],
             'provisioning_uri': provisioning_uri
         })
 
@@ -286,65 +311,73 @@ def login_begin(request):
         return ReturnTool.ErrorReturn('参数为空！', 400)
 
     username = data.get('username')
-    platform = data.get('platform')
     supported = data.get('supported')
+
     if not username:
         return ReturnTool.ErrorReturn('用户名必填!', 400)
 
     # 检查用户是否存在（新增：判空 queue，避免 AttributeError）
     with DatabaseSession() as session:
-        queue = session.query(SysUser.user_name, SysUser.credentials_data, SysUser.credentials_data_mobile).filter(or_(
+        user = session.query(SysUser.id).filter(or_(
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
-        if not queue or not queue.user_name:
+        if not user:
             return ReturnTool.ErrorReturn('用户未注册！', 400)
-        if platform == 'mobile':
-            if not queue or not queue.credentials_data_mobile:  # 新增 queue 判空
-                return ReturnTool.ErrorReturn('用户没有开通移动端二次身份验证！', 404)
-            credential = json.loads(queue.credentials_data_mobile)
-        else:
-            if not queue or not queue.credentials_data:  # 新增 queue 判空
-                return ReturnTool.ErrorReturn('用户没有开通PC端二次身份验证！', 404)
-            credential = json.loads(queue.credentials_data)
 
         # 生成挑战值（确保是32字节随机数，符合WebAuthn规范）
         challenge = generate_challenge()  # 需确保该函数返回 bytes 类型，长度建议32
 
-        # 处理传输类型（逻辑不变，保留日志）
-        stored_transports = credential.get('transports', ['internal'])
-        logs.setup_logger().info(f"Stored transports: {stored_transports}")
+        c_queue_arr = session.query(SysUserWebAuth.id, SysUserWebAuth.content).filter(and_(
+            SysUserWebAuth.type == '0',  # 是否已经注册二次认证
+            SysUserWebAuth.user_id == user.id
+        )).all()
 
-        from webauthn.helpers.structs import AuthenticatorTransport
-        transport_enums = []
-        if stored_transports:
-            for i, t in enumerate(stored_transports):
-                try:
-                    if isinstance(t, AuthenticatorTransport):
-                        transport_enums.append(t)
-                    elif isinstance(t, str):
-                        transport_enums.append(AuthenticatorTransport(t.lower()))  # 新增：统一小写，避免枚举匹配失败
-                    else:
+        allow_credentials = []
+        c_queue_list = []
+
+        for cql in c_queue_arr:
+            credential = json.loads(cql.content)
+            c_queue_list.append({
+                'id': cql.id,
+                'content': cql.content
+            })
+            # 处理传输类型（逻辑不变，保留日志）
+            stored_transports = credential.get('transports', ['internal'])
+            logs.setup_logger().info(f"Stored transports: {stored_transports}")
+
+            transport_enums = []
+            if stored_transports:
+                for i, t in enumerate(stored_transports):
+                    try:
+                        if isinstance(t, AuthenticatorTransport):
+                            transport_enums.append(t)
+                        elif isinstance(t, str):
+                            transport_enums.append(AuthenticatorTransport(t.lower()))  # 新增：统一小写，避免枚举匹配失败
+                        else:
+                            transport_enums.append(AuthenticatorTransport.INTERNAL)
+                    except Exception as e:
+                        logs.setup_logger().error(f"Transport error: {e}")
                         transport_enums.append(AuthenticatorTransport.INTERNAL)
-                except Exception as e:
-                    logs.setup_logger().error(f"Transport error: {e}")
-                    transport_enums.append(AuthenticatorTransport.INTERNAL)
-        else:
-            transport_enums = [AuthenticatorTransport.INTERNAL]
+            else:
+                transport_enums = [AuthenticatorTransport.INTERNAL]
 
-        # 创建凭证描述符（确保 credential_id 解码正确）
-        from webauthn.helpers.structs import PublicKeyCredentialDescriptor, PublicKeyCredentialType
-        try:
-            cred_id_bytes = base64url_to_bytes(credential['credential_id'])  # 关键：确保该函数能正确解码前端存储的 credential_id
-        except Exception as e:
-            logs.setup_logger().error(f"Credential ID decode error: {e}")
-            return ReturnTool.ErrorReturn('凭证ID格式错误', 400)
+            # 创建凭证描述符（确保 credential_id 解码正确）
+            try:
+                cred_id_bytes = base64url_to_bytes(credential['credential_id'])  # 关键：确保该函数能正确解码前端存储的 credential_id
+            except Exception as e:
+                logs.setup_logger().error(f"Credential ID decode error: {e}")
+                return ReturnTool.ErrorReturn('凭证ID格式错误', 400)
 
-        credential_descriptor = PublicKeyCredentialDescriptor(
-            id=cred_id_bytes,
-            type=PublicKeyCredentialType.PUBLIC_KEY,
-            transports=transport_enums,
-        )
+            credential_descriptor = PublicKeyCredentialDescriptor(
+                id=cred_id_bytes,
+                type=PublicKeyCredentialType.PUBLIC_KEY,
+                transports=transport_enums,
+            )
+            allow_credentials.append(credential_descriptor)
+
+        if len(allow_credentials) == 0:
+            return ReturnTool.ErrorReturn('当前用户未注册生物识别！', 400)
 
         # 生成验证场景选项（删除多余的 pubKeyCredParams，验证场景不需要）
         rp_id = request.host.split(':')[0]
@@ -355,7 +388,7 @@ def login_begin(request):
 
         options = generate_authentication_options(
             rp_id=rp_id,
-            allow_credentials=[credential_descriptor],
+            allow_credentials=allow_credentials,
             user_verification=user_verification,
             challenge=challenge,  # 直接传 bytes 类型的 challenge
             timeout=60000,
@@ -365,7 +398,8 @@ def login_begin(request):
         req_id = str(uuid.uuid4())
         auth_user = {
             'authentication_challenge': bytes_to_base64url(challenge),  # 确保该函数返回 无填充符 的 Base64URL
-            'authentication_username': username
+            'authentication_username': username,
+            'c_queue_list': c_queue_list
         }
         RedisHandler().save_key(req_id, json.dumps(auth_user), 300)
 
@@ -380,6 +414,7 @@ def login_begin(request):
         # 最终返回：确保返回的是JSON格式，且所有Base64URL字段无非法字符
         return ReturnTool.SuccessReturn(options_dict)
 
+
 @real_ip_decorator
 def login_complete(request, client_ip):
     data = request.get_json()
@@ -388,13 +423,15 @@ def login_complete(request, client_ip):
 
     # 从 redis 获取挑战值和用户名
     req_id = data.get('req_id')
-    platform = data.get('platform')
+    c_id = data.get('id')
+
     auth_cha_str = RedisHandler().get_key(req_id)
     if not auth_cha_str:
         return ReturnTool.ErrorReturn('请先生成挑战验证信息！', 400)
     auth_cha = json.loads(auth_cha_str)
     challenge_base64 = auth_cha.get('authentication_challenge')
     username = auth_cha.get('authentication_username')
+    c_queue_list = auth_cha.get('c_queue_list')
 
     if not challenge_base64 or not username:
         return ReturnTool.ErrorReturn('挑战验证信息已过期或错误！', 400)
@@ -406,15 +443,19 @@ def login_complete(request, client_ip):
             SysUser.email == username,
         )).first()
         if queue.user_state != 1:
-            return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！")
-        if platform == 'mobile':
-            if not queue or not queue.credentials_data_mobile:  # 新增 queue 判空
-                return ReturnTool.ErrorReturn('用户没有开通移动端二次身份验证！', 404)
-            stored_credential = json.loads(queue.credentials_data_mobile)
-        else:
-            if not queue or not queue.credentials_data:  # 新增 queue 判空
-                return ReturnTool.ErrorReturn('用户没有开通PC端二次身份验证！', 404)
-            stored_credential = json.loads(queue.credentials_data)
+            return ReturnTool.ErrorReturn("用户已经停用，请联系管理员！", 400)
+
+        auth_id = None
+        stored_credential = None
+        for cql in c_queue_list:
+            credential = json.loads(cql['content'])
+            if credential.get('credential_id') == c_id:
+                auth_id = cql['id']
+                stored_credential = credential
+                break
+
+        if not stored_credential:
+            return ReturnTool.ErrorReturn('当前设备没有生物验证！', 400)
 
         # 转换挑战值为字节
         expected_challenge = base64url_to_bytes(challenge_base64)
@@ -444,21 +485,14 @@ def login_complete(request, client_ip):
         # 更新签名计数
         stored_credential['sign_count'] = verification.new_sign_count
 
-        if platform == 'mobile':
-            sql_data = {
-                'id': queue.id,
-                'credentials_data_mobile': json.dumps(stored_credential),
-                "update_date": TimeToolClass.get_time()
-            }
-        else:
-            sql_data = {
-                'id': queue.id,
-                'credentials_data': json.dumps(stored_credential),
-                "update_date": TimeToolClass.get_time()
-            }
+        sql_data = {
+            'id': auth_id,
+            'content': json.dumps(stored_credential),
+            "update_date": TimeToolClass.get_time()
+        }
 
         # 使用 saveOrUpdate 函数
-        DbTools.saveOrUpdate(session, sql_data, SysUser)
+        DbTools.saveOrUpdate(session, sql_data, SysUserWebAuth)
         # 清理 redis
         RedisHandler().remove_key(req_id)
 
@@ -506,14 +540,19 @@ def verify_otp(request):
 
     # 检查用户是否存在
     with DatabaseSession() as session:
-        queue = session.query(SysUser.otp_secrets).filter(or_(
+        user = session.query(SysUser.id).filter(or_(
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
-        if not queue.otp_secrets:
-            return ReturnTool.ErrorReturn('用户没有开通OTP二次身份验证！', 404)
+
+        c_queue_opt = session.query(SysUserWebAuth.content).filter(and_(
+            SysUserWebAuth.type == '1',  # 是否已经注册二次认证
+            SysUserWebAuth.user_id == user.id
+        )).first()
+        if not c_queue_opt:
+            return ReturnTool.ErrorReturn('用户没有开通OTP二次身份验证！', 400)
         # 获取用户的OTP密钥
-        otp_secret = queue.otp_secrets
+        otp_secret = c_queue_opt.content
 
         # 创建TOTP对象并验证OTP代码
         totp = pyotp.TOTP(otp_secret)
@@ -531,7 +570,7 @@ def verify_otp(request):
             else:
                 return ReturnTool.ErrorReturn('登录信息已过期，请重新登录！', 301)
         else:
-            return ReturnTool.ErrorReturn('验证码错误!', 401)
+            return ReturnTool.ErrorReturn('验证码错误!', 400)
 
 
 def verify_recovery(request):
@@ -548,30 +587,36 @@ def verify_recovery(request):
 
     # 检查用户是否存在
     with DatabaseSession() as session:
-        queue = session.query(SysUser.recovery_code_md5, SysUser.id).filter(or_(
+        user = session.query(SysUser.id).filter(or_(
             SysUser.user_name == username,
             SysUser.email == username,
         )).first()
-        if not queue.recovery_code_md5:
-            return ReturnTool.ErrorReturn('用户没有开通恢复码！', 404)
+
+        c_queue_opt = session.query(SysUserWebAuth.id, SysUserWebAuth.content).filter(and_(
+            SysUserWebAuth.type == '2',  # 是否已经注册二次认证
+            SysUserWebAuth.user_id == user.id
+        )).first()
+
+        if not c_queue_opt:
+            return ReturnTool.ErrorReturn('用户没有开通恢复码！', 400)
         # 获取用户的OTP密钥
-        recovery_code_arr = json.loads(queue.recovery_code_md5)
+        recovery_code_arr = json.loads(c_queue_opt.content)
         if len(recovery_code_arr) == 0:
-            return ReturnTool.ErrorReturn('恢复码已用完，请联系管理员!', 404)
+            return ReturnTool.ErrorReturn('恢复码已用完，请联系管理员!', 400)
         recovery_code_arr_new = [sub_arr for sub_arr in recovery_code_arr if
                                  sub_arr[0] != verify_password(recovery_code, sub_arr[1])]
         if len(recovery_code_arr) == len(recovery_code_arr_new):
-            return ReturnTool.ErrorReturn('恢复码错误!', 401)
+            return ReturnTool.ErrorReturn('恢复码错误!', 400)
         else:
             userinfo = RedisHandler().get_key("user:info:" + next_id)
             if userinfo:
                 user_login_info = json.loads(userinfo)
                 sql_data = {
-                    'id': queue.id,
-                    'recovery_code_md5': json.dumps(recovery_code_arr_new),
+                    'id': c_queue_opt.id,
+                    'content': json.dumps(recovery_code_arr_new),
                     "update_date": TimeToolClass.get_time()
                 }
-                DbTools.saveOrUpdate(session, sql_data, SysUser)
+                DbTools.saveOrUpdate(session, sql_data, SysUserWebAuth)
                 RedisHandler().remove_key("user:info:" + next_id)
                 return ReturnTool.SuccessReturn({
                     'status': 'ok',
@@ -581,3 +626,41 @@ def verify_recovery(request):
                 })
             else:
                 return ReturnTool.ErrorReturn('登录信息已过期，请重新登录！', 301)
+
+
+def get_devices(user_id):
+    with DatabaseSession() as session:
+        c_queue_arr = session.query(SysUserWebAuth.id, SysUserWebAuth.create_date, SysUserWebAuth.name).filter(and_(
+            SysUserWebAuth.type == '0',  # 是否已经注册二次认证
+            SysUserWebAuth.user_id == user_id
+        )).all()
+        c_queue_list = [
+            {'id': item.id, 'create_date': item.create_date.strftime('%Y-%m-%d %H:%M:%S'), 'name': item.name} for item
+            in c_queue_arr]
+        return ReturnTool.SuccessReturn(c_queue_list)
+
+
+def update_device(request):
+    data = request.get_json()
+    if not data:
+        return ReturnTool.ErrorReturn('参数为空！', 400)
+
+    e_id = data.get('id')
+    name = data.get('name')
+    with DatabaseSession() as session:
+        sql_data = {'id': e_id, 'update_date': TimeToolClass.get_time(), 'name': name}
+        DbTools.saveOrUpdate(session, sql_data, SysUserWebAuth)
+        return ReturnTool.SuccessReturn()
+
+
+def delete_device(request):
+    data = request.get_json()
+    if not data:
+        return ReturnTool.ErrorReturn('参数为空！', 400)
+
+    e_id = data.get('id')
+
+    with DatabaseSession() as session:
+        session.query(SysUserWebAuth).filter(SysUserWebAuth.id == e_id).delete()
+        session.commit()
+        return ReturnTool.SuccessReturn()
