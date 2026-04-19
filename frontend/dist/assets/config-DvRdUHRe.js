@@ -1,0 +1,1 @@
+var e={BASE_URL:`https://www.voatalk.online/voatalk_api`,BEI_AN_HAO:`蜀ICP备2025143448号-1`};export{e as t};

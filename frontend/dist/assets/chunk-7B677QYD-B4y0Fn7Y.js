@@ -1,0 +1,1 @@
+import{F as e,g as t,p as n}from"./src-DUBXPdxE.js";var r=t(t=>{let{securityLevel:r}=e(),i=n(`body`);return r===`sandbox`&&(i=n((n(`#i${t}`).node()?.contentDocument??document).body)),i.select(`#${t}`)},`selectSvgElement`);export{r as t};
