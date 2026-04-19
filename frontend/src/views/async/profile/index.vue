@@ -67,7 +67,7 @@
           </el-button>
         </div>
       </el-form-item>
-      <el-collapse v-model="activeNames">
+      <el-collapse v-model="activeNames" v-if="isSupportBiometric">
         <el-collapse-item name="1">
           <template #title="{ isActive }">
             <div :class="['title-wrapper', { 'is-active': isActive }]">
@@ -85,22 +85,18 @@
             </el-button>
           </div>
           <div class="auth-data" v-if="authData.length > 0">
-            <el-table :data="authData" border stripe style="width: 330px">
-              <el-table-column fixed prop="name" label="注册设备" width="230">
+            <el-table :data="authData" stripe style="width: 330px">
+              <el-table-column fixed prop="name" width="230">
                 <template v-slot="scope">
                   <span class="txt">设备名称：{{ scope.row.name }}</span><br>
                   <span class="txt">创建时间：{{ scope.row.create_date }}</span>
                 </template>
               </el-table-column>
 
-              <el-table-column fixed="right" label="操作" min-width="100">
+              <el-table-column fixed="right" min-width="100">
                 <template v-slot="scope">
-                  <el-button link type="primary" size="small" @click="handleUpdateAuth(scope.row)">
-                    修改
-                  </el-button>
-                  <el-button link type="danger" size="small" @click="handleDeleteAuth(scope.row)">
-                    删除
-                  </el-button>
+                  <el-button :icon="Edit" size="small" circle @click="handleUpdateAuth(scope.row)" />
+                  <el-button type="danger" :icon="Delete" size="small" circle @click="handleDeleteAuth(scope.row)" />
                 </template>
               </el-table-column>
             </el-table>
@@ -265,6 +261,7 @@ import store from "@/store";
 import {
   Plus,
   Edit,
+  Delete,
   ArrowDown,
   Key,
 } from "@element-plus/icons-vue";
