@@ -8,7 +8,7 @@
 </template>
   
 <script setup>
-import Beian from "@/components/Beian";
+import Beian from "@/components/Beian.vue";
 </script>
   
 <style scoped>

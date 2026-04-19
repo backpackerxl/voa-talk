@@ -24,8 +24,8 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { forgetPwd } from "@/api/login";
-import Logo from "@/components/Logo";
-import Beian from "@/components/Beian";
+import Logo from "@/components/Logo.vue";
+import Beian from "@/components/Beian.vue";
 
 const registerForm = ref({
   email: "",

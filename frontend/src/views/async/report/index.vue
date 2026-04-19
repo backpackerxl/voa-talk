@@ -130,7 +130,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import ECharts from "@/components/ECharts";
+import ECharts from "@/components/ECharts.vue";
 import { InfoFilled } from "@element-plus/icons-vue";
 import store from "@/store";
 import echarts from "@/utils/echarts";

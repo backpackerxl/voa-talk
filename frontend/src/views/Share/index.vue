@@ -135,7 +135,7 @@ import { config } from "@/utils/config";
 import { getRedisChat } from "@/api/aiChat";
 import * as clipboard from "clipboard-polyfill";
 import device from "current-device";
-import RightClickMenu from "@/components/RightClickMenu";
+import RightClickMenu from "@/components/RightClickMenu.vue";
 
 const routePath = useRoute();
 const messages = ref([]);

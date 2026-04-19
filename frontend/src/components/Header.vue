@@ -41,7 +41,7 @@
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex"; // Use Vuex's useStore function
-import { defineEmits, computed, ref } from "vue";
+import { computed, ref } from "vue";
 import avater from "@/assets/images/avater.png";
 
 let emit = defineEmits(["submit", "open-menu"]);

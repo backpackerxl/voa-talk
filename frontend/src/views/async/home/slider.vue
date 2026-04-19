@@ -190,8 +190,8 @@
 <script setup>
 import { onMounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
 import { useStore } from "vuex"; // Use Vuex's useStore function
-import Header from "@/components/Header";
-import ChatList from "@/components/ChatList";
+import Header from "@/components/Header.vue";
+import ChatList from "@/components/ChatList.vue";
 import { queryTalkName, editChatName, deleteChat } from "@/api/aiChat";
 
 import { Plus } from "@element-plus/icons-vue";

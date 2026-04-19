@@ -186,9 +186,9 @@ import { ElMessage } from "element-plus";
 import "@/assets/css/github-markdown.css";
 import "@/assets/css/hljs-github.css";
 import "katex/dist/katex.min.css";
-import Logo from "@/components/Logo";
-import RightClickMenu from "@/components/RightClickMenu";
-import MyBackTag from "@/components/MyBackTag";
+import Logo from "@/components/Logo.vue";
+import RightClickMenu from "@/components/RightClickMenu.vue";
+import MyBackTag from "@/components/MyBackTag.vue";
 import * as clipboard from "clipboard-polyfill";
 
 const routePath = useRoute();

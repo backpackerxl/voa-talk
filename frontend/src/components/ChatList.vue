@@ -57,10 +57,10 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, defineEmits, defineProps, watch } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import router from "@/router";
 import { useRoute } from "vue-router";
-import RightClickMenu from "@/components/RightClickMenu";
+import RightClickMenu from "@/components/RightClickMenu.vue";
 
 const routePath = useRoute();
 

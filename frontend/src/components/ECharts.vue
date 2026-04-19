@@ -8,8 +8,7 @@ import {
   onMounted,
   onUnmounted,
   nextTick,
-  watch,
-  defineExpose,
+  watch
 } from "vue";
 import echarts from "@/utils/echarts";
 import store from "@/store";

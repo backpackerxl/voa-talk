@@ -29,8 +29,8 @@ import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { resetPWD } from "@/api/login";
 import { encryptAes } from "@/utils/tools";
-import Logo from "@/components/Logo";
-import Beian from "@/components/Beian";
+import Logo from "@/components/Logo.vue";
+import Beian from "@/components/Beian.vue";
 
 const registerForm = ref({
   pwd: "",

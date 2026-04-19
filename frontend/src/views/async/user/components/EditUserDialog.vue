@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { ref, watch, reactive, defineEmits } from "vue";
+import { ref, watch, reactive } from "vue";
 
 let emit = defineEmits(["close", "submit"]);
 const props = defineProps({

@@ -196,9 +196,9 @@ import { copySecret } from "@/utils/render-html";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
 import { checkBiometricSupport } from "@/utils/webAuthn";
 import avater from "@/assets/images/avater.png";
-import Logo from "@/components/Logo";
-// import Captcha from "@/components/Captcha";
-import Beian from "@/components/Beian";
+import Logo from "@/components/Logo.vue";
+// import Captcha from "@/components/Captcha.vue";
+import Beian from "@/components/Beian.vue";
 import { ElMessage } from "element-plus";
 import { InfoFilled } from '@element-plus/icons-vue'
 import { ref, reactive, onMounted } from "vue";
