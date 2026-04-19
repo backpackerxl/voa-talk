@@ -31,5 +31,8 @@ export default defineConfig({
       })
       console.log('HTTP 服务启动: http://localhost:8080')
     })
+  },
+  build: {
+    chunkSizeWarningLimit: 1500
   }
 })
