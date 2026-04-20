@@ -1,168 +1,101 @@
 <template>
   <el-container class="me-container">
-    <el-aside
-      width="240px"
-      :class="sliderMenu ? 'slider-menu' : 'slider-menu hidden'"
-    >
+    <el-aside width="240px" :class="sliderMenu ? 'slider-menu' : 'slider-menu hidden'">
       <div class="me-header">
         <h2 class="mb">VoaTalk</h2>
-        <svg
-          t="1748089203220"
-          class="menu-icon"
-          viewBox="0 0 1024 1024"
-          version="1.1"
-          xmlns="http://www.w3.org/2000/svg"
-          p-id="8748"
-          width="20"
-          height="20"
-          @click="handleMenu"
-        >
+        <svg t="1748089203220" class="menu-icon" viewBox="0 0 1024 1024" version="1.1"
+          xmlns="http://www.w3.org/2000/svg" p-id="8748" width="20" height="20" @click="handleMenu">
           <path
             d="M640 448h128V320h-128v128z m256-384H128a64 64 0 0 0-64 64v704a64 64 0 0 0 64 64h768a64 64 0 0 0 64-64V128a64 64 0 0 0-64-64zM448 768H256a64 64 0 0 1-64-64V256a64 64 0 0 1 64-64h192v576z m384-64a64 64 0 0 1-64 64H576V192h192a64 64 0 0 1 64 64v448z m-192-64h128V512h-128v128z"
-            p-id="8749"
-          ></path>
+            p-id="8749"></path>
         </svg>
       </div>
       <div class="new-chat">
-        <el-button
-          class="open-chat"
-          type="primary"
-          size="large"
-          @click="openNewChat"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            width="97"
-            height="99.33775329589844"
-            viewBox="0 0 97 99.33775329589844"
-            fill="none"
-            class="logo"
-          >
+        <el-button class="open-chat" type="primary" size="large" @click="openNewChat">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="97"
+            height="99.33775329589844" viewBox="0 0 97 99.33775329589844" fill="none" class="logo">
             <g filter="url(#filter_3_22)">
-              <path
-                fill="rgba(255, 255, 255, 1)"
-                d="M22.3333 16.0013L74.6667 16.0013C84.7919 16.0013 93 24.2095 93 34.3347L93 67.668C93 77.7932 84.7919 86.0013 74.6667 86.0013L22.3333 86.0013C12.2081 86.0013 4 77.7932 4 67.668L4 34.3347C4 24.2095 12.2081 16.0013 22.3333 16.0013ZM22.3333 26.0013C17.731 26.0013 14 29.7323 14 34.3347L14 67.668C14 72.2704 17.731 76.0013 22.3333 76.0013L74.6667 76.0013C79.269 76.0013 83 72.2704 83 67.668L83 34.3347C83 29.7323 79.269 26.0013 74.6667 26.0013L22.3333 26.0013Z"
-              ></path>
+              <path fill="rgba(255, 255, 255, 1)"
+                d="M22.3333 16.0013L74.6667 16.0013C84.7919 16.0013 93 24.2095 93 34.3347L93 67.668C93 77.7932 84.7919 86.0013 74.6667 86.0013L22.3333 86.0013C12.2081 86.0013 4 77.7932 4 67.668L4 34.3347C4 24.2095 12.2081 16.0013 22.3333 16.0013ZM22.3333 26.0013C17.731 26.0013 14 29.7323 14 34.3347L14 67.668C14 72.2704 17.731 76.0013 22.3333 76.0013L74.6667 76.0013C79.269 76.0013 83 72.2704 83 67.668L83 34.3347C83 29.7323 79.269 26.0013 74.6667 26.0013L22.3333 26.0013Z">
+              </path>
             </g>
-            <path
-              fill="rgba(255, 255, 255, 1)"
-              d="M61.3015 17.6882L66.4318 3.59278L75.8288 7.01298L70.6985 21.1084L61.3015 17.6882ZM75.8288 7.01298C74.8843 9.60787 72.0151 10.9458 69.4202 10.0013C66.8253 9.05688 65.4874 6.18767 66.4318 3.59278C67.3763 0.997892 70.2455 -0.340044 72.8404 0.604418C75.4353 1.54888 76.7732 4.41809 75.8288 7.01298Z"
-            ></path>
-            <path
-              fill="rgba(255, 255, 255, 1)"
-              d="M33.6985 3.29124L38.8288 17.3866L29.4318 20.8068L24.3015 6.71144L33.6985 3.29124ZM24.3015 6.71144C23.3571 4.11655 24.695 1.24734 27.2899 0.30288C29.8848 -0.641582 32.754 0.696353 33.6985 3.29124C34.6429 5.88613 33.305 8.75534 30.7101 9.69981C28.1152 10.6443 25.246 9.30633 24.3015 6.71144Z"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M40.6018 50.5092L29 41.0013"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M27 57.837L40.3519 51.0013"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M66 43.0013L66 59.0013"
-            ></path>
-            <path
-              stroke="rgba(255, 255, 255, 1)"
-              stroke-width="10"
-              stroke-linecap="round"
-              d="M28 94.3378L67.9994 94.1135"
-            ></path>
+            <path fill="rgba(255, 255, 255, 1)"
+              d="M61.3015 17.6882L66.4318 3.59278L75.8288 7.01298L70.6985 21.1084L61.3015 17.6882ZM75.8288 7.01298C74.8843 9.60787 72.0151 10.9458 69.4202 10.0013C66.8253 9.05688 65.4874 6.18767 66.4318 3.59278C67.3763 0.997892 70.2455 -0.340044 72.8404 0.604418C75.4353 1.54888 76.7732 4.41809 75.8288 7.01298Z">
+            </path>
+            <path fill="rgba(255, 255, 255, 1)"
+              d="M33.6985 3.29124L38.8288 17.3866L29.4318 20.8068L24.3015 6.71144L33.6985 3.29124ZM24.3015 6.71144C23.3571 4.11655 24.695 1.24734 27.2899 0.30288C29.8848 -0.641582 32.754 0.696353 33.6985 3.29124C34.6429 5.88613 33.305 8.75534 30.7101 9.69981C28.1152 10.6443 25.246 9.30633 24.3015 6.71144Z">
+            </path>
+            <path stroke="rgba(255, 255, 255, 1)" stroke-width="10" stroke-linecap="round"
+              d="M40.6018 50.5092L29 41.0013"></path>
+            <path stroke="rgba(255, 255, 255, 1)" stroke-width="10" stroke-linecap="round"
+              d="M27 57.837L40.3519 51.0013"></path>
+            <path stroke="rgba(255, 255, 255, 1)" stroke-width="10" stroke-linecap="round" d="M66 43.0013L66 59.0013">
+            </path>
+            <path stroke="rgba(255, 255, 255, 1)" stroke-width="10" stroke-linecap="round"
+              d="M28 94.3378L67.9994 94.1135"></path>
             <defs>
-              <filter
-                id="filter_3_22"
-                x="0"
-                y="14.0013427734375"
-                width="97"
-                height="78"
-                filterUnits="userSpaceOnUse"
-                color-interpolation-filters="sRGB"
-              >
+              <filter id="filter_3_22" x="0" y="14.0013427734375" width="97" height="78" filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB">
                 <feFlood flood-opacity="0" result="feFloodId_3_22" />
-                <feColorMatrix
-                  in="SourceAlpha"
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                  result="hardAlpha_3_22"
-                />
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                  result="hardAlpha_3_22" />
                 <feOffset dx="0" dy="2" />
                 <feGaussianBlur stdDeviation="2" />
                 <feComposite in2="hardAlpha_3_22" operator="out" />
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                />
-                <feBlend
-                  mode="normal"
-                  in2="feFloodId_3_22"
-                  result="dropShadow_1_3_22"
-                />
-                <feBlend
-                  mode="normal"
-                  in="SourceGraphic"
-                  in2="dropShadow_1_3_22"
-                  result="shape_3_22"
-                />
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
+                <feBlend mode="normal" in2="feFloodId_3_22" result="dropShadow_1_3_22" />
+                <feBlend mode="normal" in="SourceGraphic" in2="dropShadow_1_3_22" result="shape_3_22" />
               </filter>
             </defs>
           </svg>
-          开启新对话</el-button
-        >
+          开启新对话</el-button>
       </div>
-      <el-menu
-        :default-active="activeMenu"
-        class="el-menu-vertical-demo"
-        :router="true"
-      >
-        <el-menu-item
-          v-for="(menuData, index) in menuData"
-          :key="index"
-          :index="menuData.url"
-          class="menu-item"
-        >
+      <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" :router="true">
+        <el-menu-item v-for="(menuData, index) in menuData" :key="index" :index="menuData.url" class="menu-item">
           <i :class="menuData.icon"></i>
           <span>&nbsp;&nbsp;{{ menuData.label }}</span>
         </el-menu-item>
       </el-menu>
+      <div class="header-container">
+        <p>历史对话</p>
+        <div class="his-icon" v-if="showHis">
+          <el-tooltip class="box-item" effect="light" content="查看全部" placement="top-start">
+            <el-icon style="cursor: pointer" @click="openChatHisList"><i class="fa-regular fa-clock"></i></el-icon>
+          </el-tooltip>
+        </div>
+      </div>
       <div class="history-chat">
         <ChatList :chat="chatObj" @change-data="handleChatData" />
+      </div>
+      <div class="opt-menu">
+        <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click" placement="top">
+          <div class="avater-container">
+            <el-avatar v-if="imageUrl" :src="imageUrl" />
+            <el-avatar v-else :src="avater" />
+            <span class="user-name">{{ nickName }}<el-icon>
+                <ArrowRight />
+              </el-icon></span>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
+              <el-dropdown-item command="profile"><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item>
+              <el-dropdown-item command="logout"><i class="fa-solid fa-right-from-bracket"></i>退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </el-aside>
     <transition name="el-fade-in">
       <el-container>
-        <el-header
-          ><Header
-            :title="chatTitle"
-            :menu="sliderMenu"
-            :id="chatId"
-            @submit="submitEditMsg"
-            @open-menu="openMenu"
-        /></el-header>
-        <el-main
-          @click="closeMenu"
-          ref="mainView"
-          id="chatView"
-          class="chat-view"
-          ><router-view />
+        <el-header>
+          <Header :title="chatTitle" :menu="sliderMenu" :id="chatId" @submit="submitEditMsg" @open-menu="openMenu" />
+        </el-header>
+        <el-main @click="closeMenu" ref="mainView" id="chatView" class="chat-view"><router-view />
         </el-main>
       </el-container>
     </transition>
   </el-container>
-  <el-dialog
-    v-model="centerDialogVisible"
-    title="删除对话"
-    width="380"
-    align-center
-  >
+  <el-dialog v-model="centerDialogVisible" title="删除对话" width="380" align-center>
     <span>确定删除，对话内容将不可恢复</span>
     <template #footer>
       <div class="dialog-footer">
@@ -171,12 +104,7 @@
       </div>
     </template>
   </el-dialog>
-  <el-dialog
-    v-model="editDialogVisible"
-    title="编辑对话名称"
-    width="380"
-    align-center
-  >
+  <el-dialog v-model="editDialogVisible" title="编辑对话名称" width="380" align-center>
     <el-input class="edit-title" size="large" v-model="chatTitleValue" />
     <template #footer>
       <div class="dialog-footer">
@@ -190,11 +118,13 @@
 <script setup>
 import { onMounted, nextTick, ref, computed, watch } from "vue"; // Ensure computed is imported
 import { useStore } from "vuex"; // Use Vuex's useStore function
+import { ElMessageBox } from "element-plus";
 import Header from "@/components/Header.vue";
 import ChatList from "@/components/ChatList.vue";
 import { queryTalkName, editChatName, deleteChat } from "@/api/aiChat";
+import { ArrowRight } from "@element-plus/icons-vue";
 
-import { Plus } from "@element-plus/icons-vue";
+import avater from "@/assets/images/avater.png";
 import router from "@/router";
 import { useRoute } from "vue-router";
 import device from "current-device";
@@ -212,6 +142,10 @@ const store = useStore(); // Initialize the store
 const chatObj = ref(null);
 const mainView = ref(null);
 const sliderMenu = ref(JSON.parse(store.state.app.sliderMenu));
+const imageUrl = computed(() => store.state.app.avatar || null);
+const nickName = computed(() => store.state.app.nickName || null);
+const showHis = ref(!device.mobile());
+const isVisible = ref(false);
 
 // 移动端默认关闭侧边栏
 if (device.mobile()) {
@@ -398,6 +332,46 @@ function closeMenu() {
   }
 }
 
+function openChatHisList() {
+  chatId.value = -1;
+  chatTitle.value = '';
+  router.replace("/home/chat/history");
+}
+
+const handleCommand = (command) => {
+  if (command === "logout") {
+    ElMessageBox.confirm("确定要退出登录吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    })
+      .then(() => {
+        // 清除 store 中的 authorization 和 userRole
+        // 重定向到根路径
+        router.push("/");
+        // 这里可以添加实际的登出逻辑，比如清除 token 或者重定向到登录页面
+        store.dispatch("app/clearAvatar");
+        store.dispatch("app/clearAuthorization");
+        store.dispatch("app/clearUserRole");
+        store.dispatch("app/clearNickName");
+        store.dispatch("app/clearUserName");
+        store.dispatch("app/clearUserEmail");
+        store.dispatch("app/clearLoginType");
+        store.dispatch("app/clearBindQQ");
+        store.dispatch("app/clearBindGitHub");
+      })
+      .catch(() => {
+        console.log("Logout canceled");
+      });
+  } else if (command === "profile") {
+    router.push("/home/profile");
+  }
+};
+
+function handleVisibleChange(visible) {
+  isVisible.value = visible;
+}
+
 function handleMenu() {
   sliderMenu.value = !sliderMenu.value;
   store.dispatch("app/setSliderMenu", sliderMenu.value);
@@ -467,7 +441,32 @@ onMounted(() => {
   z-index: 999;
 }
 
+.header-container {
+  color: var(--el-text-color-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  padding-left: 15px;
+  padding-right: 18px;
+  border-top: 1px solid var(--el-color-info-light-8);
+  background: var(--el-bg-color);
+  box-sizing: border-box;
+}
+
+.header-container .his-icon {
+  display: none;
+}
+
+.header-container:hover .his-icon {
+  display: block;
+}
+
 @media (max-width: 768px) {
+  .header-container {
+    margin-top: 50px;
+  }
+
   .el-aside {
     position: absolute;
   }
@@ -558,5 +557,30 @@ onMounted(() => {
 
 .el-menu i.fa-solid.fa-chart-simple {
   width: 17.5px;
+}
+
+.history-chat {
+  height: calc(100vh - 391px);
+}
+
+.opt-menu {
+  padding: 5px 0px;
+  border-top: 1px solid var(--el-border-color);
+}
+
+.avater-container {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.avater-container .user-name {
+  margin-left: 8px;
+}
+
+.el-avatar--circle {
+  outline: none;
 }
 </style>

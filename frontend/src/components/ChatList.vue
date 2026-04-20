@@ -1,13 +1,4 @@
 <template>
-  <div class="header-container">
-    <p>历史对话</p>
-    <div class="his-icon" v-if="showHis">
-      <el-tooltip class="box-item" effect="light" content="查看全部" placement="top-start">
-        <el-icon style="cursor: pointer" @click="openChatHisList"><i class="fa-regular fa-clock"></i></el-icon>
-      </el-tooltip>
-    </div>
-  </div>
-
   <el-skeleton :loading="openLoading" animated>
     <template #template>
       <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
@@ -160,11 +151,6 @@ function openChatHis(event, row) {
     row.talk_name || "VoaTalk 你的Ai助手";
 }
 
-function openChatHisList() {
-  emits("change-data", { chatTitle: "", chatId: -1, type: "change" });
-  router.replace("/home/chat/history");
-}
-
 const getAiChatList = async (animated) => {
   openLoading.value = animated;
   let obj = await aiChatList({
@@ -258,36 +244,12 @@ onMounted(function () {
 </script>
 
 <style>
-.header-container {
-  color: var(--el-text-color-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 40px;
-  padding-left: 15px;
-  padding-right: 18px;
-  border-top: 1px solid var(--el-color-info-light-8);
-  background: var(--el-bg-color);
-  box-sizing: border-box;
-}
-
-.header-container .his-icon {
-  display: none;
-}
-
-.header-container:hover .his-icon {
-  display: block;
-}
-
 .infinite-list-wrapper {
-  height: calc(100vh - 360px);
+  height: inherit;
   padding: 0 5px;
 }
 
 @media (max-width: 768px) {
-  .header-container {
-    margin-top: 50px;
-  }
 
   .infinite-list-wrapper {
     height: calc(100vh - 200px);
@@ -356,6 +318,10 @@ onMounted(function () {
 
 .el-popper[data-popper-placement="bottom-end"]>.el-popper__arrow {
   top: 0 !important;
+}
+
+.el-popper[data-popper-placement="top"]>.el-popper__arrow {
+  bottom: 0 !important;
 }
 
 .el-dropdown-menu__item {

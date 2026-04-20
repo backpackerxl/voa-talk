@@ -18,32 +18,10 @@
         </el-icon>
       </div>
     </div>
-
-    <div class="opt-menu">
-      <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click"
-        placement="bottom-end">
-        <!-- <div> -->
-        <el-avatar v-if="imageUrl" :src="imageUrl" />
-        <el-avatar v-else :src="avater" />
-        <!-- </div> -->
-        <template #dropdown>
-          <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
-            <el-dropdown-item command="profile"><i class="fa-solid fa-user"></i>我的主页</el-dropdown-item>
-            <el-dropdown-item command="logout"><i class="fa-solid fa-right-from-bracket"></i>退出登录</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ElMessageBox } from "element-plus";
-import { useRouter } from "vue-router";
-import { useStore } from "vuex"; // Use Vuex's useStore function
-import { computed, ref } from "vue";
-import avater from "@/assets/images/avater.png";
-
 let emit = defineEmits(["submit", "open-menu"]);
 import { EditPen } from "@element-plus/icons-vue";
 
@@ -53,12 +31,6 @@ const props = defineProps({
   menu: Boolean,
 });
 
-const isVisible = ref(false);
-
-const store = useStore(); // Initialize the store
-
-const imageUrl = computed(() => store.state.app.avatar || null);
-
 function editTitle() {
   emit("submit", props);
 }
@@ -67,45 +39,6 @@ function handleMenu() {
   emit("open-menu", props);
 }
 
-function handleVisibleChange(visible) {
-  isVisible.value = visible;
-}
-
-const router = useRouter();
-// Handle dropdown command
-const handleCommand = (command) => {
-  if (command === "logout") {
-    ElMessageBox.confirm("确定要退出登录吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    })
-      .then(() => {
-        // Perform logout action
-        // console.log("用户点击退出");
-
-        // 清除 store 中的 authorization 和 userRole
-
-        // 重定向到根路径
-        router.push("/");
-        // 这里可以添加实际的登出逻辑，比如清除 token 或者重定向到登录页面
-        store.dispatch("app/clearAvatar");
-        store.dispatch("app/clearAuthorization");
-        store.dispatch("app/clearUserRole");
-        store.dispatch("app/clearNickName");
-        store.dispatch("app/clearUserName");
-        store.dispatch("app/clearUserEmail");
-        store.dispatch("app/clearLoginType");
-        store.dispatch("app/clearBindQQ");
-        store.dispatch("app/clearBindGitHub");
-      })
-      .catch(() => {
-        console.log("Logout canceled");
-      });
-  } else if (command === "profile") {
-    router.push("/home/profile");
-  }
-};
 </script>
 
 <style scoped>
@@ -116,10 +49,6 @@ const handleCommand = (command) => {
   align-items: center;
   background: var(--me-body-bg-color);
   padding: 0 15px;
-}
-
-.el-avatar--circle {
-  outline: none;
 }
 
 .title-text {
