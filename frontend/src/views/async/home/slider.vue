@@ -365,6 +365,9 @@ const handleCommand = (command) => {
       });
   } else if (command === "profile") {
     router.push("/home/profile");
+    if (device.mobile()) {
+      sliderMenu.value = false;
+    }
   }
 };
 
@@ -473,6 +476,10 @@ onMounted(() => {
 
   .infinite-list-wrapper .list-item {
     height: 48px;
+  }
+
+  .history-chat {
+    height: calc(100vh - 241px) !important;
   }
 }
 

@@ -1,6 +1,6 @@
 
 const CONFIG = {
-    CACHE_NAME: 'voa-talk-v1.2.5', // 版本号更新
+    CACHE_NAME: 'voa-talk-v1.2.6', // 版本号更新
     OFFLINE_PAGE: '/offline.html',
     // 1. 核心必缓存资源（入口HTML + 兜底页 + 图片）
     CORE_ASSETS: [

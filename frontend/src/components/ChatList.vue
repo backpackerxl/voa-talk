@@ -249,13 +249,6 @@ onMounted(function () {
   padding: 0 5px;
 }
 
-@media (max-width: 768px) {
-
-  .infinite-list-wrapper {
-    height: calc(100vh - 200px);
-  }
-}
-
 .infinite-list-wrapper .list {
   padding: 0;
   margin: 0;
