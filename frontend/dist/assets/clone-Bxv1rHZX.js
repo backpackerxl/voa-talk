@@ -1,0 +1,1 @@
+import{m as e}from"./_baseUniq-9tlzoCwH.js";var t=4;function n(n){return e(n,t)}export{n as t};
