@@ -93,6 +93,24 @@ export function formatDateTime(date) {
     return `${year}-${month}-${day}`;
 }
 
+export function formatFullDateTime(date) {
+    // 如果传入的是时间戳或字符串，先转换为 Date 对象
+    if (typeof date === 'number' || typeof date === 'string') {
+        date = new Date(date);
+    }
+
+    // 获取年、月、日、时、分、秒
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const second = String(date.getSeconds()).padStart(2, '0');
+
+    // 返回格式化后的字符串
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
 const match = matchMedia("(prefers-color-scheme: dark)");
 
 function followOS() {
@@ -150,3 +168,50 @@ export function smoothScroll(el, targetY, func = null) {
 
     requestAnimationFrame(animateScroll);
 }
+
+// 防抖函数
+export function debounce(func, delay = 200) {
+    let timer = null
+    return (...args) => {
+        clearTimeout(timer)
+        timer = setTimeout(() => func.apply(this, args), delay)
+    }
+}
+
+export const shortcuts = [
+    {
+        text: "一周以前",
+        value: () => {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 7);
+            return [start, end];
+        },
+    },
+    {
+        text: "两周以前",
+        value: () => {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 14);
+            return [start, end];
+        },
+    },
+    {
+        text: "一个月以前",
+        value: () => {
+            const end = new Date();
+            const start = new Date();
+            start.setMonth(start.getMonth() - 1);
+            return [start, end];
+        },
+    },
+];
+
+export function getOneMonthTimeRange() {
+    const end = new Date();
+    const start = new Date();
+    start.setMonth(start.getMonth() - 1);
+    return [start, end];
+}
+

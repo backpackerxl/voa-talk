@@ -1,45 +1,47 @@
 <template>
   <el-skeleton :loading="openLoading" animated>
     <template #template>
-      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
-      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
-      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
-      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
-      <el-skeleton-item variant="text" style="width: 90%; height: 35px; margin-left: 5%; margin-top: 10px" />
+      <div :style="{ height: height + 20 + 'px' }">
+        <el-skeleton-item variant="text" style="width: 90%; height: 28px; margin-left: 5%; margin-top: 10px" />
+        <el-skeleton-item variant="text" style="width: 90%; height: 28px; margin-left: 5%; margin-top: 10px" />
+        <el-skeleton-item variant="text" style="width: 90%; height: 28px; margin-left: 5%; margin-top: 10px" />
+      </div>
     </template>
     <template #default>
-      <div class="infinite-list-wrapper" style="overflow: auto">
+      <div class="infinite-list-wrapper">
         <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
-          <ul v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled">
-            <li v-for="(chat, index) in tableData" :key="index" :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
-              " @click="openChatHis($event, chat)" :data-index="index" @contextmenu.prevent="openMenu($event, chat)">
-              <el-tooltip class="box-item" effect="light" :content="chat.talk_name" placement="right"
-                :disabled="!shouldShowTooltip(index) || !showHis">
-                <template #content>
-                  {{ chat.talk_name }}
-                </template>
-                <div class="content">
-                  <span :ref="(el) => handleRef(el, index)" class="text-truncate"><i
-                      class="fa-regular fa-comments"></i>{{
-                        chat.talk_name }}</span>
-                  <el-dropdown v-if="showHis" trigger="click" @visible-change="handleVisibleChange"
-                    placement="bottom-end">
-                    <span class="el-dropdown-link">
-                      <i ref="trigger" :data-index="index" class="fa-solid fa-ellipsis"></i>
-                    </span>
-                    <template #dropdown>
-                      <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
-                        <el-dropdown-item @click="handleEditMsg(chat)"><i
-                            class="fa-regular fa-pen-to-square"></i>重命名</el-dropdown-item>
-                        <el-dropdown-item class="delete" @click="handleDeleteMsg(chat)"><i
-                            class="fa-solid fa-trash"></i>删除</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </div>
-              </el-tooltip>
-            </li>
-          </ul>
+          <el-scrollbar @end-reached="load" :height="height">
+            <ul class="list">
+              <li v-for="(chat, index) in tableData" :key="index" :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
+                " @click="openChatHis($event, chat)" :data-index="index" @contextmenu.prevent="openMenu($event, chat)">
+                <el-tooltip class="box-item" effect="light" :content="chat.talk_name" placement="right"
+                  :disabled="!shouldShowTooltip(index) || !showHis">
+                  <template #content>
+                    {{ chat.talk_name }}
+                  </template>
+                  <div class="content">
+                    <span :ref="(el) => handleRef(el, index)" class="text-truncate"><i
+                        class="fa-regular fa-comments"></i>{{
+                          chat.talk_name }}</span>
+                    <el-dropdown v-if="showHis" trigger="click" @visible-change="handleVisibleChange"
+                      placement="bottom-end">
+                      <span class="el-dropdown-link">
+                        <i ref="trigger" :data-index="index" class="fa-solid fa-ellipsis"></i>
+                      </span>
+                      <template #dropdown>
+                        <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
+                          <el-dropdown-item @click="handleEditMsg(chat)"><i
+                              class="fa-regular fa-pen-to-square"></i>重命名</el-dropdown-item>
+                          <el-dropdown-item class="delete" @click="handleDeleteMsg(chat)"><i
+                              class="fa-solid fa-trash"></i>删除</el-dropdown-item>
+                        </el-dropdown-menu>
+                      </template>
+                    </el-dropdown>
+                  </div>
+                </el-tooltip>
+              </li>
+            </ul>
+          </el-scrollbar>
         </RightClickMenu>
         <div class="last-msg" v-loading="loading"></div>
       </div>
@@ -48,10 +50,11 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from "vue";
+import { computed, ref, onMounted, onUnmounted, watch } from "vue";
 import router from "@/router";
 import { useRoute } from "vue-router";
 import RightClickMenu from "@/components/RightClickMenu.vue";
+import { debounce } from "@/utils/tools";
 
 const routePath = useRoute();
 
@@ -60,7 +63,26 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  offsetHeight: {
+    type: Number,
+    default: 0,
+  },
 });
+
+const totalHeight = ref(window.innerHeight);
+
+const height = computed(() => {
+  const h = totalHeight.value - props.offsetHeight - 20;
+  if (h > 800) {
+    return 800;
+  }
+  return h;
+});
+
+// 监听方法
+const onResize = () => {
+  totalHeight.value = window.innerHeight;
+}
 
 // 定义自定义事件
 const emits = defineEmits(["change-data"]);
@@ -73,10 +95,8 @@ const count = ref(0);
 const totalCount = ref(0);
 const tableData = ref([]);
 const loading = ref(false);
-const noMore = computed(() => count.value >= totalCount.value);
-const disabled = computed(() => loading.value || noMore.value);
 const currentPage = ref(1);
-const pageSize = ref(15);
+const pageSize = ref(20);
 const contentRefs = ref([]);
 const isVisible = ref(false);
 const moreIcon = ref(null);
@@ -163,11 +183,13 @@ const getAiChatList = async (animated) => {
   openLoading.value = false;
 };
 
-const load = () => {
-  loading.value = true;
-  count.value += pageSize.value;
-  currentPage.value++;
-  getAiChatList(false);
+const load = (direction) => {
+  if (direction === 'bottom') {
+    loading.value = true;
+    count.value += pageSize.value;
+    currentPage.value++;
+    getAiChatList(false);
+  }
 };
 
 watch(
@@ -240,6 +262,11 @@ function handleEditMsg(row) {
 onMounted(function () {
   talkIdOn.value = +routePath.params.id;
   getAiChatList(true);
+  window.addEventListener("resize", debounce(onResize));
+});
+
+onUnmounted(function () {
+  window.removeEventListener("resize", debounce(onResize));
 });
 </script>
 

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode development",
+    "dev:prod": "vite --mode production",
     "serve": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -21,7 +22,7 @@
     "current-device": "^0.10.2",
     "dompurify": "^3.1.6",
     "echarts": "^5.6.0",
-    "element-plus": "^2.8.0",
+    "element-plus": "^2.13.7",
     "github-markdown-css": "^5.8.1",
     "hammerjs": "^2.0.8",
     "highlight.js": "^11.11.1",

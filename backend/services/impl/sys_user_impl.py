@@ -24,7 +24,7 @@ def api_sys_user_find_list_page_impl(page_size, page_index, search_criteria):
     with DatabaseSession() as session:
         query = session.query(SysUserDTO)
         # 使用公用方法动态添加搜索条件
-        query = DbTools.apply_filters(query, SysUser, search_criteria)
+        query = DbTools.apply_filters(query, SysUserDTO, search_criteria)
         # 根据需要应用过滤器
         paginated_data = DbTools.find_list_page(query, page_size, page_index)
         return ReturnTool.SuccessReturn(paginated_data)

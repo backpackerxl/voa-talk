@@ -2,84 +2,48 @@
   <div class="body">
     <div class="data-inner">
       <div class="header">
-        <el-form :inline="true" :model="state" class="demo-form-inline">
-          <el-form-item label="对话名称">
-            <el-input
-              v-model="state.user_name"
-              placeholder="模糊搜索历史对话"
-              size="large"
-              clearable
-            />
-          </el-form-item>
+        <el-form :inline="true" :model="state">
+          <div>
+            <el-form-item label="模糊搜索：">
+              <el-input style="width: 200px;" v-model="state.user_name" placeholder="模糊搜索对话名称" clearable />
+            </el-form-item>
+            &nbsp;&nbsp;
+            <el-form-item label="时间：">
+              <el-config-provider :locale="zhCn">
+                <el-date-picker v-model="state.create_date" type="datetimerange" :shortcuts="shortcuts"
+                  format="YYYY-MM-DD HH" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+                  :show-footer="false" style="width: 250px;" />
+              </el-config-provider>
+            </el-form-item>
+          </div>
           <el-form-item>
-            <el-button size="large" type="primary" @click="fetchData"
-              >查 询</el-button
-            >
+            <el-button type="primary" @click="fetchData" :icon="Search">查 询</el-button>
           </el-form-item>
         </el-form>
         <div class="option">
           <p>数据列表</p>
           <div>
-            <el-button size="large" type="danger" @click="batchDel"
-              >删 除</el-button
-            >
+            <el-button type="danger" @click="batchDel" :icon="Delete">删 除</el-button>
           </div>
         </div>
       </div>
       <div class="data-view">
-        <el-table
-          v-loading="state.loading"
-          :data="tableData"
-          border
-          stripe
-          style="width: 100%"
-          @select="changeCheckBox"
-          @select-all="changeCheckBox"
-        >
+        <el-table v-loading="state.loading" :data="tableData" border stripe style="width: 100%" @select="changeCheckBox"
+          @select-all="changeCheckBox">
           <el-table-column type="selection" width="55" />
           <!-- 表格列定义 -->
-          <el-table-column
-            fixed
-            prop="talk_name"
-            label="对话名称"
-            min-width="400"
-          />
-          <el-table-column
-            fixed
-            prop="nick_name"
-            label="对话拥有者"
-            min-width="200"
-          />
-          <el-table-column
-            fixed
-            prop="create_date"
-            label="对话产生的时间"
-            min-width="200"
-          />
+          <el-table-column fixed prop="talk_name" label="对话名称" min-width="300" />
+          <el-table-column prop="nick_name" label="对话拥有者" min-width="200" />
+          <el-table-column prop="create_date" label="对话产生的时间" min-width="200" />
           <el-table-column fixed="right" label="操作" min-width="180">
             <template v-slot="scope">
-              <el-button
-                link
-                type="primary"
-                size="small"
-                @click="openChatInfo(scope.row)"
-              >
+              <el-button link type="primary" size="small" @click="openChatInfo(scope.row)">
                 详情
               </el-button>
-              <el-button
-                link
-                type="primary"
-                size="small"
-                @click="openEditDialog(scope.row)"
-              >
+              <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">
                 编辑
               </el-button>
-              <el-button
-                link
-                type="danger"
-                size="small"
-                @click="handleDelete(scope.row)"
-              >
+              <el-button link type="danger" size="small" @click="handleDelete(scope.row)">
                 删除
               </el-button>
             </template>
@@ -87,23 +51,14 @@
         </el-table>
         <div class="me-pagination">
           <span>共 {{ tableCount }} 条</span>
-          <el-pagination
-            layout="prev, pager, next"
-            :page-size="pageSize"
-            :total="tableCount"
-            @current-change="pageQuery"
-          />
+          <el-pagination layout="prev, pager, next" :page-size="pageSize" :total="tableCount"
+            @current-change="pageQuery" />
         </div>
       </div>
     </div>
   </div>
 
-  <el-dialog
-    v-model="centerDialogVisible"
-    title="删除对话"
-    width="400"
-    align-center
-  >
+  <el-dialog v-model="centerDialogVisible" title="删除对话" width="400" align-center>
     <span>确定删除，对话内容将不可恢复</span>
     <template #footer>
       <div class="dialog-footer">
@@ -112,12 +67,7 @@
       </div>
     </template>
   </el-dialog>
-  <el-dialog
-    v-model="editDialogVisible"
-    title="编辑对话名称"
-    width="400"
-    align-center
-  >
+  <el-dialog v-model="editDialogVisible" title="编辑对话名称" width="400" align-center>
     <el-input size="large" v-model="chatTitle" />
     <template #footer>
       <div class="dialog-footer">
@@ -134,6 +84,10 @@ import { ElMessage } from "element-plus"; // 引入 ElMessage 组件
 import { queryChat, editChatName, deleteChat } from "@/api/aiChat";
 import { useStore } from "vuex"; // Use Vuex's useStore function
 import router from "@/router";
+import { Delete, Search } from "@element-plus/icons-vue"; // 引入图标
+import { ElConfigProvider } from 'element-plus';
+import { formatFullDateTime, shortcuts, getOneMonthTimeRange } from "@/utils/tools";
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 
 const store = useStore(); // Initialize the store
 
@@ -155,14 +109,11 @@ const centerDialogVisible = ref(false);
 
 let state = reactive({
   user_name: "",
+  create_date: getOneMonthTimeRange(),
   loading: false,
   delete_ids: "",
   user_name_list: "",
 });
-
-function close() {
-  state.open = false;
-}
 
 async function openChatInfo(row) {
   store.dispatch("app/setSliderData", {
@@ -180,12 +131,20 @@ const fetchData = async () => {
       pageSize: pageSize.value,
       pageIndex: currentPage.value,
     };
-    params.search_criteria =
-      '{"sort": {"field": "create_date", "order": "desc"}}';
-    // 有参数就采用模糊查询
-    if (state.user_name !== "") {
-      params.search_criteria = `{"talk_name": {"value": "${state.user_name}", "operator": "like"}, "sort": {"field": "create_date", "order": "desc"}}`;
+    params.search_criteria = {
+      "talk_name": { "value": state.user_name, "operator": "like" },
+      "sort": { "field": "create_date", "order": "desc" }
+    };
+
+    if (state.create_date) {
+      const stm = formatFullDateTime(state.create_date[0]);
+      const etm = formatFullDateTime(state.create_date[1]);
+      params.search_criteria.create_date = {
+        "value": [{ "value": stm, "operator": "gte" }, { "value": etm, "operator": "lte" }],
+        "operator": "range"
+      };
     }
+    params.search_criteria = JSON.stringify(params.search_criteria);
     const response = await queryChat(params);
     tableData.value = response.data.records;
     tableCount.value = response.data.total_count;
@@ -261,22 +220,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.body .data-inner {
-  padding: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+.body {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 1024px) {
-  .body .data-inner {
-    width: 95vw;
-  }
+.body .data-inner {
+  padding: 5px;
+  width: calc(100% - 120px);
 }
 
 .header {
   width: 100%;
-  height: 80px;
+  height: 70px;
   background: var(--el-bg-color);
   box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
@@ -310,12 +269,8 @@ onMounted(() => {
   margin: 0 !important;
 }
 
-:deep(.el-form-item__label) {
-  line-height: 40px !important;
-}
-
 .el-table {
-  height: 65vh !important;
+  height: calc(100vh - 300px) !important;
 }
 
 .el-table thead {
@@ -346,13 +301,6 @@ onMounted(() => {
   color: var(--el-text-color-primary);
   line-height: 45px;
   margin-right: 20px;
-}
-
-.text-truncate {
-  max-width: 170px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* 隐藏 el-table 的无数据提示 */

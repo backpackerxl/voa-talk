@@ -3,88 +3,47 @@
     <div class="data-inner">
       <div class="header">
         <el-form :inline="true" :model="state" class="demo-form-inline">
-          <el-form-item label="用户名">
-            <el-input
-              v-model="state.user_name"
-              placeholder="模糊搜索用户名或昵称"
-              size="large"
-              clearable
-            />
-          </el-form-item>
+          <div>
+            <el-form-item label="模糊搜索：">
+              <el-input v-model="state.user_name" placeholder="模糊搜索用户名或昵称" clearable />
+            </el-form-item>
+          </div>
           <el-form-item>
-            <el-button size="large" type="primary" @click="fetchData"
-              >查 询</el-button
-            >
+            <el-button type="primary" @click="fetchData" :icon="Search">查 询</el-button>
           </el-form-item>
         </el-form>
         <div class="option">
           <p>数据列表</p>
-          <el-button size="large" type="danger" @click="batchDel"
-            >删 除</el-button
-          >
+          <el-button type="danger" @click="batchDel" :icon="Delete">删 除</el-button>
         </div>
       </div>
       <div class="data-view">
-        <el-table
-          v-loading="state.loading"
-          :data="tableData"
-          border
-          stripe
-          style="width: 100%"
-          @select="changeCheckBox"
-          @select-all="changeCheckBox"
-        >
+        <el-table v-loading="state.loading" :data="tableData" border stripe style="width: 100%" @select="changeCheckBox"
+          @select-all="changeCheckBox">
           <el-table-column type="selection" width="55" />
           <!-- 表格列定义 -->
-          <el-table-column
-            fixed
-            prop="user_name"
-            label="用户名"
-            min-width="150"
-          />
+          <el-table-column fixed prop="user_name" label="用户名" min-width="150" />
           <el-table-column prop="nick_name" label="昵称" min-width="150" />
           <el-table-column label="是否为管理员" min-width="120">
             <template v-slot="scope">
-              <el-tag round type="info" v-if="scope.row.super_admin === 0"
-                >否</el-tag
-              >
-              <el-tag round type="success" v-if="scope.row.super_admin === 1"
-                >是</el-tag
-              >
+              <el-tag round type="info" v-if="scope.row.super_admin === 0">否</el-tag>
+              <el-tag round type="success" v-if="scope.row.super_admin === 1">是</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="用户状态" min-width="120">
             <template v-slot="scope">
-              <el-tag type="success" v-if="scope.row.user_state === 1"
-                >正常</el-tag
-              >
-              <el-tag type="info" v-if="scope.row.user_state === 0"
-                >停用</el-tag
-              >
+              <el-tag type="success" v-if="scope.row.user_state === 1">正常</el-tag>
+              <el-tag type="info" v-if="scope.row.user_state === 0">停用</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="email" label="邮箱" min-width="200" />
-          <el-table-column
-            prop="last_login_time"
-            label="最后登录时间"
-            min-width="200"
-          />
+          <el-table-column prop="last_login_time" label="最后登录时间" min-width="200" />
           <el-table-column fixed="right" label="操作" min-width="120">
             <template v-slot="scope">
-              <el-button
-                link
-                type="primary"
-                size="small"
-                @click="openEditDialog(scope.row)"
-              >
+              <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">
                 编辑
               </el-button>
-              <el-button
-                link
-                type="danger"
-                size="small"
-                @click="handleDelete(scope.row)"
-              >
+              <el-button link type="danger" size="small" @click="handleDelete(scope.row)">
                 删除
               </el-button>
             </template>
@@ -92,20 +51,11 @@
         </el-table>
         <div class="me-pagination">
           <span>共 {{ tableCount }} 条</span>
-          <el-pagination
-            layout="prev, pager, next"
-            :page-size="pageSize"
-            :total="tableCount"
-            @current-change="pageQuery"
-          />
+          <el-pagination layout="prev, pager, next" :page-size="pageSize" :total="tableCount"
+            @current-change="pageQuery" />
         </div>
 
-        <el-dialog
-          v-model="centerDialogVisible"
-          title="删除用户"
-          width="400"
-          align-center
-        >
+        <el-dialog v-model="centerDialogVisible" title="删除用户" width="400" align-center>
           <span>确定删除所选用户的账号？此操作不可恢复</span>
           <template #footer>
             <div class="dialog-footer">
@@ -117,12 +67,7 @@
       </div>
     </div>
 
-    <EditUserDialog
-      @close="close"
-      v-if="state.open"
-      :user="selectedUser"
-      @submit="submitEdit"
-    />
+    <EditUserDialog @close="close" v-if="state.open" :user="selectedUser" @submit="submitEdit" />
   </div>
 </template>
 
@@ -131,6 +76,7 @@ import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus"; // 引入 ElMessage 组件
 import { ApiUserFindListPage, ApiUserDel, ApiUserExit } from "@/api/apiUser";
 import EditUserDialog from "./components/EditUserDialog.vue"; // 引入组件
+import { Delete, Search } from "@element-plus/icons-vue";
 
 const tableData = ref([]);
 const tableCount = ref(0);
@@ -140,7 +86,6 @@ const userNameList = ref("");
 
 // 每页显示数量
 const pageSize = ref(20);
-let editDialogVisible = ref(false);
 const selectedUser = ref(null);
 const centerDialogVisible = ref(false);
 let state = reactive({
@@ -242,22 +187,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.body .data-inner {
-  padding: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+.body {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 1024px) {
-  .body .data-inner {
-    width: 95vw;
-  }
+.body .data-inner {
+  padding: 5px;
+  width: calc(100% - 120px);
 }
 
 .header {
   width: 100%;
-  height: 80px;
+  height: 70px;
   background: var(--el-bg-color);
   box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
@@ -295,12 +240,8 @@ onMounted(() => {
   margin: 0 !important;
 }
 
-:deep(.el-form-item__label) {
-  line-height: 40px !important;
-}
-
 .el-table {
-  height: 65vh !important;
+  height: calc(100vh - 300px) !important;
 }
 
 .el-table thead {

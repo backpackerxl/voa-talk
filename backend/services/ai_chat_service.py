@@ -133,11 +133,11 @@ def api_query_page_service(request, req_user):
     user_id = req_user.get('id')
     if super_admin != 1:
         temp = json.loads(search_criteria)
-        print(temp)
+        # print(temp)
         temp['user_id'] = {"value": user_id, "operator": "eq"}
         search_criteria = json.dumps(temp)
 
-    print(search_criteria)
+    # print(search_criteria)
 
     return ai_chat_impl.api_query_list_page_impl(page_size, page_index, search_criteria)
 

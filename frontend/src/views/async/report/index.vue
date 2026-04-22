@@ -1,140 +1,152 @@
 <template>
-  <div class="container">
-    <el-row :gutter="24">
-      <el-col :span="6">
-        <div class="grid-content header">
-          <i class="fa-regular fa-comments left-icon"></i>
-          <div class="name">
-            对话数量
-            <el-tooltip effect="light" content="系统使用过程中的所有对话数量" placement="right">
-              <el-icon style="margin-left: 4px" :size="12">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-          <div class="number">
-            {{
-              headerObj.talk_count > 1000
-                ? `${(headerObj.talk_count / 1000).toFixed(1)} k`
-                : headerObj.talk_count
-            }}
-          </div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="grid-content header">
-          <i class="fa-solid fa-robot left-icon"></i>
-          <div class="name">
-            模型数量
-            <el-tooltip effect="light" content="系统已接入的大模型的数量" placement="right">
-              <el-icon style="margin-left: 4px" :size="12">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-          <div class="number">{{ headerObj.model_count }}</div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="grid-content header">
-          <i class="fa-solid fa-user-plus left-icon"></i>
-          <div class="name">
-            用户数量
-            <el-tooltip effect="light" content="系统注册的用户数量" placement="right">
-              <el-icon style="margin-left: 4px" :size="12">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-          <div class="number">{{ headerObj.user_count }}</div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="grid-content header">
-          <i class="fa-solid fa-envelope left-icon"></i>
-          <div class="name">
-            邮件数量
-            <el-tooltip effect="light" content="系统发送的邮件数量" placement="right">
-              <el-icon style="margin-left: 4px" :size="12">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-          <div class="number">{{ headerObj.email_count }}</div>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="24">
-      <el-col :span="18">
-        <div class="grid-content midle">
-          <div class="title">
-            <span>日对话量</span>
-            <div>
-              <el-date-picker v-model="barDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
-                start-placeholder="Start date" end-placeholder="End date" @change="handleBarData" />
+  <div class="body">
+    <div class="container">
+      <el-row :gutter="24">
+        <el-col :span="6">
+          <div class="grid-content header">
+            <i class="fa-regular fa-comments left-icon"></i>
+            <div class="name">
+              对话数量
+              <el-tooltip effect="light" content="系统使用过程中的所有对话数量" placement="right">
+                <el-icon style="margin-left: 4px" :size="12">
+                  <InfoFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+            <div class="number">
+              {{
+                headerObj.talk_count > 1000
+                  ? `${(headerObj.talk_count / 1000).toFixed(1)} k`
+                  : headerObj.talk_count
+              }}
             </div>
           </div>
-          <ECharts ref="barChart" :option="barChartOption" height="240px" />
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="grid-content midle">
-          <div class="title">
-            <span>模型调用量</span>
-            <div>
-              <el-date-picker v-model="pieDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
-                start-placeholder="Start date" end-placeholder="End date" @change="handlePieData" />
+        </el-col>
+        <el-col :span="6">
+          <div class="grid-content header">
+            <i class="fa-solid fa-robot left-icon"></i>
+            <div class="name">
+              模型数量
+              <el-tooltip effect="light" content="系统已接入的大模型的数量" placement="right">
+                <el-icon style="margin-left: 4px" :size="12">
+                  <InfoFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+            <div class="number">{{ headerObj.model_count }}</div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="grid-content header">
+            <i class="fa-solid fa-user-plus left-icon"></i>
+            <div class="name">
+              用户数量
+              <el-tooltip effect="light" content="系统注册的用户数量" placement="right">
+                <el-icon style="margin-left: 4px" :size="12">
+                  <InfoFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+            <div class="number">{{ headerObj.user_count }}</div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="grid-content header">
+            <i class="fa-solid fa-envelope left-icon"></i>
+            <div class="name">
+              邮件数量
+              <el-tooltip effect="light" content="系统发送的邮件数量" placement="right">
+                <el-icon style="margin-left: 4px" :size="12">
+                  <InfoFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+            <div class="number">{{ headerObj.email_count }}</div>
+          </div>
+        </el-col>
+      </el-row>
+      <el-row :gutter="24">
+        <el-col :span="18">
+          <div class="grid-content midle">
+            <div class="title">
+              <span>日对话量</span>
+              <div>
+                <el-config-provider :locale="zhCn">
+                  <el-date-picker v-model="barDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
+                    start-placeholder="Start date" end-placeholder="End date" @change="handleBarData"
+                    :show-footer="false" />
+                </el-config-provider>
+              </div>
+            </div>
+            <ECharts ref="barChart" :option="barChartOption" height="220px" />
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="grid-content midle">
+            <div class="title">
+              <span>模型调用量</span>
+              <div>
+                <el-config-provider :locale="zhCn">
+                  <el-date-picker v-model="pieDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
+                    start-placeholder="Start date" end-placeholder="End date" @change="handlePieData"
+                    :show-footer="false" />
+                </el-config-provider>
+              </div>
+            </div>
+            <ECharts ref="pieChart" :option="pieChartOption" height="220px" />
+          </div>
+        </el-col>
+      </el-row>
+      <el-row :gutter="24">
+        <el-col :span="18">
+          <div class="grid-content bottom">
+            <div class="title">
+              <span>Tokens 日调用量</span>
+              <div>
+                <el-config-provider :locale="zhCn">
+                  <el-date-picker v-model="lineDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
+                    start-placeholder="Start date" end-placeholder="End date" @change="handleLineData"
+                    :show-footer="false" />
+                </el-config-provider>
+              </div>
+            </div>
+            <ECharts ref="lineChart" :option="lineChartOption" height="280px" />
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="grid-content bottom">
+            <h2 class="title">Tokens 调用量周榜</h2>
+            <div class="box" v-for="(item, index) in topTalkList" :key="index">
+              <el-tooltip class="box-item" effect="light" :content="item.talk_name" placement="right"
+                :disabled="!shouldShowTooltip(index)">
+                <template #content>
+                  {{ item.talk_name }}
+                </template>
+                <p class="txt" :ref="(el) => handleRef(el, index)">
+                  <i class="fa-regular fa-comments"></i>{{ item.talk_name }}
+                </p>
+              </el-tooltip>
+              <span>{{
+                item.tokens > 1000
+                  ? `${(item.tokens / 1000).toFixed(1)} k`
+                  : item.tokens
+              }}</span>
             </div>
           </div>
-          <ECharts ref="pieChart" :option="pieChartOption" height="240px" />
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="24">
-      <el-col :span="6">
-        <div class="grid-content bottom">
-          <h2 class="title">Tokens 调用量周榜</h2>
-          <div class="box" v-for="(item, index) in topTalkList" :key="index">
-            <el-tooltip class="box-item" effect="light" :content="item.talk_name" placement="right"
-              :disabled="!shouldShowTooltip(index)">
-              <template #content>
-                {{ item.talk_name }}
-              </template>
-              <p class="txt" :ref="(el) => handleRef(el, index)">
-                <i class="fa-regular fa-comments"></i>{{ item.talk_name }}
-              </p>
-            </el-tooltip>
-            <span>{{
-              item.tokens > 1000
-                ? `${(item.tokens / 1000).toFixed(1)} k`
-                : item.tokens
-            }}</span>
-          </div>
-        </div>
-      </el-col>
-      <el-col :span="18">
-        <div class="grid-content bottom">
-          <div class="title">
-            <span>Tokens 日调用量</span>
-            <div>
-              <el-date-picker v-model="lineDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
-                start-placeholder="Start date" end-placeholder="End date" @change="handleLineData" />
-            </div>
-          </div>
-          <ECharts ref="lineChart" :option="lineChartOption" height="280px" />
-        </div>
-      </el-col>
-    </el-row>
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { ElConfigProvider } from 'element-plus';
 import ECharts from "@/components/ECharts.vue";
 import { InfoFilled } from "@element-plus/icons-vue";
 import store from "@/store";
 import echarts from "@/utils/echarts";
-import { formatDateTime, hexToRGB } from "@/utils/tools";
+import { formatDateTime, shortcuts } from "@/utils/tools";
 import {
   headerData,
   topTalk,
@@ -142,6 +154,7 @@ import {
   barTalks,
   lineTokens,
 } from "@/api/report";
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 
 const barChart = ref(null);
 const pieChart = ref(null);
@@ -154,36 +167,6 @@ const headerObj = ref({
 });
 
 const topTalkList = ref([]);
-
-const shortcuts = [
-  {
-    text: "一周以前",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - 7);
-      return [start, end];
-    },
-  },
-  {
-    text: "两周以前",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - 14);
-      return [start, end];
-    },
-  },
-  {
-    text: "一个月以前",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setMonth(start.getMonth() - 1);
-      return [start, end];
-    },
-  },
-];
 
 const barDate = ref([]);
 const lineDate = ref([]);
@@ -432,11 +415,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.body {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .container {
-  padding: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+  padding: 5px;
+  width: calc(100% - 120px);
 }
 
 .el-row {
@@ -511,7 +500,7 @@ onMounted(() => {
 }
 
 .midle {
-  height: 280px;
+  height: 260px;
 }
 
 .bottom {

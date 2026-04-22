@@ -736,7 +736,7 @@ function scrollHanlde() {
 }
 
 onMounted(async () => {
-  if (routePath.params.id) {
+  if (routePath && routePath.params.id) {
     welcomeWord.value = false;
     chatId.value = Number(routePath.params.id);
     await getOneChatData();
@@ -803,11 +803,11 @@ function scrollTopBottom(animation = false) {
 }
 
 .el-skeleton {
-  width: 43vw;
+  width: 48vw;
 }
 
 .chat-window {
-  width: 43vw;
+  width: 48vw;
   transition: all 0.1s;
 }
 
@@ -866,7 +866,7 @@ function scrollTopBottom(animation = false) {
 }
 
 .input-container {
-  width: 42vw;
+  width: 48vw;
   position: fixed;
 }
 

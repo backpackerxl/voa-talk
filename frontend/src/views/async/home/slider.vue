@@ -1,5 +1,5 @@
 <template>
-  <el-container class="me-container">
+  <el-container>
     <el-aside width="240px" :class="sliderMenu ? 'slider-menu' : 'slider-menu hidden'">
       <div class="me-header">
         <h2 class="mb">VoaTalk</h2>
@@ -65,16 +65,14 @@
         </div>
       </div>
       <div class="history-chat">
-        <ChatList :chat="chatObj" @change-data="handleChatData" />
+        <ChatList :chat="chatObj" @change-data="handleChatData" :offset-height="offsetHeight" />
       </div>
       <div class="opt-menu">
         <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click" placement="top">
           <div class="avater-container">
-            <el-avatar v-if="imageUrl" :src="imageUrl" />
-            <el-avatar v-else :src="avater" />
-            <span class="user-name">{{ nickName }}<el-icon>
-                <ArrowRight />
-              </el-icon></span>
+            <el-avatar v-if="imageUrl" :src="imageUrl" size="small" />
+            <el-avatar v-else :src="avater" size="small" />
+            <span class="user-name">{{ nickName }}&nbsp;<i class="fa-solid fa-angle-right"></i></span>
           </div>
           <template #dropdown>
             <el-dropdown-menu :style="{ pointerEvents: isVisible ? 'auto' : 'none' }">
@@ -90,7 +88,8 @@
         <el-header>
           <Header :title="chatTitle" :menu="sliderMenu" :id="chatId" @submit="submitEditMsg" @open-menu="openMenu" />
         </el-header>
-        <el-main @click="closeMenu" ref="mainView" id="chatView" class="chat-view"><router-view />
+        <el-main @click="closeMenu" ref="mainView">
+          <router-view />
         </el-main>
       </el-container>
     </transition>
@@ -122,7 +121,6 @@ import { ElMessageBox } from "element-plus";
 import Header from "@/components/Header.vue";
 import ChatList from "@/components/ChatList.vue";
 import { queryTalkName, editChatName, deleteChat } from "@/api/aiChat";
-import { ArrowRight } from "@element-plus/icons-vue";
 
 import avater from "@/assets/images/avater.png";
 import router from "@/router";
@@ -146,6 +144,7 @@ const imageUrl = computed(() => store.state.app.avatar || null);
 const nickName = computed(() => store.state.app.nickName || null);
 const showHis = ref(!device.mobile());
 const isVisible = ref(false);
+const offsetHeight = ref(200);
 
 // 移动端默认关闭侧边栏
 if (device.mobile()) {
@@ -253,6 +252,7 @@ if (isSuperAdmin.value && !device.mobile()) {
     },
     ...menuData.value,
   ];
+  offsetHeight.value += 200;
 }
 
 async function deleteUserOk() {
@@ -430,12 +430,12 @@ onMounted(() => {
   background-color: transparent !important;
 }
 
-.edit-title :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 3px var(--el-color-primary) inset !important;
+.el-menu-vertical-demo {
+  margin-bottom: 15px;
 }
 
-.me-container {
-  display: flex;
+.edit-title :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 3px var(--el-color-primary) inset !important;
 }
 
 .el-aside {
@@ -466,20 +466,12 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .header-container {
-    margin-top: 50px;
-  }
-
   .el-aside {
     position: absolute;
   }
 
   .infinite-list-wrapper .list-item {
     height: 48px;
-  }
-
-  .history-chat {
-    height: calc(100vh - 241px) !important;
   }
 }
 
@@ -530,6 +522,7 @@ onMounted(() => {
 .el-main {
   flex: none !important;
   padding: 0px !important;
+  scrollbar-gutter: stable both-edges;
 }
 
 .el-aside.code-play {
@@ -566,19 +559,15 @@ onMounted(() => {
   width: 17.5px;
 }
 
-.history-chat {
-  height: calc(100vh - 391px);
-}
-
 .opt-menu {
-  padding: 5px 0px;
+  padding: 10px 0px;
   border-top: 1px solid var(--el-border-color);
 }
 
 .avater-container {
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding-left: 15px;
   user-select: none;
   cursor: pointer;
 }

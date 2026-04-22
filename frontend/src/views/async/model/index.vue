@@ -3,67 +3,37 @@
     <div class="data-inner">
       <div class="header">
         <el-form :inline="true" :model="state" class="demo-form-inline">
-          <el-form-item label="模型名">
-            <el-input
-              v-model="state.user_name"
-              placeholder="模糊搜索模型名"
-              size="large"
-              clearable
-            />
-          </el-form-item>
+          <div>
+            <el-form-item label="模糊搜索：">
+              <el-input v-model="state.user_name" placeholder="模糊搜索模型名" clearable />
+            </el-form-item>
+          </div>
           <el-form-item>
-            <el-button size="large" type="primary" @click="fetchData"
-              >查 询</el-button
-            >
+            <el-button type="primary" @click="fetchData" :icon="Search">查 询</el-button>
           </el-form-item>
         </el-form>
         <div class="option">
           <p>数据列表</p>
           <div>
-            <el-button size="large" type="primary" @click="addModel"
-              >新 增</el-button
-            ><el-button size="large" type="danger" @click="batchDel"
-              >删 除</el-button
-            >
+            <el-button type="primary" @click="addModel" :icon="Plus">新 增</el-button>
+            <el-button type="danger" @click="batchDel" :icon="Delete">删 除</el-button>
           </div>
         </div>
       </div>
       <div class="data-view">
-        <el-table
-          v-loading="state.loading"
-          :data="tableData"
-          border
-          stripe
-          style="width: 100%"
-          @select="changeCheckBox"
-          @select-all="changeCheckBox"
-        >
+        <el-table v-loading="state.loading" :data="tableData" border stripe style="width: 100%" @select="changeCheckBox"
+          @select-all="changeCheckBox">
           <el-table-column type="selection" width="55" />
           <!-- 表格列定义 -->
-          <el-table-column
-            fixed
-            prop="model_id"
-            label="模型ID"
-            min-width="150"
-          />
+          <el-table-column fixed prop="model_id" label="模型ID" min-width="150" />
           <el-table-column fixed prop="name" label="模型名称" min-width="150" />
           <el-table-column prop="req_url" label="接口Api" min-width="200" />
           <el-table-column prop="api_key" label="接口Key" min-width="200" />
           <el-table-column prop="sort" label="排序" min-width="100" />
-          <el-table-column
-            prop="update_date"
-            label="修改时间"
-            min-width="180"
-          />
+          <el-table-column prop="update_date" label="修改时间" min-width="180" />
           <el-table-column prop="desc" label="模型描述" min-width="180">
             <template #default="{ row }">
-              <el-popover
-                placement="bottom"
-                title=""
-                :content="row.desc"
-                trigger="hover"
-                width="180"
-              >
+              <el-popover placement="bottom" title="" :content="row.desc" trigger="hover" width="180">
                 <template #reference>
                   <div class="text-truncate">{{ row.desc }}</div>
                 </template>
@@ -72,20 +42,10 @@
           </el-table-column>
           <el-table-column fixed="right" label="操作" min-width="120">
             <template v-slot="scope">
-              <el-button
-                link
-                type="primary"
-                size="small"
-                @click="openEditDialog(scope.row)"
-              >
+              <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">
                 编辑
               </el-button>
-              <el-button
-                link
-                type="danger"
-                size="small"
-                @click="handleDelete(scope.row)"
-              >
+              <el-button link type="danger" size="small" @click="handleDelete(scope.row)">
                 删除
               </el-button>
             </template>
@@ -93,20 +53,11 @@
         </el-table>
         <div class="me-pagination">
           <span>共 {{ tableCount }} 条</span>
-          <el-pagination
-            layout="prev, pager, next"
-            :page-size="pageSize"
-            :total="tableCount"
-            @current-change="pageQuery"
-          />
+          <el-pagination layout="prev, pager, next" :page-size="pageSize" :total="tableCount"
+            @current-change="pageQuery" />
         </div>
 
-        <el-dialog
-          v-model="centerDialogVisible"
-          title="删除用户"
-          width="400"
-          align-center
-        >
+        <el-dialog v-model="centerDialogVisible" title="删除用户" width="400" align-center>
           <span>确定删除所选模型配置？此操作不可恢复！</span>
           <template #footer>
             <div class="dialog-footer">
@@ -117,13 +68,7 @@
         </el-dialog>
       </div>
     </div>
-    <EditModelDialog
-      @close="close"
-      v-if="state.open"
-      :model="selectedUser"
-      :title="titleDesc"
-      @submit="submitEdit"
-    />
+    <EditModelDialog @close="close" v-if="state.open" :model="selectedUser" :title="titleDesc" @submit="submitEdit" />
   </div>
 </template>
 
@@ -136,6 +81,7 @@ import {
   ApiModelExit,
 } from "@/api/modelConfig";
 import EditModelDialog from "./components/EditModelDialog.vue"; // 引入组件
+import { Plus, Delete, Search } from "@element-plus/icons-vue"; // 引入图标
 
 const tableData = ref([]);
 const tableCount = ref(0);
@@ -254,22 +200,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.body .data-inner {
-  padding: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+.body {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 1024px) {
-  .body .data-inner {
-    width: 95vw;
-  }
+.body .data-inner {
+  padding: 5px;
+  width: calc(100% - 120px);
 }
 
 .header {
   width: 100%;
-  height: 80px;
+  height: 70px;
   background: var(--el-bg-color);
   box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
@@ -307,12 +253,8 @@ onMounted(() => {
   margin: 0 !important;
 }
 
-:deep(.el-form-item__label) {
-  line-height: 40px !important;
-}
-
 .el-table {
-  height: 65vh !important;
+  height: calc(100vh - 300px) !important;
 }
 
 .el-table thead {

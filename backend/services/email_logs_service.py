@@ -28,3 +28,7 @@ def api_delete_ids_service(request):
 def api_send_email_service(request):
     request_data = request.get_json()
     return email_logs_impl.api_send_email_service(request_data)
+
+
+def api_get_email_body(eid):
+    return email_logs_impl.api_get_email_body(eid)

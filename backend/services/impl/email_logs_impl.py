@@ -12,11 +12,11 @@ from utils import SendMail
 
 def api_send_email_find_list_page_service(page_size, page_index, search_criteria):
     with DatabaseSession() as session:
-        query = session.query(EmailLogs)
+        query = session.query(EmailLogs.id, EmailLogs.subject, EmailLogs.send_users, EmailLogs.create_date)
         # 使用公用方法动态添加搜索条件
         query = DbTools.apply_filters(query, EmailLogs, search_criteria)
         # 根据需要应用过滤器
-        paginated_data = DbTools.find_list_page(query, page_size, page_index)
+        paginated_data = DbTools.find_list_page_opt(query, page_size, page_index)
         return ReturnTool.SuccessReturn(paginated_data)
 
 
@@ -53,3 +53,9 @@ def api_send_email_service(request_data):
         request_data['send_users'] = json.dumps(users_email)
         DbTools.saveOrUpdate(session, request_data, EmailLogs)
         return ReturnTool.SuccessReturn()
+
+
+def api_get_email_body(eid):
+    with DatabaseSession() as session:
+        obj = session.query(EmailLogs.body).filter(EmailLogs.id == eid).first()
+    return ReturnTool.SuccessReturn(obj.body)

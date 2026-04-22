@@ -2,125 +2,59 @@
   <div class="body">
     <div class="data-inner">
       <div class="header">
-        <el-form :inline="true" :model="state" class="demo-form-inline">
-          <el-form-item label="邮件主题">
-            <el-input
-              v-model="state.subject"
-              placeholder="模糊搜索用户名或昵称"
-              size="large"
-              clearable
-            />
-          </el-form-item>
+        <el-form :inline="true" :model="state">
+          <div>
+            <el-form-item label="模糊搜索：">
+              <el-input v-model="state.subject" placeholder="模糊搜索邮件主题" clearable />
+            </el-form-item>
+            &nbsp;&nbsp;
+            <el-form-item label="时间：">
+              <el-config-provider :locale="zhCn">
+                <el-date-picker v-model="state.create_date" type="datetimerange" :shortcuts="shortcuts"
+                  format="YYYY-MM-DD HH" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
+                  :show-footer="false" style="width: 250px;" />
+              </el-config-provider>
+            </el-form-item>
+          </div>
           <el-form-item>
-            <el-button size="large" type="primary" @click="fetchData"
-              >查 询</el-button
-            >
+            <el-button type="primary" :icon="Search" @click="fetchData">查 询</el-button>
           </el-form-item>
         </el-form>
         <div class="option">
           <p>数据列表</p>
           <div>
-            <el-button
-              size="large"
-              type="primary"
-              :icon="Edit"
-              @click="openEmailEdit"
-              >写邮件</el-button
-            >
-            <el-button
-              size="large"
-              type="danger"
-              @click="batchDel"
-              :icon="Delete"
-              >删 除</el-button
-            >
+            <el-button type="primary" :icon="Edit" @click="openEmailEdit">写邮件</el-button>
+            <el-button type="danger" @click="batchDel" :icon="Delete">删 除</el-button>
           </div>
         </div>
       </div>
       <div class="data-view">
-        <el-table
-          v-loading="state.loading"
-          :data="tableData"
-          border
-          stripe
-          style="width: 100%"
-          @select="changeCheckBox"
-          @select-all="changeCheckBox"
-        >
+        <el-table v-loading="state.loading" :data="tableData" border stripe style="width: 100%" @select="changeCheckBox"
+          @select-all="changeCheckBox">
           <el-table-column type="selection" width="55" />
           <!-- 表格列定义 -->
-          <el-table-column
-            fixed
-            prop="subject"
-            label="邮件主题"
-            min-width="170"
-          />
-          <el-table-column prop="body" label="邮件内容" min-width="250">
-            <template #default="{ row }">
-              <el-popover
-                placement="bottom"
-                title=""
-                content=""
-                trigger="hover"
-                width="250"
-              >
-                <div>请点击详情查看邮件原件内容...</div>
-                <template #reference>
-                  <div class="text-truncate">{{ row.body }}</div>
-                </template>
-              </el-popover>
-            </template>
-          </el-table-column>
+          <el-table-column fixed prop="subject" label="邮件主题" min-width="170" />
           <el-table-column prop="send_users" label="收件人邮箱" min-width="180">
             <template #default="{ row }">
-              <el-popover
-                placement="bottom"
-                title=""
-                content=""
-                trigger="hover"
-                width="200"
-              >
-                <el-tag
-                  v-for="(ev, index) in JSON.parse(row.send_users)"
-                  :key="index"
-                  :type="typeList[index % typeList.length]"
-                  style="margin-bottom: 6px"
-                  >{{ ev }}</el-tag
-                >
+              <el-popover placement="bottom" title="" content="" trigger="hover" width="200">
+                <el-tag v-for="(ev, index) in JSON.parse(row.send_users)" :key="index"
+                  :type="typeList[index % typeList.length]" style="margin-bottom: 6px">{{ ev }}</el-tag>
                 <template #reference>
                   <div class="text-truncate">
-                    <el-tag
-                      v-for="(ev, index) in JSON.parse(row.send_users)"
-                      :key="index"
-                      :type="typeList[index % typeList.length]"
-                      >{{ ev }}</el-tag
-                    >
+                    <el-tag v-for="(ev, index) in JSON.parse(row.send_users)" :key="index"
+                      :type="typeList[index % typeList.length]">{{ ev }}</el-tag>
                   </div>
                 </template>
               </el-popover>
             </template>
           </el-table-column>
-          <el-table-column
-            prop="create_date"
-            label="发送时间"
-            min-width="160"
-          />
+          <el-table-column prop="create_date" label="发送时间" min-width="160" />
           <el-table-column fixed="right" label="操作" min-width="120">
             <template v-slot="scope">
-              <el-button
-                link
-                type="primary"
-                size="small"
-                @click="openEditDialog(scope.row)"
-              >
+              <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">
                 查看
               </el-button>
-              <el-button
-                link
-                type="danger"
-                size="small"
-                @click="handleDelete(scope.row)"
-              >
+              <el-button link type="danger" size="small" @click="handleDelete(scope.row)">
                 删除
               </el-button>
             </template>
@@ -128,20 +62,11 @@
         </el-table>
         <div class="me-pagination">
           <span>共 {{ tableCount }} 条</span>
-          <el-pagination
-            layout="prev, pager, next"
-            :page-size="pageSize"
-            :total="tableCount"
-            @current-change="pageQuery"
-          />
+          <el-pagination layout="prev, pager, next" :page-size="pageSize" :total="tableCount"
+            @current-change="pageQuery" />
         </div>
 
-        <el-dialog
-          v-model="centerDialogVisible"
-          title="删除用户"
-          width="400"
-          align-center
-        >
+        <el-dialog v-model="centerDialogVisible" title="删除用户" width="400" align-center>
           <span>确定删除所选邮件记录？此操作不可恢复</span>
           <template #footer>
             <div class="dialog-footer">
@@ -151,70 +76,25 @@
           </template>
         </el-dialog>
 
-        <el-dialog
-          v-model="infoDialog"
-          title="发送详情"
-          width="980"
-          style="max-height: 600px"
-          align-center
-        >
+        <el-dialog v-model="infoDialog" title="发送详情" width="980" style="max-height: 600px" align-center>
           <el-form :model="form" label-width="100px" class="custom-form">
-            <el-form-item
-              prop="subject"
-              label="邮件主题："
-              class="custom-form-item"
-            >
-              <el-input
-                v-model="form.subject"
-                style="width: 240px"
-                placeholder="请填写邮件主题"
-                :disabled="true"
-              ></el-input>
+            <el-form-item prop="subject" label="邮件主题：" class="custom-form-item">
+              <el-input v-model="form.subject" style="width: 240px" placeholder="请填写邮件主题" :disabled="true"></el-input>
             </el-form-item>
-            <el-form-item
-              prop="user_list"
-              label="收件人："
-              class="custom-form-item"
-            >
-              <el-select
-                v-model="value"
-                multiple
-                filterable
-                clearable
-                :reserve-keyword="false"
-                :collapse-tags="true"
-                :collapse-tags-tooltip="true"
-                placeholder="请选择收件人"
-                style="width: 240px"
-                :disabled="true"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.id"
-                  :label="item.nick_name"
-                  :value="item.email"
-                >
+            <el-form-item prop="user_list" label="收件人：" class="custom-form-item">
+              <el-select v-model="value" multiple filterable clearable :reserve-keyword="false" :collapse-tags="true"
+                :collapse-tags-tooltip="true" placeholder="请选择收件人" style="width: 240px" :disabled="true">
+                <el-option v-for="item in options" :key="item.id" :label="item.nick_name" :value="item.email">
                   <div class="flex items-center">
-                    <el-avatar
-                      v-if="item.avatar"
-                      :src="item.avatar"
-                      size="small"
-                    />
-                    <el-avatar
-                      v-else
-                      src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                      size="small"
-                    />
+                    <el-avatar v-if="item.avatar" :src="item.avatar" size="small" />
+                    <el-avatar v-else src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                      size="small" />
                     <span class="lable-text">{{ item.nick_name }}</span>
                   </div>
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item
-              prop="body"
-              label="邮件内容："
-              class="custom-form-item"
-            >
+            <el-form-item prop="body" label="邮件内容：" class="custom-form-item">
               <iframe :srcdoc="infoHtml" class="info-html"></iframe>
             </el-form-item>
           </el-form>
@@ -225,83 +105,31 @@
           </template>
         </el-dialog>
 
-        <el-drawer
-          v-model="editEmail"
-          title="写邮件"
-          :with-header="true"
-          size="100%"
-        >
+        <el-drawer v-model="editEmail" title="写邮件" :with-header="true" size="100%">
           <el-form :model="form" label-width="100px" class="custom-form">
-            <el-form-item
-              prop="subject"
-              label="邮件主题："
-              class="custom-form-item"
-            >
-              <el-input
-                v-model="form.subject"
-                style="width: 240px"
-                placeholder="请填写邮件主题"
-              ></el-input>
+            <el-form-item prop="subject" label="邮件主题：" class="custom-form-item">
+              <el-input v-model="form.subject" style="width: 240px" placeholder="请填写邮件主题"></el-input>
             </el-form-item>
-            <el-form-item
-              prop="user_list"
-              label="收件人："
-              class="custom-form-item"
-            >
-              <el-select
-                v-model="value"
-                multiple
-                filterable
-                clearable
-                :reserve-keyword="false"
-                :collapse-tags="true"
-                :collapse-tags-tooltip="true"
-                placeholder="请选择收件人"
-                style="width: 240px"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.id"
-                  :label="item.nick_name"
-                  :value="item.email"
-                >
+            <el-form-item prop="user_list" label="收件人：" class="custom-form-item">
+              <el-select v-model="value" multiple filterable clearable :reserve-keyword="false" :collapse-tags="true"
+                :collapse-tags-tooltip="true" placeholder="请选择收件人" style="width: 240px">
+                <el-option v-for="item in options" :key="item.id" :label="item.nick_name" :value="item.email">
                   <div class="flex items-center">
-                    <el-avatar
-                      v-if="item.avatar"
-                      :src="item.avatar"
-                      size="small"
-                    />
-                    <el-avatar
-                      v-else
-                      src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                      size="small"
-                    />
+                    <el-avatar v-if="item.avatar" :src="item.avatar" size="small" />
+                    <el-avatar v-else src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                      size="small" />
                     <span class="lable-text">{{ item.nick_name }}</span>
                   </div>
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item
-              prop="body"
-              label="邮件内容："
-              class="custom-form-item"
-            >
-              <div style="border: 1px solid var(--w-e-textarea-border-color)">
-                <Toolbar
-                  style="
+            <el-form-item prop="body" label="邮件内容：" class="custom-form-item">
+              <div style="border: 1px solid var(--w-e-textarea-border-color);">
+                <Toolbar style="
                     border-bottom: 1px solid var(--w-e-textarea-border-color);
-                  "
-                  :editor="editorRef"
-                  :defaultConfig="toolbarConfig"
-                  mode="default"
-                />
-                <Editor
-                  style="height: 600px; overflow-y: hidden"
-                  v-model="valueHtml"
-                  :defaultConfig="editorConfig"
-                  mode="default"
-                  @onCreated="handleCreated"
-                />
+                  " :editor="editorRef" :defaultConfig="toolbarConfig" mode="default" />
+                <Editor style="height: 400px; overflow-y: hidden;" v-model="valueHtml" :defaultConfig="editorConfig"
+                  mode="default" @onCreated="handleCreated" />
               </div>
             </el-form-item>
           </el-form>
@@ -320,10 +148,13 @@
 <script setup>
 import "@wangeditor/editor/dist/css/style.css"; // 引入 css
 import { ref, reactive, onMounted, shallowRef, onBeforeUnmount } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, Search } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus"; // 引入 ElMessage 组件
-import { findListPage, emailDel, findUsers, sendEmail } from "@/api/emailLogs";
+import { findListPage, emailDel, findUsers, sendEmail, getEmailBody } from "@/api/emailLogs";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
+import { ElConfigProvider } from 'element-plus';
+import { formatFullDateTime, shortcuts, getOneMonthTimeRange } from "@/utils/tools";
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 
 const tableData = ref([]);
 const tableCount = ref(0);
@@ -336,7 +167,6 @@ const typeList = ["primary", "success", "info", "warning", "danger"];
 // 每页显示数量
 const pageSize = ref(20);
 const editEmail = ref(false);
-const selectedUser = ref(null);
 const valueHtml = ref("<p><br></p>");
 const infoHtml = ref("");
 const editorRef = shallowRef();
@@ -345,6 +175,7 @@ const infoDialog = ref(false);
 let state = reactive({
   open: false,
   subject: "",
+  create_date: getOneMonthTimeRange(),
   loading: false,
   delete_ids: "",
   user_name_list: "",
@@ -373,9 +204,6 @@ const handleCreated = (editor) => {
   editorRef.value = editor; // 记录 editor 实例，重要！
 };
 
-function close() {
-  state.open = false;
-}
 const fetchData = async () => {
   try {
     state.loading = true; // 请求开始时设置为true
@@ -385,7 +213,20 @@ const fetchData = async () => {
     };
     // 有参数就采用模糊查询
     if (state.user_name !== "") {
-      params.search_criteria = `{"subject": {"value": "${state.subject}", "operator": "like"}, "sort": {"field": "create_date", "order": "desc"}}`;
+      params.search_criteria = {
+        "subject": { "value": state.subject, "operator": "like" },
+        "sort": { "field": "create_date", "order": "desc" }
+      };
+
+      if (state.create_date) {
+        const stm = formatFullDateTime(state.create_date[0]);
+        const etm = formatFullDateTime(state.create_date[1]);
+        params.search_criteria.create_date = {
+          "value": [{ "value": stm, "operator": "gte" }, { "value": etm, "operator": "lte" }],
+          "operator": "range"
+        };
+      }
+      params.search_criteria = JSON.stringify(params.search_criteria);
     }
     const response = await findListPage(params);
     tableData.value = response.data.records;
@@ -413,10 +254,11 @@ const openEmailEdit = function () {
 
 async function openEditDialog(row) {
   const obj = await findUsers();
+  const bodyObj = await getEmailBody(row.id);
   infoDialog.value = true;
   options.value = obj.data;
   value.value = JSON.parse(row.send_users);
-  infoHtml.value = row.body;
+  infoHtml.value = bodyObj.data;
   form.value.subject = row.subject;
 }
 
@@ -447,15 +289,6 @@ function sendMyEmail() {
       console.log(err);
     });
 }
-
-const submitEdit = async (updatedUser) => {
-  try {
-    await ApiUserExit(updatedUser);
-    fetchData();
-  } catch (error) {
-    console.error("Failed to update user:", error);
-  }
-};
 
 const pageQuery = (page) => {
   currentPage.value = page;
@@ -510,22 +343,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.body .data-inner {
-  padding: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+.body {
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-@media (max-width: 1024px) {
-  .body .data-inner {
-    width: 95vw;
-  }
+.body .data-inner {
+  padding: 5px;
+  width: calc(100% - 120px);
 }
 
 .header {
   width: 100%;
-  height: 80px;
+  height: 70px;
   background: var(--el-bg-color);
   box-shadow: 0 2px 10px rgb(0, 0, 0, 0.1);
   border-radius: 5px;
@@ -549,6 +382,7 @@ onMounted(() => {
 
 .el-form.custom-form {
   display: block !important;
+  overflow: hidden;
 }
 
 .el-form-item.custom-form-item {
@@ -571,12 +405,8 @@ onMounted(() => {
   margin: 0 !important;
 }
 
-:deep(.el-form-item__label) {
-  line-height: 40px !important;
-}
-
 .el-table {
-  height: 65vh !important;
+  height: calc(100vh - 300px) !important;
 }
 
 .el-table thead {

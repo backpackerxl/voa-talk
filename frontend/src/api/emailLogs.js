@@ -8,6 +8,13 @@ export function findListPage(params) {
     })
 }
 
+export function getEmailBody(eid) {
+    return request({
+        url: 'email_logs/getEmailBody/' + eid,
+        method: 'get',
+    })
+}
+
 export function findUsers(params) {
     return request({
         url: 'email_logs/findUsers',

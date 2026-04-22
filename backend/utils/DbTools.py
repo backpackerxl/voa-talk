@@ -51,6 +51,35 @@ def find_list_page(query, page_size, page_index):
     return {"total_count": total_count, "records": records, "total_pages": total_pages}
 
 
+def format_model_data_opt(model_instance, columns):
+    """
+    将数据库模型实例格式化为字典，包括其所有的属性。
+    :param model_instance: 数据库模型实例
+    :param columns: 查询列
+    :return: 格式化后的字典
+    """
+    data = {}
+    for idx, column in enumerate(columns):
+        data[column] = model_instance[idx]
+    return data
+
+
+def find_list_page_opt(query, page_size, page_index):
+    """
+    分页查询
+    :param query: 查询对象
+    :param page_size: 页大小
+    :param page_index: 页码
+    :return: 分页结果
+    """
+    columns = [item['name'] for item in query.column_descriptions]
+    total_count = query.count()
+    currentPage = query.limit(page_size).offset((page_index - 1) * page_size).all()
+    records = [convert_timestamps_in_dict(format_model_data_opt(product, columns)) for product in currentPage]
+    total_pages = (total_count + page_size - 1) // page_size
+    return {"total_count": total_count, "records": records, "total_pages": total_pages}
+
+
 def queryAll(query):
     """
     查询全部
@@ -281,12 +310,36 @@ def apply_filters(query, model, filters):
                 filter_conditions.append(field > value)
             elif operator == 'lt':
                 filter_conditions.append(field < value)
+            elif operator == 'gte':
+                filter_conditions.append(field >= value)
+            elif operator == 'lte':
+                filter_conditions.append(field <= value)
             elif operator == 'like':
                 filter_conditions.append(field.like(f'%{value}%'))
             elif operator == 'in':
                 filter_conditions.append(field.in_(value))
             elif operator == 'not_in':
                 filter_conditions.append(~field.in_(value))
+            elif operator == 'range':
+                # value 是 [gte条件, lte条件]
+                range_conds = []
+                for item in value:
+                    v = item.get('value')
+                    op = item.get('operator')
+                    if not v or not op:
+                        continue
+
+                    if op == 'gte':
+                        range_conds.append(field >= v)
+                    elif op == 'lte':
+                        range_conds.append(field <= v)
+                    elif op == 'gt':
+                        range_conds.append(field > v)
+                    elif op == 'lt':
+                        range_conds.append(field < v)
+
+                if range_conds:
+                    filter_conditions.append(and_(*range_conds))
             else:
                 raise ValueError(f"Unsupported operator: {operator}")
         except Exception as e:
