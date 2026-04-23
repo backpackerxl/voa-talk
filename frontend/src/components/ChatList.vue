@@ -15,7 +15,7 @@
               <li v-for="(chat, index) in tableData" :key="index" :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
                 " @click="openChatHis($event, chat)" :data-index="index" @contextmenu.prevent="openMenu($event, chat)">
                 <el-tooltip class="box-item" effect="light" :content="chat.talk_name" placement="right"
-                  :disabled="!shouldShowTooltip(index) || !showHis">
+                  :disabled="!shouldShowTooltip(index) || !showHis" :show-arrow="false">
                   <template #content>
                     {{ chat.talk_name }}
                   </template>
@@ -24,7 +24,7 @@
                         class="fa-regular fa-comments"></i>{{
                           chat.talk_name }}</span>
                     <el-dropdown v-if="showHis" trigger="click" @visible-change="handleVisibleChange"
-                      placement="bottom-end">
+                      placement="bottom-end" :show-arrow="false">
                       <span class="el-dropdown-link">
                         <i ref="trigger" :data-index="index" class="fa-solid fa-ellipsis"></i>
                       </span>
@@ -286,11 +286,7 @@ onUnmounted(function () {
 .infinite-list-wrapper .list-item {
   height: 40px;
   color: var(--el-text-color-primary);
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
-  -webkit-touch-callout: none;
 }
 
 .infinite-list-wrapper .list-item:hover,
@@ -334,14 +330,6 @@ onUnmounted(function () {
 
 .el-dropdown-menu {
   padding: 6px;
-}
-
-.el-popper[data-popper-placement="bottom-end"]>.el-popper__arrow {
-  top: 0 !important;
-}
-
-.el-popper[data-popper-placement="top"]>.el-popper__arrow {
-  bottom: 0 !important;
 }
 
 .el-dropdown-menu__item {

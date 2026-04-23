@@ -12,7 +12,7 @@
               <el-config-provider :locale="zhCn">
                 <el-date-picker v-model="state.create_date" type="datetimerange" :shortcuts="shortcuts"
                   format="YYYY-MM-DD HH" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"
-                  :show-footer="false" style="width: 250px;" />
+                  :show-footer="false" style="width: 250px;" :show-arrow="false" />
               </el-config-provider>
             </el-form-item>
           </div>

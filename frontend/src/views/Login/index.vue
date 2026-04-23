@@ -97,8 +97,10 @@
           <div class="formdata">
             <el-form ref="loginForm" :model="formOtp" :rules="otpRules" label-position="top" label-width="100px">
               <el-form-item label="请输入验证码/恢复码" prop="optcode">
-                <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable
-                  :placeholder="placeholderTxt"></el-input>
+                <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable type="number"
+                  placeholder="XXX XXX" v-if="captchaType"></el-input>
+                <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable type="text"
+                  placeholder="XXXX XXXX" v-else></el-input>
               </el-form-item>
             </el-form>
           </div>
@@ -210,6 +212,7 @@ const userNameTxt = ref("");
 const loginPrefix = ref("");
 const supportBiometric = ref('');
 const authIcon = ref('');
+const captchaType = ref(true);
 
 let pcOrMobile = device.mobile() ? "mobile" : "pc";
 
@@ -253,7 +256,6 @@ const activeNames = ref(['1']);
 
 const authnTxt = ref('验证');
 const recoveryCode = ref([]);
-const placeholderTxt = ref('XXX XXX');
 const nextId = ref('');
 const recoveryTxt = ref('一次性恢复码验证');
 
@@ -288,7 +290,7 @@ const otpRules = {
           return;
         }
         // 2. 长度为6时触发目标函数
-        if (value.length === 6 && placeholderTxt.value === 'XXX XXX') {
+        if (value.length === 6 && captchaType.value) {
           authnTxt.value = '验证中...';
           setTimeout(() => {
             handleOptcodeComplete(value); // 触发自定义逻辑
@@ -296,7 +298,7 @@ const otpRules = {
           }, 1000);
         }
         // 4. 长度为8时触发目标函数
-        if (value.length === 8 && placeholderTxt.value === 'XXXX XXXX') {
+        if (value.length === 8 && !captchaType.value) {
           authnTxt.value = '验证中...';
           setTimeout(() => {
             handleRecoveryCodeComplete(value); // 触发自定义逻辑
@@ -494,29 +496,27 @@ async function verifyOtpOrAuthn() {
 }
 
 function verifyOTPCode() {
-  if (placeholderTxt.value === 'XXX XXX' && !formOtp.value.optcode) {
+  if (captchaType.value && !formOtp.value.optcode) {
     ElMessage.error('请输入验证码！');
     return;
   }
-  if (placeholderTxt.value === 'XXXX XXXX' && !formOtp.value.optcode) {
+  if (!captchaType.value && !formOtp.value.optcode) {
     ElMessage.error('请输入一次性恢复码！');
     return;
   }
   formOtp.value.optcode = '';
-  placeholderTxt.value = 'XXX XXX';
 }
 
 function verifyRecoveryCode() {
-  if (placeholderTxt.value === 'XXX XXX') {
-    formOtp.value.optcode = '';
-    placeholderTxt.value = 'XXXX XXXX';
+  formOtp.value.optcode = '';
+  if (!captchaType.value) {
     recoveryTxt.value = '验证码验证';
+    captchaType.value = true;
     return;
   }
 
-  formOtp.value.optcode = '';
-  placeholderTxt.value = 'XXX XXX';
   recoveryTxt.value = '一次性恢复码验证';
+  captchaType.value = false;
 }
 
 function linkOTP() {

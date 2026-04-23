@@ -5,14 +5,6 @@
         <el-col :span="6">
           <div class="grid-content header">
             <i class="fa-regular fa-comments left-icon"></i>
-            <div class="name">
-              对话数量
-              <el-tooltip effect="light" content="系统使用过程中的所有对话数量" placement="right">
-                <el-icon style="margin-left: 4px" :size="12">
-                  <InfoFilled />
-                </el-icon>
-              </el-tooltip>
-            </div>
             <div class="number">
               {{
                 headerObj.talk_count > 1000
@@ -20,48 +12,58 @@
                   : headerObj.talk_count
               }}
             </div>
+            <div class="name">
+              对话数量
+              <el-tooltip effect="light" content="系统使用过程中的所有对话数量" placement="right" :show-arrow="false">
+                <el-icon style="margin-left: 4px" :size="12">
+                  <InfoFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="grid-content header">
             <i class="fa-solid fa-robot left-icon"></i>
+            <div class="number">{{ headerObj.model_count }}</div>
             <div class="name">
               模型数量
-              <el-tooltip effect="light" content="系统已接入的大模型的数量" placement="right">
+              <el-tooltip effect="light" content="系统已接入的大模型的数量" placement="right" :show-arrow="false">
                 <el-icon style="margin-left: 4px" :size="12">
                   <InfoFilled />
                 </el-icon>
               </el-tooltip>
             </div>
-            <div class="number">{{ headerObj.model_count }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="grid-content header">
             <i class="fa-solid fa-user-plus left-icon"></i>
+            <div class="number">{{ headerObj.user_count }}</div>
             <div class="name">
               用户数量
-              <el-tooltip effect="light" content="系统注册的用户数量" placement="right">
+              <el-tooltip effect="light" content="系统注册的用户数量" placement="right" :show-arrow="false">
                 <el-icon style="margin-left: 4px" :size="12">
                   <InfoFilled />
                 </el-icon>
               </el-tooltip>
             </div>
-            <div class="number">{{ headerObj.user_count }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="grid-content header">
             <i class="fa-solid fa-envelope left-icon"></i>
+            <div class="number">
+              {{ headerObj.email_count }}
+            </div>
             <div class="name">
               邮件数量
-              <el-tooltip effect="light" content="系统发送的邮件数量" placement="right">
+              <el-tooltip effect="light" content="系统发送的邮件数量" placement="right" :show-arrow="false">
                 <el-icon style="margin-left: 4px" :size="12">
                   <InfoFilled />
                 </el-icon>
               </el-tooltip>
             </div>
-            <div class="number">{{ headerObj.email_count }}</div>
           </div>
         </el-col>
       </el-row>
@@ -74,7 +76,7 @@
                 <el-config-provider :locale="zhCn">
                   <el-date-picker v-model="barDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
                     start-placeholder="Start date" end-placeholder="End date" @change="handleBarData"
-                    :show-footer="false" />
+                    :show-footer="false" :show-arrow="false" />
                 </el-config-provider>
               </div>
             </div>
@@ -89,7 +91,7 @@
                 <el-config-provider :locale="zhCn">
                   <el-date-picker v-model="pieDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
                     start-placeholder="Start date" end-placeholder="End date" @change="handlePieData"
-                    :show-footer="false" />
+                    :show-footer="false" :show-arrow="false" />
                 </el-config-provider>
               </div>
             </div>
@@ -106,7 +108,7 @@
                 <el-config-provider :locale="zhCn">
                   <el-date-picker v-model="lineDate" type="datetimerange" :shortcuts="shortcuts" range-separator="To"
                     start-placeholder="Start date" end-placeholder="End date" @change="handleLineData"
-                    :show-footer="false" />
+                    :show-footer="false" :show-arrow="false" />
                 </el-config-provider>
               </div>
             </div>
@@ -478,10 +480,9 @@ onMounted(() => {
 
 .header i.left-icon {
   position: absolute;
-  font-size: 20px;
+  font-size: 24px;
   line-height: 60px;
   color: var(--el-color-primary);
-  border-right: 1px solid var(--el-text-color-regular);
   padding-right: 5px;
 }
 
@@ -493,8 +494,7 @@ onMounted(() => {
 }
 
 .header .name {
-  font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--el-text-color-regular);
   margin-left: 45px;
 }

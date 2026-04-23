@@ -68,7 +68,7 @@
         <ChatList :chat="chatObj" @change-data="handleChatData" :offset-height="offsetHeight" />
       </div>
       <div class="opt-menu">
-        <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click" placement="top">
+        <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click" placement="top" :show-arrow="false">
           <div class="avater-container">
             <el-avatar v-if="imageUrl" :src="imageUrl" size="small" />
             <el-avatar v-else :src="avater" size="small" />
@@ -567,7 +567,7 @@ onMounted(() => {
 .avater-container {
   display: flex;
   align-items: center;
-  padding-left: 15px;
+  padding-left: 20px;
   user-select: none;
   cursor: pointer;
 }

@@ -739,9 +739,9 @@ onMounted(async () => {
   if (routePath && routePath.params.id) {
     welcomeWord.value = false;
     chatId.value = Number(routePath.params.id);
-    await getOneChatData();
     const obj = await queryRecommend({ talk_id: chatId.value });
     recordList.value = obj.data.reco_list;
+    await getOneChatData();
   } else {
     chatId.value = -1;
     messages.value = [];
@@ -800,6 +800,7 @@ function scrollTopBottom(animation = false) {
   overflow-x: hidden;
   height: calc(100vh - 190px);
   margin: 0 2px;
+  scrollbar-gutter: stable both-edges;
 }
 
 .el-skeleton {

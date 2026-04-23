@@ -14,7 +14,7 @@
     <h3 class="nick-name">{{ welcomStr }}</h3>
     <el-form label-position="left" style="width: 330px">
       <el-form-item label="主题: " class="them-item">
-        <el-dropdown>
+        <el-dropdown :show-arrow="false">
           <el-button plain>
             <div class="me-icon">
               <span :class="them.icon"></span>
