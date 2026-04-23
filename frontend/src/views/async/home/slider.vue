@@ -68,7 +68,8 @@
         <ChatList :chat="chatObj" @change-data="handleChatData" :offset-height="offsetHeight" />
       </div>
       <div class="opt-menu">
-        <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click" placement="top" :show-arrow="false">
+        <el-dropdown @visible-change="handleVisibleChange" @command="handleCommand" trigger="click" placement="top"
+          :show-arrow="false">
           <div class="avater-container">
             <el-avatar v-if="imageUrl" :src="imageUrl" size="small" />
             <el-avatar v-else :src="avater" size="small" />
@@ -144,7 +145,7 @@ const imageUrl = computed(() => store.state.app.avatar || null);
 const nickName = computed(() => store.state.app.nickName || null);
 const showHis = ref(!device.mobile());
 const isVisible = ref(false);
-const offsetHeight = ref(200);
+const offsetHeight = ref(204);
 
 // 移动端默认关闭侧边栏
 if (device.mobile()) {
@@ -560,14 +561,14 @@ onMounted(() => {
 }
 
 .opt-menu {
-  padding: 10px 0px;
+  padding: 8px 0px 16px 0px;
   border-top: 1px solid var(--el-border-color);
 }
 
 .avater-container {
   display: flex;
   align-items: center;
-  padding-left: 20px;
+  margin-left: 15px;
   user-select: none;
   cursor: pointer;
 }

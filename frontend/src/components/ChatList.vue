@@ -2,15 +2,16 @@
   <el-skeleton :loading="openLoading" animated>
     <template #template>
       <div :style="{ height: height + 20 + 'px' }">
-        <el-skeleton-item variant="text" style="width: 90%; height: 28px; margin-left: 5%; margin-top: 10px" />
-        <el-skeleton-item variant="text" style="width: 90%; height: 28px; margin-left: 5%; margin-top: 10px" />
-        <el-skeleton-item variant="text" style="width: 90%; height: 28px; margin-left: 5%; margin-top: 10px" />
+        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
+        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
+        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
+        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
       </div>
     </template>
     <template #default>
       <div class="infinite-list-wrapper">
         <RightClickMenu ref="rightClickMenu" :menu-items="menuItems">
-          <el-scrollbar @end-reached="load" :height="height">
+          <el-scrollbar @end-reached="load" :height="height" :distance="10">
             <ul class="list">
               <li v-for="(chat, index) in tableData" :key="index" :class="chat.talk_id === talkIdOn ? 'list-item active' : 'list-item'
                 " @click="openChatHis($event, chat)" :data-index="index" @contextmenu.prevent="openMenu($event, chat)">
@@ -277,14 +278,14 @@ onUnmounted(function () {
 }
 
 .infinite-list-wrapper .list {
-  padding: 0;
+  padding: 0 10px;
   margin: 0;
   list-style: none;
   font-size: 14px;
 }
 
 .infinite-list-wrapper .list-item {
-  height: 40px;
+  height: 35px;
   color: var(--el-text-color-primary);
   user-select: none;
 }
@@ -293,7 +294,7 @@ onUnmounted(function () {
 .infinite-list-wrapper .list-item.active {
   background: var(--el-color-info-light-8);
   cursor: pointer;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .list-item .content i.fa-ellipsis {
@@ -312,11 +313,7 @@ onUnmounted(function () {
   align-items: center;
   height: inherit;
   padding: 0 10px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
-  -webkit-touch-callout: none;
 }
 
 .list-item .content .text-truncate {
@@ -326,6 +323,7 @@ onUnmounted(function () {
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  user-select: none;
 }
 
 .el-dropdown-menu {
