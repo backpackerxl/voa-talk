@@ -1,11 +1,11 @@
 <template>
   <el-skeleton :loading="openLoading" animated>
     <template #template>
-      <div :style="{ height: height + 20 + 'px' }">
-        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
-        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
-        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
-        <el-skeleton-item variant="text" style="width: 80%; height: 28px; margin-left: 10%; margin-top: 10px" />
+      <div :style="{ height: height + 'px' }">
+        <el-skeleton-item variant="text" style="width: 85%; height: 28px; margin-left: 10%; margin-top: 5px" />
+        <el-skeleton-item variant="text" style="width: 85%; height: 28px; margin-left: 10%; margin-top: 5px" />
+        <el-skeleton-item variant="text" style="width: 85%; height: 28px; margin-left: 10%; margin-top: 5px" />
+        <el-skeleton-item variant="text" style="width: 85%; height: 28px; margin-left: 10%; margin-top: 5px" />
       </div>
     </template>
     <template #default>
@@ -73,7 +73,7 @@ const props = defineProps({
 const totalHeight = ref(window.innerHeight);
 
 const height = computed(() => {
-  const h = totalHeight.value - props.offsetHeight - 20;
+  const h = totalHeight.value - props.offsetHeight;
   if (h > 800) {
     return 800;
   }
@@ -274,11 +274,11 @@ onUnmounted(function () {
 <style>
 .infinite-list-wrapper {
   height: inherit;
-  padding: 0 5px;
+  position: relative;
 }
 
 .infinite-list-wrapper .list {
-  padding: 0 10px;
+  padding: 0 15px;
   margin: 0;
   list-style: none;
   font-size: 14px;
@@ -312,7 +312,7 @@ onUnmounted(function () {
   justify-content: space-between;
   align-items: center;
   height: inherit;
-  padding: 0 10px;
+  padding: 0 6px;
   user-select: none;
 }
 
@@ -352,6 +352,10 @@ onUnmounted(function () {
   height: 20px;
   width: 20px;
   --el-loading-spinner-size: 18px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-color: transparent;
 }
 
 :deep(.el-loading-mask) {
