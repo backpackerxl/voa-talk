@@ -1,0 +1,1 @@
+import{t as e}from"./request-DyfsRm2I.js";function t(t){return e({url:`model_config/query`,method:`get`,params:t})}function n(t){return e({url:`model_config/delete`,method:`post`,params:t})}function r(t){return e({url:`model_config/saveOrUpdate`,method:`post`,params:t})}function i(t){return e({url:`model_config/list`,method:`get`,params:t})}export{i,r as n,t as r,n as t};
