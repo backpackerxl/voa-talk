@@ -278,7 +278,7 @@ onUnmounted(function () {
 }
 
 .infinite-list-wrapper .list {
-  padding: 0 15px;
+  padding: 5px 15px;
   margin: 0;
   list-style: none;
   font-size: 14px;

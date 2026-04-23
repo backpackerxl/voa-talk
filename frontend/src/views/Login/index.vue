@@ -98,9 +98,9 @@
             <el-form ref="loginForm" :model="formOtp" :rules="otpRules" label-position="top" label-width="100px">
               <el-form-item label="请输入验证码/恢复码" prop="optcode">
                 <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable type="number"
-                  placeholder="XXX XXX" v-if="captchaType"></el-input>
+                  placeholder="XXX XXX" v-if="captchaType" :autofocus="true"></el-input>
                 <el-input class="in-box otp-input" v-model="formOtp.optcode" size="large" clearable type="text"
-                  placeholder="XXXX XXXX" v-else></el-input>
+                  placeholder="XXXX XXXX" v-else :autofocus="true"></el-input>
               </el-form-item>
             </el-form>
           </div>
@@ -503,6 +503,11 @@ function verifyOTPCode() {
   if (!captchaType.value && !formOtp.value.optcode) {
     ElMessage.error('请输入一次性恢复码！');
     return;
+  }
+  if (captchaType.value) {
+    handleOptcodeComplete(formOtp.value.optcode);
+  } else {
+    handleRecoveryCodeComplete(formOtp.value.optcode);
   }
   formOtp.value.optcode = '';
 }

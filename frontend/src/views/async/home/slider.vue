@@ -145,7 +145,7 @@ const imageUrl = computed(() => store.state.app.avatar || null);
 const nickName = computed(() => store.state.app.nickName || null);
 const showHis = ref(!device.mobile());
 const isVisible = ref(false);
-const offsetHeight = ref(204);
+const offsetHeight = ref(194);
 
 // 移动端默认关闭侧边栏
 if (device.mobile()) {
@@ -450,7 +450,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 40px;
+  height: 30px;
   padding-left: 15px;
   padding-right: 18px;
   border-top: 1px solid var(--el-color-info-light-8);
