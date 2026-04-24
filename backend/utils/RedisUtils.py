@@ -1,20 +1,17 @@
 import base64
 import json
-import os
 
 import redis
 
 from utils import Config
-
-env = os.getenv('VOA_TALK_ENV')
 
 
 class RedisHandler:
     def __init__(self):
         # 构建参数字典
         pool_kwargs = {
-            'host': Config.ridesAddress.get(env),
-            'port': Config.ridesPort.get(env),
+            'host': Config.ridesAddress,
+            'port': Config.ridesPort,
             'decode_responses': True
         }
 

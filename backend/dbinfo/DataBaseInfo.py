@@ -1,5 +1,3 @@
-import os
-
 from sqlalchemy import create_engine
 from sqlalchemy import text
 from sqlalchemy.engine import URL
@@ -7,15 +5,13 @@ from sqlalchemy.orm import sessionmaker
 
 from utils import Config
 
-env = os.getenv('VOA_TALK_ENV')
-
 # 1. 构建URL对象（替代手动拼接字符串）
 db_url = URL.create(
     drivername="mysql+pymysql",  # 数据库驱动
     username=Config.mysqlUser,
     password=Config.mysqlPWD,  # 无需手动URL编码！URL.create会自动处理特殊字符
-    host=Config.mysqlAddress.get(env),
-    port=Config.mysqlPort.get(env),
+    host=Config.mysqlAddress,
+    port=Config.mysqlPort,
     database="ai_chat",
     query={"charset": "utf8mb4"}  # URI参数（编码）
 )
