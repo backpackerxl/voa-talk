@@ -28,7 +28,7 @@ CREATE TABLE `email_logs`  (
   `send_users` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '发送人json字符串',
   `create_date` timestamp NULL DEFAULT NULL COMMENT '创建日期',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '邮件发送记录表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '邮件发送记录表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of email_logs
@@ -49,7 +49,7 @@ CREATE TABLE `model_config`  (
   `update_date` timestamp NULL DEFAULT NULL COMMENT '更新时间',
   `sort` int NOT NULL COMMENT '排序',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型配置信息' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型配置信息' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of model_config
@@ -65,7 +65,7 @@ CREATE TABLE `request_logs`  (
   `model_id` int NOT NULL COMMENT '模型id',
   `create_date` timestamp NULL DEFAULT NULL COMMENT '记录时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型调用记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型调用记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of request_logs
@@ -94,7 +94,7 @@ CREATE TABLE `sys_user`  (
   `qq_open_id` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '第三方开放平台id用于QQ登录',
   `github_open_id` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '第三方开放平台id用于github登录',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统用户信息表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统用户信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user
@@ -114,7 +114,7 @@ CREATE TABLE `sys_users_webauth`  (
   `create_date` datetime NOT NULL COMMENT '创建日期',
   `update_date` datetime NOT NULL COMMENT '修改日期',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '二次登录验证' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '二次登录验证' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_users_webauth
@@ -134,7 +134,7 @@ CREATE TABLE `talk_logs`  (
   `tokens` int NULL DEFAULT NULL COMMENT '大模型token消耗',
   `pause_ask_stats` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '回答是否完整0：完整，1：不完整',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 70 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '对话记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '对话记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of talk_logs
@@ -149,7 +149,7 @@ CREATE TABLE `talk_recommendation`  (
   `talk_id` bigint NULL DEFAULT NULL COMMENT '对话ID',
   `content` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '推荐内容',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 55 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '推荐搜索' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '推荐搜索' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of talk_recommendation
@@ -167,7 +167,7 @@ CREATE TABLE `talk_user_relation`  (
   `create_date` timestamp NULL DEFAULT NULL COMMENT '创建时间',
   `nick_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户昵称',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '对话与用户的关系' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '对话与用户的关系' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of talk_user_relation
