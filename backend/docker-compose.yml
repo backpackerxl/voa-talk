@@ -1,0 +1,51 @@
+services:
+  # 1. MySQL 服务
+  mysql:
+    image: mysql:8.0
+    container_name: voatalk-mysql
+    restart: always  # 开机自启动
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}  # 你的密码
+      MYSQL_DATABASE: ai_chat  # 自动创建的数据库名
+    volumes:
+      - ./mysql-data:/var/lib/mysql  # 数据持久化（重要！）
+    ports:
+      - "3308:3306"
+    networks:
+      - app-network
+
+  # 2. Redis 服务
+  redis:
+    image: redis:latest
+    container_name: voatalk-redis
+    restart: always  # 开机自启动
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  # 3. Flask 服务
+  web:
+    image: voatalk-app:v1
+    container_name: voatalk-app
+    restart: always  # 开机自启动
+    environment:
+      REDIS_IP: redis
+      REDIS_PORT: 6379
+      MYSQL_IP: mysql
+      MYSQL_PORT: 3308
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      QQ_CLIENT_SECRET: ${QQ_CLIENT_SECRET}
+    ports:
+      - "10011:10011"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - app-network
+
+# 共享网络，让三个容器互相访问
+networks:
+  app-network:
