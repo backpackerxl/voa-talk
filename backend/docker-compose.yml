@@ -26,18 +26,21 @@ services:
 
   # 3. Flask 服务
   web:
-    image: voatalk-app:v1
+    build: .
     container_name: voatalk-app
     restart: always  # 开机自启动
     environment:
       REDIS_IP: redis
       REDIS_PORT: 6379
       MYSQL_IP: mysql
-      MYSQL_PORT: 3308
+      MYSQL_PORT: 3306
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
       QQ_CLIENT_SECRET: ${QQ_CLIENT_SECRET}
+    volumes:
+      - /home/logs:/app/logfile
+      - /home/uploads:/app/uploads
     ports:
       - "10011:10011"
     depends_on:
