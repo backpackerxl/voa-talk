@@ -12,7 +12,7 @@ db_url = URL.create(
     password=Config.mysqlPWD,  # 无需手动URL编码！URL.create会自动处理特殊字符
     host=Config.mysqlAddress,
     port=Config.mysqlPort,
-    database="ai_chat",
+    database=Config.mysqlDataBase,
     query={"charset": "utf8mb4"}  # URI参数（编码）
 )
 # 2. 创建引擎（参数与增强版一致）

@@ -18,6 +18,8 @@ TheExpirationTimeOfTheToken = 5
 mysqlAddress = os.getenv("MYSQL_IP")
 # 数据库端口，分本地环境(DEV)/生产环境(PRO)
 mysqlPort = int(os.getenv("MYSQL_PORT"))
+# 数据库名
+mysqlDataBase = os.getenv("MYSQL_DATABASE")
 # 数据库用户名
 mysqlUser = "root"
 # 数据库密码
