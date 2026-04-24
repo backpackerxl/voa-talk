@@ -19,7 +19,7 @@ for ((i=1; i<=MAX_ATTEMPTS; i++)); do
         sleep $DELAY
     else
         echo "第 $i 次检查：端口 $PORT 未被监听，等待 $DELAY 秒后重试..."
-        nohup python backend/app.py &
+        python app.py &
         exit 0
     fi
 done
