@@ -23,7 +23,7 @@ npm install
 ### 2.1Compiles and hot-reloads for development
 
 ```shell
-npm run serve
+npm run dev
 ```
 
 ### 2.2Compiles and minifies for production
