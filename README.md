@@ -35,8 +35,10 @@ npm run build
 ## 3.Backend Project setup
 
 更新依赖
+
 ```python
-pip freeze > requirements.txt
+pip
+freeze > requirements.txt
 ```
 
 ```commandline
@@ -56,6 +58,11 @@ pip install -r requirements.txt
 ```
 python app.py
 ```
+
+### 管理员账号密码
+
+- 账号：admin
+- 密码：123456
 
 ### 3.2Mail setting
 
