@@ -36,9 +36,8 @@ npm run build
 
 更新依赖
 
-```python
-pip
-freeze > requirements.txt
+```shell
+pip freeze > requirements.txt
 ```
 
 ### 管理员账号密码
@@ -70,7 +69,7 @@ cd backend
 mkdir logfile uploads
 ```
 
-```
+```shell
 pip install -r requirements.txt
 ```
 
