@@ -22,7 +22,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `email_logs`;
 CREATE TABLE `email_logs`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `subject` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '邮件名称',
   `body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '邮件内容',
   `send_users` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '发送人json字符串',
@@ -39,7 +39,7 @@ CREATE TABLE `email_logs`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `model_config`;
 CREATE TABLE `model_config`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '模型名称',
   `desc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '模型描述',
   `req_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '接口请求地址',
@@ -47,7 +47,7 @@ CREATE TABLE `model_config`  (
   `model_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '模型id',
   `create_date` timestamp NULL DEFAULT NULL COMMENT '创建时间',
   `update_date` timestamp NULL DEFAULT NULL COMMENT '更新时间',
-  `sort` int NOT NULL COMMENT '排序',
+  `sort` bigint NOT NULL COMMENT '排序',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型配置信息' ROW_FORMAT = DYNAMIC;
 
@@ -60,9 +60,9 @@ CREATE TABLE `model_config`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `request_logs`;
 CREATE TABLE `request_logs`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `user_id` int NOT NULL COMMENT '用户id',
-  `model_id` int NOT NULL COMMENT '模型id',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `user_id` bigint NOT NULL COMMENT '用户id',
+  `model_id` bigint NOT NULL COMMENT '模型id',
   `create_date` timestamp NULL DEFAULT NULL COMMENT '记录时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '模型调用记录' ROW_FORMAT = DYNAMIC;
@@ -125,13 +125,13 @@ CREATE TABLE `sys_users_webauth`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `talk_logs`;
 CREATE TABLE `talk_logs`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `talk_id` bigint NOT NULL COMMENT '对话id',
   `resp_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '模型响应内容',
   `req_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '用户输入的内容',
   `img` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '图片地址',
   `create_date` timestamp NULL DEFAULT NULL COMMENT '创建时间',
-  `tokens` int NULL DEFAULT NULL COMMENT '大模型token消耗',
+  `tokens` bigint NULL DEFAULT NULL COMMENT '大模型token消耗',
   `pause_ask_stats` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '回答是否完整0：完整，1：不完整',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '对话记录' ROW_FORMAT = DYNAMIC;
@@ -145,7 +145,7 @@ CREATE TABLE `talk_logs`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `talk_recommendation`;
 CREATE TABLE `talk_recommendation`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `talk_id` bigint NULL DEFAULT NULL COMMENT '对话ID',
   `content` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '推荐内容',
   PRIMARY KEY (`id`) USING BTREE
@@ -160,8 +160,8 @@ CREATE TABLE `talk_recommendation`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `talk_user_relation`;
 CREATE TABLE `talk_user_relation`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `user_id` int NOT NULL COMMENT '用户id',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `user_id` bigint NOT NULL COMMENT '用户id',
   `talk_id` bigint NOT NULL COMMENT '对话id',
   `talk_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '对话名称',
   `create_date` timestamp NULL DEFAULT NULL COMMENT '创建时间',
@@ -172,5 +172,16 @@ CREATE TABLE `talk_user_relation`  (
 -- ----------------------------
 -- Records of talk_user_relation
 -- ----------------------------
+DROP TABLE IF EXISTS `sys_users_login_logs`;
+CREATE TABLE `sys_users_login_logs` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `refresh_token` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '刷新token',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录设备名称',
+  `ip` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录ip',
+  `create_date` timestamp NOT NULL COMMENT '登录时间',
+  `refresh_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '刷新id',
+  `user_id` bigint NOT NULL COMMENT '用户id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统用户登录日志';
 
 SET FOREIGN_KEY_CHECKS = 1;
