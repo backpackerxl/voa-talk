@@ -3,7 +3,7 @@ import traceback
 from flask import Blueprint, request, jsonify
 
 from services import sys_report_service
-from utils import logs
+from utils import logs, JwtUtils
 from utils.BusinessException import BusinessException
 from utils.JwtUtils import token_required
 from utils.ReturnTool import ErrorReturn
@@ -81,6 +81,24 @@ def line_tokens():
     try:
         response = sys_report_service.line_tokens(request)
         return jsonify(response)
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f'处理请求时出错: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@sys_user_blueprint.route('/all_data', methods=['GET'])
+def all_data():
+    try:
+        token = request.args.get("token")
+        JwtUtils.verify_token(token)
+        response = sys_report_service.all_data()
+        return response
     except BusinessException as e:
         # 特定的业务逻辑异常处理
         print(traceback.format_exc())

@@ -1,10 +1,14 @@
-from datetime import datetime
+import json
+import time
+from datetime import datetime, date
 from decimal import Decimal
 
+from dateutil.relativedelta import relativedelta
+from flask import Response
 from sqlalchemy import text
 
 from dbinfo import DatabaseSession
-from utils import ReturnTool
+from utils import ReturnTool, logs
 
 sql_pool = {
     'header_data': text("""
@@ -139,3 +143,45 @@ def line_tokens(stm, etm):
             for item in result
         ]
         return ReturnTool.SuccessReturn(processed_data)
+
+
+# 定时推送间隔（秒），这里设置 30 秒推一次，你可以随便改
+PUSH_INTERVAL = 30
+
+
+def all_data():
+    def generate():
+        try:
+            while True:  # 无限循环，实现定时推送
+                # ============= 每次推送都重新计算日期（关键！）
+                today = date.today()
+                one_month_ago = today - relativedelta(months=1)
+                tomorrow = date.today() + relativedelta(days=1)
+                etm = today.strftime("%Y-%m-%d")
+                stm = one_month_ago.strftime("%Y-%m-%d")
+                ttm = tomorrow.strftime("%Y-%m-%d")
+
+                print(stm, etm, ttm)
+
+                # 每次都获取最新数据
+                res_dict = {
+                    'header_data': header_data()['data'],
+                    'top_talk': top_talk()['data'],
+                    'bar_talks': bar_talks(stm, etm)['data'],
+                    'model_talks': model_talks(stm, ttm)['data'],
+                    'line_tokens': line_tokens(stm, etm)['data']
+                }
+
+                # 推送给前端
+                resp_json = json.dumps(res_dict, ensure_ascii=False)
+                yield f"data: {resp_json}\n\n"
+
+                for _ in range(PUSH_INTERVAL):
+                    yield f":heartbeat\n\n"
+                    time.sleep(1)
+
+        except GeneratorExit:
+            logs.setup_logger().error('连接已断开')
+
+    # SSE 响应
+    return Response(generate(), mimetype='text/event-stream')

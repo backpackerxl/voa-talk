@@ -68,7 +68,7 @@
         </el-col>
       </el-row>
       <el-row :gutter="24">
-        <el-col :span="18">
+        <el-col :span="17">
           <div class="grid-content midle">
             <div class="title">
               <span>日对话量</span>
@@ -83,7 +83,7 @@
             <ECharts ref="barChart" :option="barChartOption" height="220px" />
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="7">
           <div class="grid-content midle">
             <div class="title">
               <span>模型调用量</span>
@@ -100,7 +100,7 @@
         </el-col>
       </el-row>
       <el-row :gutter="24">
-        <el-col :span="18">
+        <el-col :span="17">
           <div class="grid-content bottom">
             <div class="title">
               <span>Tokens 日调用量</span>
@@ -115,7 +115,7 @@
             <ECharts ref="lineChart" :option="lineChartOption" height="280px" />
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="7">
           <div class="grid-content bottom">
             <h2 class="title">Tokens 调用量周榜</h2>
             <div class="box" v-for="(item, index) in topTalkList" :key="index">
@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { ElConfigProvider } from 'element-plus';
 import ECharts from "@/components/ECharts.vue";
 import { InfoFilled } from "@element-plus/icons-vue";
@@ -150,13 +150,13 @@ import store from "@/store";
 import echarts from "@/utils/echarts";
 import { formatDateTime, shortcuts } from "@/utils/tools";
 import {
-  headerData,
-  topTalk,
   modelTalks,
   barTalks,
   lineTokens,
+  allData,
 } from "@/api/report";
 import zhCn from 'element-plus/es/locale/lang/zh-cn';
+let source = null;
 
 const barChart = ref(null);
 const pieChart = ref(null);
@@ -336,14 +336,47 @@ function setPieOptione(vData) {
     },
     series: [
       {
-        name: "销售渠道",
+        name: "模型调用量",
+        radius: ['60%', '80%'],
         type: "pie",
-        radius: "50%",
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
         data: vData,
       },
     ],
   };
 }
+
+onUnmounted(() => {
+  if (source) {
+    source.close();
+  }
+});
+
+// 监听页面卸载事件（关闭、刷新、跳转都会触发）
+window.addEventListener('beforeunload', (e) => {
+  if (source) {
+    source.close();
+  }
+});
 
 // 模拟数据加载
 onMounted(() => {
@@ -355,64 +388,25 @@ onMounted(() => {
       lineChart.value && lineChart.value.toggleThem();
     }
   });
-  // 请求头部数据
-  headerData()
-    .then((obj) => {
-      headerObj.value = obj.data;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
 
-  topTalk()
-    .then((obj) => {
-      topTalkList.value = obj.data;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  source = allData();
 
-  // 这里可以是异步数据加载
-  const end = new Date(); // 当前时间
-  const endAddOne = new Date(); // 当前时间
-  const start = new Date();
-  start.setMonth(start.getMonth() - 1); // 一个月的数据
-  endAddOne.setDate(endAddOne.getDate() + 1);
-
-  barDate.value = [start, end];
-  lineDate.value = [start, end];
-  pieDate.value = [start, end];
-
-  const stm = formatDateTime(start);
-  const etm = formatDateTime(end);
-
-  modelTalks({ stm, etm: formatDateTime(endAddOne) })
-    .then((obj) => {
-      setPieOptione(obj.data);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-
-  barTalks({ stm, etm })
-    .then((obj) => {
-      const xData = obj.data.map((item) => item.date.split(" ")[0]);
-      const yData = obj.data.map((item) => item.talk_count);
-      setBarOption(xData, yData);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-
-  lineTokens({ stm, etm })
-    .then((obj) => {
-      const xData = obj.data.map((item) => item.date.split(" ")[0]);
-      const yData = obj.data.map((item) => item.tokens_count);
-      setLineOption(xData, yData);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  source.onmessage = (e) => {
+    const res = JSON.parse(e.data)
+    // 感知服务端断开通知，前端自动关闭连接
+    if (res.code === 401) {
+      source.close()
+    }
+    headerObj.value = res.header_data;
+    topTalkList.value = res.top_talk;
+    setPieOptione(res.model_talks);
+    const xData = res.bar_talks.map((item) => item.date.split(" ")[0]);
+    const yData = res.bar_talks.map((item) => item.talk_count);
+    setBarOption(xData, yData);
+    const xLData = res.line_tokens.map((item) => item.date.split(" ")[0]);
+    const yLData = res.line_tokens.map((item) => item.tokens_count);
+    setLineOption(xLData, yLData);
+  }
 });
 </script>
 

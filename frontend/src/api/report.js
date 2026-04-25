@@ -1,4 +1,6 @@
 import request from '@/utils/request';
+import store from '@/store';
+import { config } from '@/utils/config';
 
 export function headerData() {
     return request({
@@ -36,4 +38,11 @@ export function lineTokens(params) {
         method: 'get',
         params: params,
     })
+}
+
+export function allData() {
+    const { authorization } = store.state.app
+    const url = config.BASE_URL + "/report/all_data";
+    const source = new EventSource(`${url}?token=${authorization}`)
+    return source;
 }

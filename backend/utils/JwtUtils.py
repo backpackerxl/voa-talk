@@ -235,3 +235,33 @@ def add_update_time(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def verify_token(token):
+    if not token:
+        return jsonify({"message": "缺少令牌", "code": 401}), 401
+    try:
+        # 创建 JWTHandler 实例
+        jwt_handler = JWTHandler()
+        # 使用 JWTHandler 的 VerifyToken 方法验证 token
+        valid, payload = jwt_handler.VerifyToken(token)
+        # 如果 token 无效，抛出 ValueError 异常
+        if not valid:
+            raise ValueError("无效的令牌")
+        nickName = payload.get("nickName")
+        admin = payload.get("superAdmin")
+        # 获取请求的 IP 地址
+        real_ip = request.headers.get("X-Real-IP")
+        if not real_ip:
+            real_ip = request.remote_addr
+
+        ip_address = real_ip
+        # 获取访问的模块（路由）
+        accessed_module = request.endpoint
+        # 记录日志到数据库
+        logs.setup_logger().info(f"{nickName}请求了后端，使用的IP为：{ip_address}，请求的方法为：{accessed_module}")
+        if admin == 0:
+            return jsonify({"message": "普通用户，无权调用", "code": 403}), 403
+    # 捕获 ValueError 异常，并返回 401 未授权错误
+    except ValueError as e:
+        return jsonify({"message": str(e), "code": 401}), 401
