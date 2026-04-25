@@ -160,9 +160,6 @@ def all_data():
                 etm = today.strftime("%Y-%m-%d")
                 stm = one_month_ago.strftime("%Y-%m-%d")
                 ttm = tomorrow.strftime("%Y-%m-%d")
-
-                print(stm, etm, ttm)
-
                 # 每次都获取最新数据
                 res_dict = {
                     'header_data': header_data()['data'],
