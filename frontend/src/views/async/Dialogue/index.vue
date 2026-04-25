@@ -137,17 +137,15 @@
           <el-select v-model="modelId" placeholder="请选择模型" style="width: 150px" clearable>
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-tooltip class="box-item" effect="light" :content="!changeIcon ? '请输入您的问题' : '停止生成'" placement="top">
-            <el-button type="primary" @click="sendMessage" circle :disabled="disabledBtn" :class="{
-              'send-message active': !disabledBtn,
-              'send-message': disabledBtn,
-            }">
-              <i :class="{
-                'fa-solid fa-arrow-up': !changeIcon,
-                'fa-solid fa-square': changeIcon,
-              }"></i>
-            </el-button>
-          </el-tooltip>
+          <el-button type="primary" @click="sendMessage" circle :disabled="disabledBtn" :class="{
+            'send-message active': !disabledBtn,
+            'send-message': disabledBtn,
+          }">
+            <i :class="{
+              'fa-solid fa-arrow-up': !changeIcon,
+              'fa-solid fa-square': changeIcon,
+            }"></i>
+          </el-button>
         </div>
       </div>
     </div>
