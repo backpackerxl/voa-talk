@@ -2,6 +2,7 @@ import datetime
 from functools import wraps
 
 import jwt
+from dateutil.relativedelta import relativedelta
 from flask import request, jsonify
 
 from utils import Config
@@ -15,18 +16,21 @@ class JWTHandler:
         self.secret_key = secret_key
         self.algorithm = algorithm
 
-    def encode_jwt(self, payload):
+    def encode_jwt(self, payload, expiration=Config.TheExpirationTimeOfTheToken):
         """
         编码 JWT。 生成Token
         参数：
             payload (字典): 要包含在 JWT 中的负载
+            expiration: 过期时长
         返回值：
             字符串: 编码后的 JWT
         """
         # 在负载中添加一个 "exp"（过期时间）字段，设置过期时间为 1 天后
-        payload['exp'] = datetime.datetime.utcnow() + datetime.timedelta(days=Config.TheExpirationTimeOfTheToken)
+        payload['exp'] = datetime.datetime.utcnow() + relativedelta(seconds=expiration)
+        token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
+        del payload['exp']
 
-        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
+        return token
 
     def decode_jwt(self, encoded_jwt):
         """
@@ -48,13 +52,13 @@ class JWTHandler:
         except jwt.ExpiredSignatureError:
             return {
                 "status": "失败",
-                "code": 666,
+                "code": 401,
                 "message": "过期令牌"
             }
         except jwt.InvalidTokenError:
             return {
                 "status": "失败",
-                "code": 666,
+                "code": 401,
                 "message": "非法令牌"
             }
 
@@ -235,33 +239,3 @@ def add_update_time(func):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-def verify_token(token):
-    if not token:
-        return jsonify({"message": "缺少令牌", "code": 401}), 401
-    try:
-        # 创建 JWTHandler 实例
-        jwt_handler = JWTHandler()
-        # 使用 JWTHandler 的 VerifyToken 方法验证 token
-        valid, payload = jwt_handler.VerifyToken(token)
-        # 如果 token 无效，抛出 ValueError 异常
-        if not valid:
-            raise ValueError("无效的令牌")
-        nickName = payload.get("nickName")
-        admin = payload.get("superAdmin")
-        # 获取请求的 IP 地址
-        real_ip = request.headers.get("X-Real-IP")
-        if not real_ip:
-            real_ip = request.remote_addr
-
-        ip_address = real_ip
-        # 获取访问的模块（路由）
-        accessed_module = request.endpoint
-        # 记录日志到数据库
-        logs.setup_logger().info(f"{nickName}请求了后端，使用的IP为：{ip_address}，请求的方法为：{accessed_module}")
-        if admin == 0:
-            return jsonify({"message": "普通用户，无权调用", "code": 403}), 403
-    # 捕获 ValueError 异常，并返回 401 未授权错误
-    except ValueError as e:
-        return jsonify({"message": str(e), "code": 401}), 401

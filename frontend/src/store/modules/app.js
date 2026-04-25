@@ -1,5 +1,6 @@
 const state = {
     authorization: localStorage.getItem('token') || '', // 初始化时从 localStorage 获取 token
+    refreshToken: localStorage.getItem('refreshToken') || '', // 初始化时从 localStorage 获取刷新 token
     userRole: Number(localStorage.getItem('userRole')) || 0, // 初始化时从 localStorage 获取用户角色，默认 0 表示非超级管理员
     nickName: localStorage.getItem('nickName') || '', // 初始化
     userName: localStorage.getItem('userName') || '', // 初始化
@@ -26,6 +27,12 @@ const mutations = {
     },
     CLEAR_AUTHORIZATION(state) {
         state.authorization = '';
+    },
+    SET_REFRESH_AUTH(state, refreshToken) {
+        state.refreshToken = refreshToken;
+    },
+    CLEAR_REFRESH_AUTH(state) {
+        state.refreshToken = '';
     },
     SET_USER_ROLE(state, role) {
         state.userRole = role;
@@ -125,6 +132,14 @@ const actions = {
     clearAuthorization({ commit }) {
         commit('CLEAR_AUTHORIZATION');
         localStorage.removeItem('token'); // 清除 localStorage 中的 token
+    },
+    setRefreshAuth({ commit }, refreshToken) {
+        commit('SET_REFRESH_AUTH', refreshToken);
+        localStorage.setItem('refreshToken', refreshToken); // 同步保存到 localStorage
+    },
+    clearRefreshAuth({ commit }) {
+        commit('CLEAR_REFRESH_AUTH');
+        localStorage.removeItem('refreshToken'); // 清除 localStorage 中的刷新 token
     },
     setUserRole({ commit }, role) {
         commit('SET_USER_ROLE', role);

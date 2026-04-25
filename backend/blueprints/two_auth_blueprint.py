@@ -2,6 +2,7 @@ from flask import jsonify, request, Blueprint
 
 from services import two_auth_service
 from utils import logs
+from utils.JwtUtils import token_on
 from utils.ReturnTool import ErrorReturn
 
 two_auth_blueprint = Blueprint('two_auth', __name__, url_prefix='/two_auth')
@@ -44,6 +45,7 @@ def generate_otp_qrcode(username):
 
 # 获取设备的注册列表
 @two_auth_blueprint.route('/get/devices', methods=['GET'])
+@token_on
 def get_devices():
     try:
         response = two_auth_service.get_devices()
@@ -55,6 +57,7 @@ def get_devices():
 
 # 2. 修改注册的设备名称
 @two_auth_blueprint.route('/update/device', methods=['POST'])
+@token_on
 def update_device():
     try:
         response = two_auth_service.update_device(request)
@@ -66,6 +69,7 @@ def update_device():
 
 # 2. 修改注册的设备名称
 @two_auth_blueprint.route('/delete/device', methods=['POST'])
+@token_on
 def delete_device():
     try:
         response = two_auth_service.delete_device(request)

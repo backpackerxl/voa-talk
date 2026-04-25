@@ -9,6 +9,7 @@ from datetime import datetime
 import pyotp
 import qrcode
 from sqlalchemy import or_, and_
+from ua_parser import user_agent_parser
 from webauthn import (
     generate_registration_options,
     verify_registration_response,
@@ -34,8 +35,8 @@ from webauthn.helpers.structs import (
 )
 
 from dbinfo import DatabaseSession
-from entity import SysUser, SysUserWebAuth
-from utils import ReturnTool, DbTools
+from entity import SysUser, SysUserWebAuth, SysUsersLoginLogs
+from utils import ReturnTool, DbTools, Tools, Config
 from utils import logs, TimeToolClass
 from utils.Config import ALLOWED_ORIGINS
 from utils.JwtUtils import JWTHandler, real_ip_decorator
@@ -424,6 +425,15 @@ def login_complete(request, client_ip):
     # 从 redis 获取挑战值和用户名
     req_id = data.get('req_id')
     c_id = data.get('id')
+    # 1. 获取请求头里的 User-Agent
+    ua_string = request.headers.get('User-Agent', '')
+    # 2. 解析设备信息
+    parsed = user_agent_parser.Parse(ua_string)
+    device = parsed.get('device', {})
+    # 3. 拼接设备名称（最精准）
+    device_model = device.get('model', '')  # 型号：iPhone 16 Pro
+    if device_model is None:
+        device_model = '网页登录'
 
     auth_cha_str = RedisHandler().get_key(req_id)
     if not auth_cha_str:
@@ -512,10 +522,33 @@ def login_complete(request, client_ip):
             "bindGithub": (1 if queue.github_open_id is None else 3),
         }
         # 生成token
+        login_quen = session.query(SysUsersLoginLogs).filter(
+            and_(
+                SysUsersLoginLogs.name == device_model,
+                SysUsersLoginLogs.user_id == queue.id
+            )
+        ).first()
+        resp = JWTHandler().decode_jwt(login_quen.refresh_token)
+        refresh_id = login_quen.refresh_id
+        if resp['code'] != 200:
+            refresh_token = JWTHandler().encode_jwt(user_data, Config.ReExpirationTimeOfTheToken)
+            refresh_id = Tools.generate_custom_id(15)
+
+            now = datetime.now()
+            login_logs = {
+                'refresh_id': refresh_id,
+                'name': device_model,
+                'refresh_token': refresh_token,
+                'ip': client_ip,
+                'create_date': now,
+                'user_id': queue.id
+            }
+            DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
+
+        # 生成token
         token = JWTHandler().encode_jwt(user_data)
         user_data["jwtToken"] = token
-        user_data["refreshToken"] = token
-        user_data['exp'] = user_data['exp'].strftime("%Y-%m-%d %H:%M:%S")
+        user_data["refreshToken"] = refresh_id
 
         return ReturnTool.SuccessReturn({
             'status': 'ok',

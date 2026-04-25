@@ -9,6 +9,7 @@ from sqlalchemy import text
 
 from dbinfo import DatabaseSession
 from utils import ReturnTool, logs
+from utils.JwtUtils import JWTHandler
 
 sql_pool = {
     'header_data': text("""
@@ -149,11 +150,15 @@ def line_tokens(stm, etm):
 PUSH_INTERVAL = 30
 
 
-def all_data():
+def all_data(token):
     def generate():
         try:
             while True:  # 无限循环，实现定时推送
                 # ============= 每次推送都重新计算日期（关键！）
+                jwt_res = JWTHandler().decode_jwt(token)
+                if jwt_res['code'] != 200:
+                    yield f"data: {json.dumps(jwt_res, ensure_ascii=False)}\n\n"
+                    break
                 today = date.today()
                 one_month_ago = today - relativedelta(months=1)
                 tomorrow = date.today() + relativedelta(days=1)
@@ -169,8 +174,14 @@ def all_data():
                     'line_tokens': line_tokens(stm, etm)['data']
                 }
 
+                data = {
+                    'code': 200,
+                    'data': res_dict,
+                    'msg': '操作成功'
+                }
+
                 # 推送给前端
-                resp_json = json.dumps(res_dict, ensure_ascii=False)
+                resp_json = json.dumps(data, ensure_ascii=False)
                 yield f"data: {resp_json}\n\n"
 
                 for _ in range(PUSH_INTERVAL):

@@ -41,8 +41,8 @@ export function lineTokens(params) {
 }
 
 export function allData() {
-    const { authorization } = store.state.app
+    const { authorization } = store.state.app;
     const url = config.BASE_URL + "/report/all_data";
-    const source = new EventSource(`${url}?token=${authorization}`)
+    const source = new EventSource(`${url}?token=${authorization}`);
     return source;
 }

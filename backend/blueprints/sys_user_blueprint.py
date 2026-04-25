@@ -145,12 +145,61 @@ def reset_pwd():
         return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
 
 
+@sys_user_blueprint.route("/get_refresh_token/<refresh_id>", methods=["GET"])
+def get_refresh_token(refresh_id):
+    try:
+        response = sys_user_service.get_refresh_token(refresh_id)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f'处理请求时出错: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
 @sys_user_blueprint.route('/sendEmailCode', methods=['POST'])
 @token_on
 def send_email_code():
     try:
         response = sys_user_service.send_email_code(request)
-        return jsonify(response)
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f'处理请求时出错: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@sys_user_blueprint.route('/queryLoginUser', methods=['GET'])
+@token_on
+def query_login_user():
+    try:
+        response = sys_user_service.query_login_user()
+        return jsonify(response), response.get("code")
+    except BusinessException as e:
+        # 特定的业务逻辑异常处理
+        print(traceback.format_exc())
+        logs.setup_logger().error(f"业务错误: {str(e)}")
+        return jsonify(ErrorReturn(str(e), e.error_code))
+    except Exception as e:
+        print(traceback.format_exc())
+        logs.setup_logger().error(f'处理请求时出错: {e}')
+        return jsonify(ErrorReturn(f"内部错误：{e}", 500)), 500
+
+
+@sys_user_blueprint.route('/singOutDevice', methods=['POST'])
+@token_on
+def sing_out_device():
+    try:
+        response = sys_user_service.sing_out_device(request)
+        return jsonify(response), response.get("code")
     except BusinessException as e:
         # 特定的业务逻辑异常处理
         print(traceback.format_exc())
@@ -168,7 +217,7 @@ def send_email_code():
 def update_user_email():
     try:
         response = sys_user_service.update_user_email(request)
-        return jsonify(response)
+        return jsonify(response), response.get("code")
     except BusinessException as e:
         # 特定的业务逻辑异常处理
         print(traceback.format_exc())

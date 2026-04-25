@@ -353,6 +353,7 @@ const handleCommand = (command) => {
         // 这里可以添加实际的登出逻辑，比如清除 token 或者重定向到登录页面
         store.dispatch("app/clearAvatar");
         store.dispatch("app/clearAuthorization");
+        store.dispatch("app/clearRefreshAuth");
         store.dispatch("app/clearUserRole");
         store.dispatch("app/clearNickName");
         store.dispatch("app/clearUserName");

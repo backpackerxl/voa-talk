@@ -150,6 +150,7 @@ import store from "@/store";
 import echarts from "@/utils/echarts";
 import { formatDateTime, shortcuts } from "@/utils/tools";
 import {
+  headerData,
   modelTalks,
   barTalks,
   lineTokens,
@@ -378,6 +379,37 @@ window.addEventListener('beforeunload', (e) => {
   }
 });
 
+function loadData() {
+  source = allData();
+
+  source.onmessage = (e) => {
+    const res = JSON.parse(e.data)
+    // 感知服务端断开通知，前端自动关闭连接
+    if (res.code === 200) {
+      headerObj.value = res.data.header_data;
+      topTalkList.value = res.data.top_talk;
+      setPieOptione(res.data.model_talks);
+      const xData = res.data.bar_talks.map((item) => item.date.split(" ")[0]);
+      const yData = res.data.bar_talks.map((item) => item.talk_count);
+      setBarOption(xData, yData);
+      const xLData = res.data.line_tokens.map((item) => item.date.split(" ")[0]);
+      const yLData = res.data.line_tokens.map((item) => item.tokens_count);
+      setLineOption(xLData, yLData);
+    } else if (res.code === 401) {
+      // 更新token
+      source.close();
+      headerData().then((res) => {
+        if (res.code === 200) {
+          loadData();
+        }
+      });
+    } else {
+      source.close()
+      console.log(res);
+    }
+  }
+}
+
 // 模拟数据加载
 onMounted(() => {
   document.documentElement.querySelector("title").innerText = "运行报表";
@@ -388,25 +420,7 @@ onMounted(() => {
       lineChart.value && lineChart.value.toggleThem();
     }
   });
-
-  source = allData();
-
-  source.onmessage = (e) => {
-    const res = JSON.parse(e.data)
-    // 感知服务端断开通知，前端自动关闭连接
-    if (res.code === 401) {
-      source.close()
-    }
-    headerObj.value = res.header_data;
-    topTalkList.value = res.top_talk;
-    setPieOptione(res.model_talks);
-    const xData = res.bar_talks.map((item) => item.date.split(" ")[0]);
-    const yData = res.bar_talks.map((item) => item.talk_count);
-    setBarOption(xData, yData);
-    const xLData = res.line_tokens.map((item) => item.date.split(" ")[0]);
-    const yLData = res.line_tokens.map((item) => item.tokens_count);
-    setLineOption(xLData, yLData);
-  }
+  loadData();
 });
 </script>
 

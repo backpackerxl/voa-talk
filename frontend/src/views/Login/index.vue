@@ -404,6 +404,7 @@ async function sendPostRequest() {
 
 function cacheUserInfoAndRedirect(userinfo) {
   store.dispatch("app/setAuthorization", userinfo.jwtToken);
+  store.dispatch("app/setRefreshAuth", userinfo.refreshToken);
   store.dispatch("app/setUserRole", userinfo.superAdmin);
   store.dispatch("app/setNickName", userinfo.nickName);
   store.dispatch("app/setUserName", userinfo.userName);

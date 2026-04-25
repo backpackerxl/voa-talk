@@ -3,9 +3,9 @@ import traceback
 from flask import Blueprint, request, jsonify
 
 from services import sys_report_service
-from utils import logs, JwtUtils
+from utils import logs
 from utils.BusinessException import BusinessException
-from utils.JwtUtils import token_required
+from utils.JwtUtils import token_required, JWTHandler
 from utils.ReturnTool import ErrorReturn
 
 sys_user_blueprint = Blueprint('report', __name__, url_prefix='/report')
@@ -96,9 +96,12 @@ def line_tokens():
 def all_data():
     try:
         token = request.args.get("token")
-        JwtUtils.verify_token(token)
-        response = sys_report_service.all_data()
-        return response
+        jwt = JWTHandler()
+        resp = jwt.decode_jwt(token)
+        if resp['code'] == 200:
+            response = sys_report_service.all_data(token)
+            return response
+        return jsonify(resp), resp['code']
     except BusinessException as e:
         # 特定的业务逻辑异常处理
         print(traceback.format_exc())

@@ -1,6 +1,4 @@
 from services.impl import sys_report_impl
-from utils import ReturnTool, logs
-from utils.JwtUtils import JWTHandler
 
 
 def header_data():
@@ -35,5 +33,5 @@ def line_tokens(request):
     return sys_report_impl.line_tokens(stm, etm)
 
 
-def all_data():
-    return sys_report_impl.all_data()
+def all_data(token):
+    return sys_report_impl.all_data(token)

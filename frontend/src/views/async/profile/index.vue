@@ -161,6 +161,27 @@
           </el-tooltip>
         </div>
       </el-collapse-item>
+
+      <el-collapse-item name="4" v-if="isSupportBiometric" title="登录设备管理">
+        <div class="auth-data" v-if="loginUsers.length > 0">
+          <el-table :data="loginUsers" stripe style="width: 320px" :show-header="false">
+            <el-table-column fixed prop="name" width="270">
+              <template v-slot="scope">
+                <span class="txt">登录设备：{{ scope.row.name }}</span><br>
+                <span class="txt">登录时间：{{ scope.row.create_date }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column fixed="right" min-width="50">
+              <template v-slot="scope">
+                <el-button type="danger" size="small" circle @click="handleExitUser(scope.row)">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-collapse-item>
     </el-collapse>
   </div>
   <el-dialog v-model="editDialogVisible" title="修改邮箱号" width="380" align-center>
@@ -226,6 +247,16 @@
     </template>
   </el-dialog>
 
+  <el-dialog v-model="exitEqDialogVisible" title="退出登录" width="380" align-center>
+    <span>确定退出该设备的登录吗？</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="exitEqDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="exitEqOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
   <el-dialog v-model="bindAccountDialogVisible" width="380" :show-close="false" align-center>
     <div class="logintext">
       <img :src="userAvatarUrl ? userAvatarUrl : avater" alt="头像" class="user-avatar" />
@@ -276,7 +307,7 @@ const registerForm = ref({
 
 const editDialogVisible = ref(false);
 import router from "@/router";
-import { updateUser, sendEmailCodeApi, updateUserEmail } from "@/api/apiUser";
+import { updateUser, sendEmailCodeApi, updateUserEmail, queryLoginUser, singOutDevice } from "@/api/apiUser";
 import { getOtherUserChatList, linkOtherUser, noLinkOtherUser } from "@/api/aiChat";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
 import { checkBiometricSupport } from "@/utils/webAuthn";
@@ -305,10 +336,12 @@ const activeNames = ref([]);
 const bindAccountDialogVisible = ref(false);
 const tableData = ref([]);
 const authData = ref([]);
+const loginUsers = ref([]);
 const tableCount = ref(0);
 const addEqNameDialogVisible = ref(false);
 const editEqNameDialogVisible = ref(false);
 const deleteEqDialogVisible = ref(false);
+const exitEqDialogVisible = ref(false);
 const registerEqForm = ref({
   name: "",
   id: -1,
@@ -440,6 +473,27 @@ const emailRule = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 function handleDeleteAuth(item) {
   deleteEqDialogVisible.value = true;
   registerEqForm.value = item;
+}
+
+function handleExitUser(item) {
+  exitEqDialogVisible.value = true;
+  registerEqForm.value = item;
+}
+
+async function exitEqOk() {
+  exitEqDialogVisible.value = false;
+  try {
+    const res = await singOutDevice({ id: registerEqForm.value.id });
+    ElMessage.success(res.data);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    queryLoginUser().then(res => {
+      if (res.code === 200) {
+        loginUsers.value = res.data || [];
+      }
+    });
+  }
 }
 
 function deleteEqOk() {
@@ -1061,6 +1115,10 @@ onMounted(async function () {
   getDevices().then(res => {
     authData.value = res.data || [];
   });
+  // 获取登录用户列表
+  queryLoginUser().then(res => {
+    loginUsers.value = res.data || [];
+  });
 });
 </script>
 
@@ -1339,7 +1397,6 @@ onMounted(async function () {
 }
 
 .auth-data .el-table {
-  height: 180px;
   margin-top: 10px;
 }
 </style>

@@ -11,7 +11,8 @@ SecretKey = 'asgfdgerher'
 HashingPassword = b'$2b$12$secretsaltsecretsaltse'
 
 # Token的过期时间，单位为天
-TheExpirationTimeOfTheToken = 5
+TheExpirationTimeOfTheToken = 60 * 30
+ReExpirationTimeOfTheToken = 60 * 60 * 24 * 14
 
 # mysql 数据库
 # 数据库地址，分本地环境(DEV)/生产环境(PRO)

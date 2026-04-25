@@ -113,3 +113,16 @@ def api_user_update_nickname(request, req_user):
     avatar = data.get('avatar')
     nick_name = data.get('nick_name')
     return sys_user_impl.api_user_update_nickname(id, avatar, nick_name)
+
+
+def get_refresh_token(refresh_id):
+    return sys_user_impl.get_refresh_token(refresh_id)
+
+
+@get_req_user
+def query_login_user(req_user):
+    return sys_user_impl.query_login_user(req_user)
+
+
+def sing_out_device(request):
+    return sys_user_impl.sing_out_device(request)

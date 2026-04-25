@@ -4,16 +4,18 @@ import json
 import time
 
 import bcrypt
-from sqlalchemy import or_
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import or_, and_
 
 from dbinfo import DatabaseSession
 from dto import SysUserDTO
-from entity import SysUser, EmailLogs
+from entity import SysUser, EmailLogs, SysUsersLoginLogs
 from utils import DbTools, Config, Tools
 from utils import ReturnTool
 from utils import SendMail
 from utils import TimeToolClass
 from utils.GetChatId import Snowflake
+from utils.JwtUtils import JWTHandler
 from utils.RedisUtils import RedisHandler
 from utils.encryptUtils import aes_decrypt
 
@@ -282,3 +284,53 @@ def api_user_update_nickname(id, avatar, nick_name):
             return ReturnTool.SuccessReturn()
         else:
             return ReturnTool.ErrorReturn('修改失败！')
+
+
+def get_refresh_token(refresh_id):
+    with DatabaseSession() as session:
+        logs = session.query(SysUsersLoginLogs).filter(SysUsersLoginLogs.refresh_id == refresh_id).first()
+        if logs is None:
+            return ReturnTool.ErrorReturn("权限已失效", 401)
+        token = logs.refresh_token
+        jwt = JWTHandler()
+        resp = jwt.decode_jwt(token)
+        if resp['code'] == 200:
+            payload = resp['data']
+            login_token = jwt.encode_jwt(payload)
+            return ReturnTool.SuccessReturn(login_token)
+        else:
+            return ReturnTool.ErrorReturn(resp['message'], resp['code'])
+
+
+def query_login_user(req_user):
+    with DatabaseSession() as session:
+        half_moth = datetime.date.today() - relativedelta(days=15)
+        logs = session.query(SysUsersLoginLogs).filter(and_(
+            SysUsersLoginLogs.user_id == req_user.get('id'),
+            SysUsersLoginLogs.create_date > half_moth
+        )).all()
+        res_arr = []
+        jwt = JWTHandler()
+        for log in logs:
+            token = log.refresh_token
+            resp = jwt.decode_jwt(token)
+            if resp['code'] == 200:
+                res_arr.append({
+                    'id': log.id,
+                    'name': log.name,
+                    'create_date': log.create_date.strftime('%Y-%m-%d %H:%M:%S'),
+                })
+
+        return ReturnTool.SuccessReturn(res_arr)
+
+
+def sing_out_device(request):
+    data = request.get_json()
+    if not data:
+        return ReturnTool.ErrorReturn('参数为空！', 400)
+
+    e_id = data.get('id')
+    with DatabaseSession() as session:
+        session.query(SysUsersLoginLogs).filter(SysUsersLoginLogs.id == e_id).delete()
+        session.commit()
+        return ReturnTool.SuccessReturn("退出成功！")

@@ -48,3 +48,18 @@ export function updateUserEmail(params) {
         params: params,
     })
 }
+
+export function singOutDevice(params) {
+    return request({
+        url: 'sys_user/singOutDevice',
+        method: 'post',
+        params: params,
+    })
+}
+
+export function queryLoginUser() {
+    return request({
+        url: 'sys_user/queryLoginUser',
+        method: 'get',
+    })
+}

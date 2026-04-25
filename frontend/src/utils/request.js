@@ -49,11 +49,31 @@ service.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
       // 401/408 处理：跳转到登录页
-      if (status === 401 || status === 408) {
+      // 401 处理：刷新 token 并重新请求
+      if (status === 401) {
+        try {
+          const resp = await axios.get(config.BASE_URL + '/sys_user/get_refresh_token/' + store.state.app.refreshToken);
+          const obj = resp.data;
+          if (obj.code !== 200) {
+            throw new Error("刷新失败");
+          }
+          store.dispatch("app/setAuthorization", obj.data);
+          // 重新发送原始请求
+          error.config.headers['token'] = obj.data;
+          return service.request(error.config);
+        } catch (error) {
+          const redirect = encodeURIComponent(window.location.href);
+          router.push(`/login?redirect=${redirect}`);
+          // 清空 store 数据
+          const clearActions = ["clearAvatar", "clearAuthorization", "clearUserRole", "clearNickName", "clearRefreshAuth", "clearUserName", "clearUserEmail"];
+          clearActions.forEach(action => store.dispatch(`app/${action}`));
+        }
+      }
+      if (status === 408) {
         const redirect = encodeURIComponent(window.location.href);
         router.push(`/login?redirect=${redirect}`);
         // 清空 store 数据
-        const clearActions = ["clearAvatar", "clearAuthorization", "clearUserRole", "clearNickName", "clearUserName", "clearUserEmail"];
+        const clearActions = ["clearAvatar", "clearAuthorization", "clearUserRole", "clearNickName", "clearRefreshAuth", "clearUserName", "clearUserEmail"];
         clearActions.forEach(action => store.dispatch(`app/${action}`));
       }
       // 其他HTTP错误：提示后端返回的msg
