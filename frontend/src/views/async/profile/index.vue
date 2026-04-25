@@ -162,7 +162,7 @@
         </div>
       </el-collapse-item>
 
-      <el-collapse-item name="4" v-if="isSupportBiometric" title="登录设备管理">
+      <el-collapse-item name="4" title="登录设备管理">
         <div class="auth-data" v-if="loginUsers.length > 0">
           <el-table :data="loginUsers" stripe style="width: 320px" :show-header="false">
             <el-table-column fixed prop="name" width="270">
