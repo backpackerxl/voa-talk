@@ -48,9 +48,7 @@ def public_login_handler(request, queue, login_type, ip, bind_other_account):
                 SysUsersLoginLogs.user_id == queue.id
             )
         ).first()
-        resp = JWTHandler().decode_jwt(login_quen.refresh_token)
-        refresh_id = login_quen.refresh_id
-        if resp['code'] != 200:
+        if login_quen is None:
             refresh_token = JWTHandler().encode_jwt(user_data, Config.ReExpirationTimeOfTheToken)
             refresh_id = Tools.generate_custom_id(15)
 
@@ -64,6 +62,23 @@ def public_login_handler(request, queue, login_type, ip, bind_other_account):
                 'user_id': queue.id
             }
             DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
+        else:
+            resp = JWTHandler().decode_jwt(login_quen.refresh_token)
+            refresh_id = login_quen.refresh_id
+            if resp['code'] != 200:
+                refresh_token = JWTHandler().encode_jwt(user_data, Config.ReExpirationTimeOfTheToken)
+                refresh_id = Tools.generate_custom_id(15)
+
+                now = datetime.datetime.now()
+                login_logs = {
+                    'refresh_id': refresh_id,
+                    'name': device_model,
+                    'refresh_token': refresh_token,
+                    'ip': ip,
+                    'create_date': now,
+                    'user_id': queue.id
+                }
+                DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
 
         # 生成token
         token = JWTHandler().encode_jwt(user_data)
