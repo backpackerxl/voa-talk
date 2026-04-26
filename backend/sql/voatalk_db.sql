@@ -181,7 +181,8 @@ CREATE TABLE `sys_users_login_logs` (
   `create_date` timestamp NOT NULL COMMENT '登录时间',
   `refresh_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '刷新id',
   `user_id` bigint NOT NULL COMMENT '用户id',
+  `update_date` timestamp NOT NULL COMMENT '活跃时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统用户登录日志';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统用户登录日志';
 
 SET FOREIGN_KEY_CHECKS = 1;
