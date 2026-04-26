@@ -173,6 +173,11 @@
                 <span class="txt">登录设备：{{ scope.row.name }}</span>
                 <br>
                 <span class="txt">最近活跃：{{ scope.row.update_date }}</span>
+                <br>
+                <span class="txt">登录IP：{{ scope.row.ip }}</span>&nbsp;&nbsp;<el-icon @click="copyIP(scope.row.ip)"
+                  style="cursor: pointer;">
+                  <CopyDocument />
+                </el-icon>
               </template>
             </el-table-column>
 
@@ -311,7 +316,7 @@ import {
   Edit,
   Delete,
   ArrowDown,
-  Key,
+  CopyDocument,
 } from "@element-plus/icons-vue";
 const welcomStr = ref(store.state.app.nickName);
 const userEmail = ref("");
@@ -337,6 +342,7 @@ import { config } from "@/utils/config";
 import { handleThem } from "@/utils/tools";
 import device from "current-device";
 import avater from "@/assets/images/avater.png";
+import * as clipboard from "clipboard-polyfill";
 const userNameTxt = ref('');
 const userAvatarUrl = ref('');
 const authIcon = ref('');
@@ -531,6 +537,16 @@ function deleteEqOk() {
   });
 }
 
+function copyIP(ip) {
+  clipboard.writeText(ip).then(
+    () => {
+      ElMessage.success("复制成功");
+    },
+    () => {
+      ElMessage.error("复制失败");
+    }
+  );
+}
 
 
 function handleUpdateAuth(item) {

@@ -321,6 +321,7 @@ def query_login_user(req_user):
                     'id': log.id,
                     'name': log.name,
                     'refresh_id': log.refresh_id,
+                    'ip': log.ip,
                     'update_date': log.update_date.strftime('%Y-%m-%d %H:%M:%S'),
                 })
 
