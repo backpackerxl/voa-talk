@@ -165,15 +165,20 @@
       <el-collapse-item name="4" title="登录设备管理">
         <div class="auth-data" v-if="loginUsers.length > 0">
           <el-table :data="loginUsers" stripe style="width: 320px" :show-header="false">
-            <el-table-column fixed prop="name" width="270">
+            <el-table-column fixed prop="name" width="230">
               <template v-slot="scope">
-                <span class="txt">登录设备：{{ scope.row.name }}</span><br>
+                <el-tag type="primary" size="small"
+                  v-if="scope.row.refresh_id === store.state.app.refreshToken">当前使用</el-tag>
+                <br>
+                <span class="txt">登录设备：{{ scope.row.name }}</span>
+                <br>
                 <span class="txt">登录时间：{{ scope.row.create_date }}</span>
               </template>
             </el-table-column>
 
-            <el-table-column fixed="right" min-width="50">
+            <el-table-column fixed="right" min-width="90">
               <template v-slot="scope">
+                <el-button size="small" :icon="Edit" circle @click="handleUpdateDevice(scope.row)" />
                 <el-button type="danger" size="small" circle @click="handleExitUser(scope.row)">
                   <i class="fa-solid fa-right-from-bracket"></i>
                 </el-button>
@@ -257,6 +262,21 @@
     </template>
   </el-dialog>
 
+  <el-dialog v-model="updateEqDialogVisible" title="修改登录设备名称" width="380" align-center>
+    <el-form :model="registerEqForm" :rules="rulesEqName" ref="registerEqFormRef" placeholder="请输入登录设备名称">
+      <el-form-item label="设备名称: " prop="name">
+        <el-input size="large" v-model="registerEqForm.name" />
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="updateEqDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="updateEqLoginNameOk"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
   <el-dialog v-model="bindAccountDialogVisible" width="380" :show-close="false" align-center>
     <div class="logintext">
       <img :src="userAvatarUrl ? userAvatarUrl : avater" alt="头像" class="user-avatar" />
@@ -307,7 +327,7 @@ const registerForm = ref({
 
 const editDialogVisible = ref(false);
 import router from "@/router";
-import { updateUser, sendEmailCodeApi, updateUserEmail, queryLoginUser, singOutDevice } from "@/api/apiUser";
+import { updateUser, sendEmailCodeApi, updateUserEmail, queryLoginUser, singOutDevice, updateSingDevice } from "@/api/apiUser";
 import { getOtherUserChatList, linkOtherUser, noLinkOtherUser } from "@/api/aiChat";
 import { arrayBufferToBase64Url, base64UrlToArrayBuffer } from "@/utils/webAuthnHelper";
 import { checkBiometricSupport } from "@/utils/webAuthn";
@@ -342,6 +362,7 @@ const addEqNameDialogVisible = ref(false);
 const editEqNameDialogVisible = ref(false);
 const deleteEqDialogVisible = ref(false);
 const exitEqDialogVisible = ref(false);
+const updateEqDialogVisible = ref(false);
 const registerEqForm = ref({
   name: "",
   id: -1,
@@ -534,6 +555,30 @@ function updateEqNameOk() {
     }
   });
 }
+
+function handleUpdateDevice(item) {
+  registerEqForm.value = item;
+  updateEqDialogVisible.value = true;
+}
+
+function updateEqLoginNameOk() {
+  registerEqFormRef.value.validate((valid) => {
+    if (valid) {
+      updateEqDialogVisible.value = false;
+      updateSingDevice({ name: registerEqForm.value.name, id: registerEqForm.value.id }).then(res => {
+        if (res.code === 200) {
+          ElMessage.success('修改成功');
+          getDevices().then(res => {
+            authData.value = res.data || [];
+          });
+        }
+      }).catch(err => {
+        ElMessage.error(err.msg);
+      });
+    }
+  });
+}
+
 
 function registerWebAuthn() {
   registerEqForm.value = {

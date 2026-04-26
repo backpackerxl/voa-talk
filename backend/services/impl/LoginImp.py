@@ -3,7 +3,6 @@ import json
 import uuid
 
 from sqlalchemy import or_, and_
-from ua_parser import user_agent_parser
 
 from dbinfo import DatabaseSession
 from entity import SysUser, SysUserWebAuth, SysUsersLoginLogs
@@ -17,15 +16,6 @@ from utils.encryptUtils import aes_decrypt
 def login_impl(request, client_ip):
     with DatabaseSession() as session:
         username = request.get_json().get("userName")
-        # 1. 获取请求头里的 User-Agent
-        ua_string = request.headers.get('User-Agent', '')
-        # 2. 解析设备信息
-        parsed = user_agent_parser.Parse(ua_string)
-        device = parsed.get('device', {})
-        # 3. 拼接设备名称（最精准）
-        device_model = device.get('model', '')  # 型号：iPhone 16 Pro
-        if device_model is None:
-            device_model = '网页登录'
 
         queue = session.query(SysUser).filter(
             or_(
@@ -67,43 +57,20 @@ def login_impl(request, client_ip):
             "bindGithub": (1 if queue.github_open_id is None else 3),
         }
         # 生成token
-        login_quen = session.query(SysUsersLoginLogs).filter(
-            and_(
-                SysUsersLoginLogs.name == device_model,
-                SysUsersLoginLogs.user_id == queue.id
-            )
-        ).first()
-        if login_quen is None:
-            refresh_token = JWTHandler().encode_jwt(user_data, Config.ReExpirationTimeOfTheToken)
-            refresh_id = Tools.generate_custom_id(15)
+        refresh_token = JWTHandler().encode_jwt(user_data, Config.ReExpirationTimeOfTheToken)
+        refresh_id = Tools.generate_custom_id(15)
+        device_model = Tools.generate_custom_id(6)  # 系统登录设备随机标识符
 
-            now = datetime.datetime.now()
-            login_logs = {
-                'refresh_id': refresh_id,
-                'name': device_model,
-                'refresh_token': refresh_token,
-                'ip': client_ip,
-                'create_date': now,
-                'user_id': queue.id
-            }
-            DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
-        else:
-            resp = JWTHandler().decode_jwt(login_quen.refresh_token)
-            refresh_id = login_quen.refresh_id
-            if resp['code'] != 200:
-                refresh_token = JWTHandler().encode_jwt(user_data, Config.ReExpirationTimeOfTheToken)
-                refresh_id = Tools.generate_custom_id(15)
-
-                now = datetime.datetime.now()
-                login_logs = {
-                    'refresh_id': refresh_id,
-                    'name': device_model,
-                    'refresh_token': refresh_token,
-                    'ip': client_ip,
-                    'create_date': now,
-                    'user_id': queue.id
-                }
-                DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
+        now = datetime.datetime.now()
+        login_logs = {
+            'refresh_id': refresh_id,
+            'name': device_model,
+            'refresh_token': refresh_token,
+            'ip': client_ip,
+            'create_date': now,
+            'user_id': queue.id
+        }
+        DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
 
         token = JWTHandler().encode_jwt(user_data)
         user_data["jwtToken"] = token

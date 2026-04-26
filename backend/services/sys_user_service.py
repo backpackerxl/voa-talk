@@ -126,3 +126,7 @@ def query_login_user(req_user):
 
 def sing_out_device(request):
     return sys_user_impl.sing_out_device(request)
+
+
+def update_sing_device(request):
+    return sys_user_impl.update_sing_device(request)
