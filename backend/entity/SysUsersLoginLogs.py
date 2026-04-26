@@ -15,4 +15,5 @@ class SysUsersLoginLogs(Base):
     refresh_token = Column('refresh_token', String, primary_key=False, nullable=False, comment="刷新token")
     ip = Column('ip', String, primary_key=False, nullable=False, comment="登录IP")
     create_date = Column('create_date', Date, primary_key=False, nullable=False, comment="登录日期")
+    update_date = Column('update_date', Date, primary_key=False, nullable=False, comment="活跃时间")
     user_id = Column('user_id', Date, primary_key=False, nullable=False, comment="用户id")

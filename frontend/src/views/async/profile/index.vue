@@ -172,7 +172,7 @@
                 <br>
                 <span class="txt">登录设备：{{ scope.row.name }}</span>
                 <br>
-                <span class="txt">登录时间：{{ scope.row.create_date }}</span>
+                <span class="txt">最近活跃：{{ scope.row.update_date }}</span>
               </template>
             </el-table-column>
 

@@ -68,6 +68,7 @@ def login_impl(request, client_ip):
             'refresh_token': refresh_token,
             'ip': client_ip,
             'create_date': now,
+            'update_date': now,
             'user_id': queue.id
         }
         DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)

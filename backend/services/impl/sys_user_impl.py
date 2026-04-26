@@ -294,6 +294,8 @@ def get_refresh_token(refresh_id):
         token = logs.refresh_token
         jwt = JWTHandler()
         resp = jwt.decode_jwt(token)
+        logs.update_date = datetime.datetime.now()
+        session.commit()
         if resp['code'] == 200:
             payload = resp['data']
             login_token = jwt.encode_jwt(payload)
@@ -319,7 +321,7 @@ def query_login_user(req_user):
                     'id': log.id,
                     'name': log.name,
                     'refresh_id': log.refresh_id,
-                    'create_date': log.create_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    'update_date': log.update_date.strftime('%Y-%m-%d %H:%M:%S'),
                 })
 
         return ReturnTool.SuccessReturn(res_arr)

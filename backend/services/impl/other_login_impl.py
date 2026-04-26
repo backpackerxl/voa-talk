@@ -42,6 +42,7 @@ def public_login_handler(queue, login_type, ip, bind_other_account):
             'refresh_token': refresh_token,
             'ip': ip,
             'create_date': now,
+            'update_date': now,
             'user_id': queue.id
         }
         DbTools.saveOrUpdate(session, login_logs, SysUsersLoginLogs)
