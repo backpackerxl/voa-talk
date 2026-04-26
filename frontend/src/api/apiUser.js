@@ -57,6 +57,14 @@ export function singOutDevice(params) {
     })
 }
 
+export function updateSingDevice(params) {
+    return request({
+        url: 'sys_user/updateSingDevice',
+        method: 'post',
+        params: params,
+    })
+}
+
 export function queryLoginUser() {
     return request({
         url: 'sys_user/queryLoginUser',

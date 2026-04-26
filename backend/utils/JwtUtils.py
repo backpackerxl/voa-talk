@@ -26,7 +26,7 @@ class JWTHandler:
             字符串: 编码后的 JWT
         """
         # 在负载中添加一个 "exp"（过期时间）字段，设置过期时间为 1 天后
-        payload['exp'] = datetime.datetime.utcnow() + relativedelta(seconds=expiration)
+        payload['exp'] = datetime.datetime.now() + relativedelta(seconds=expiration)
         token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
         del payload['exp']
 

@@ -294,6 +294,8 @@ def get_refresh_token(refresh_id):
         token = logs.refresh_token
         jwt = JWTHandler()
         resp = jwt.decode_jwt(token)
+        logs.update_date = datetime.datetime.now()
+        session.commit()
         if resp['code'] == 200:
             payload = resp['data']
             login_token = jwt.encode_jwt(payload)
@@ -318,7 +320,8 @@ def query_login_user(req_user):
                 res_arr.append({
                     'id': log.id,
                     'name': log.name,
-                    'create_date': log.create_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    'refresh_id': log.refresh_id,
+                    'update_date': log.update_date.strftime('%Y-%m-%d %H:%M:%S'),
                 })
 
         return ReturnTool.SuccessReturn(res_arr)
@@ -334,3 +337,19 @@ def sing_out_device(request):
         session.query(SysUsersLoginLogs).filter(SysUsersLoginLogs.id == e_id).delete()
         session.commit()
         return ReturnTool.SuccessReturn("退出成功！")
+
+
+def update_sing_device(request):
+    data = request.get_json()
+    if not data:
+        return ReturnTool.ErrorReturn('参数为空！', 400)
+
+    e_id = data.get('id')
+    e_name = data.get('name')
+    with DatabaseSession() as session:
+        logs = {
+            'id': e_id,
+            'name': e_name
+        }
+        DbTools.saveOrUpdate(session, logs, SysUsersLoginLogs)
+        return ReturnTool.SuccessReturn("修改成功！")
