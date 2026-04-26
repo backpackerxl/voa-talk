@@ -584,8 +584,8 @@ function updateEqLoginNameOk() {
       updateSingDevice({ name: registerEqForm.value.name, id: registerEqForm.value.id }).then(res => {
         if (res.code === 200) {
           ElMessage.success('修改成功');
-          getDevices().then(res => {
-            authData.value = res.data || [];
+          queryLoginUser().then(res => {
+            loginUsers.value = res.data || [];
           });
         }
       }).catch(err => {
